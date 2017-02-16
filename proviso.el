@@ -1,9 +1,9 @@
-;;; profile.el --- manage profiles
+;;; proviso.el --- manage profiles
 ;; Copyright (C) 2016-2017  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-01-26 17:12:21 dharms>
+;; Modified Time-stamp: <2017-02-16 08:21:39 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -28,25 +28,27 @@
 
 ;;; Code:
 
-(require 'profile-tags)
-(require 'profile-sml)
+(require 'proviso-tags)
+(require 'proviso-sml)
 
+(eval-when-compile
+  (require 'cl))
 (require 'f)
 (require 'seq)
 (require 'switch-buffer-functions)
 (require 'tramp)
 
-(defvar prof-obarray
+(defvar proviso-obarray
   (let ((intern-obarray (make-vector 7 0)))
     (intern "default" intern-obarray)
     intern-obarray)
   "Array of profile objects.")
-(defvar prof-path-alist '()
+(defvar proviso-path-alist '()
   "Alist of pairs of strings (REGEXP . PROFILE-NAME).
 A profile is used for a file if the filename matches REGEXP.  In the case
 of no matches, the default profile is instead used.")
-(defvar prof-local (intern-soft "default" prof-obarray))
-(defvar prof-current nil)
+(defvar proviso-local (intern-soft "default" proviso-obarray))
+(defvar proviso-current nil)
 
 ;; Profile Properties:
 ;;  - External:
@@ -55,66 +57,79 @@ of no matches, the default profile is instead used.")
 ;; :remote-prefix :remote-host :root-stem
 
 ;; hooks
-(defvar prof-on-profile-pre-init '()
+(defvar proviso-on-profile-pre-init '()
   "Hooks run just before a profile is first initialized.
 Hook functions are called with one parameter, the new profile.")
-(defvar prof-on-profile-post-init '()
+(defvar proviso-on-profile-post-init '()
   "Hooks run just after a profile is first initialized.
 Hook functions are called with one parameter, the new profile.")
-(defvar prof-on-profile-loaded '()
+(defvar proviso-on-profile-loaded '()
   "Hooks run whenever a profile becomes active.
 Hook functions are called with two parameters: the new profile,
 and the old one: `lambda(new old)()'.")
 
-(defun prof-p (prof)
+(defun proviso-p (prof)
   "Return non-nil if PROF is a profile."
-  (intern-soft prof prof-obarray))
+  (intern-soft prof proviso-obarray))
 
-(defun prof-put (profile property value)
+(defvar proviso--last-proviso-defined nil
+  "The most recent profile to be defined.")
+
+(defvar proviso--ext "proviso"
+  "The extension for profile files.")
+
+(defun proviso-define (profile &rest plist)
+  "Create or replace a profile named PROFILE.
+Add to it the property list PLIST."
+  (let ((p (intern profile proviso-obarray)))
+    (setplist p plist)
+    (setq proviso--last-proviso-defined p)))
+
+(defun proviso-define-derived (profile parent &rest plist)
+  "Create or replace a profile named PROFILE.
+Its parent is PARENT.  Add to it the property list PLIST."
+  (let ((p (intern profile proviso-obarray)))
+    (setplist p (append (list :parent parent) plist))
+    (setq proviso--last-proviso-defined p)))
+
+(defun proviso-put (profile property value)
   "Put into PROFILE the PROPERTY with value VALUE."
-  (let ((p (intern-soft profile prof-obarray)))
+  (let ((p (intern-soft profile proviso-obarray)))
     (if p (put p property value)
       (error "Invalid profile %s" profile))))
 
-(defun prof-get (profile property &optional inhibit-polymorphism)
+(defun proviso-get (profile property &optional inhibit-polymorphism)
   "Get from PROFILE the value associated with PROPERTY.
 INHIBIT-POLYMORPHISM, if non-nil, will constrain lookup from
 searching in any bases."
-  (let ((p (intern-soft profile prof-obarray))
+  (let ((p (intern-soft profile proviso-obarray))
         parent parentname)
     (when p
       (or (get p property)
           (and (not inhibit-polymorphism)
                (setq parentname (get p :parent))
-               (setq parent (intern-soft parentname prof-obarray))
-               (prof-get parent property))))))
+               (setq parent (intern-soft parentname proviso-obarray))
+               (proviso-get parent property))))))
 
-(defun prof-define (profile &rest plist)
-  "Create or replace a profile named PROFILE.
-Add to it the property list PLIST."
-  (let ((p (intern profile prof-obarray)))
-    (setplist p plist)))
-
-(defun prof-define-derived (profile parent &rest plist)
-  "Create or replace a profile named PROFILE.
-Its parent is PARENT.  Add to it the property list PLIST."
-  (let ((p (intern profile prof-obarray)))
-    (setplist p (append (list :parent parent) plist))))
-
-(defun prof-find-path-alist (&optional filename)
-  "Scan `prof-path-alist' for an entry to match FILENAME."
+(defun proviso-find-path-alist (&optional filename)
+  "Scan `proviso-path-alist' for an entry to match FILENAME."
   (assoc-default
    (or filename (buffer-file-name) (buffer-name))
-   prof-path-alist 'string-match))
+   proviso-path-alist 'string-match))
 
-(define-error 'prof-error "Profile error")
-(define-error 'prof-error-non-fatal "Profile load stopped" 'prof-error)
-(define-error 'prof-error-aborted "Profile load aborted" 'prof-error)
+(defun proviso-name-p (prof)
+  "Return non-nil if PROF names an active profile."
+  (seq-find (lambda (elt)
+              (string= (cdr elt) prof)) proviso-path-alist))
 
-(defvar prof--ignore-load-errors nil
+(define-error 'proviso-error "Profile error")
+(define-error 'proviso-error-non-fatal "Profile load stopped" 'proviso-error)
+(define-error 'proviso-error-aborted "Profile load aborted" 'proviso-error)
+
+(defvar proviso--ignore-load-errors nil
   "Internal variable is non-nil if user desires errors to be skipped.")
 
-(defun prof--query-error (profile err)
+(defun proviso--query-error (profile err)
   "While loading PROFILE, error ERR has occurred; ask the user what to do."
   (interactive)
   (let ((buf (get-buffer-create "*Profile Error*")))
@@ -144,60 +159,60 @@ Its parent is PARENT.  Add to it the property list PLIST."
         (setq ch (read-char-choice prompt choices)))
       (quit-window t)
       (cond ((eq ch ?n)
-             (signal 'prof-error-non-fatal err))
+             (signal 'proviso-error-non-fatal err))
             ((eq ch ?a)
-             (prof-hard-reset profile)
-             (signal 'prof-error-aborted
+             (proviso-hard-reset profile)
+             (signal 'proviso-error-aborted
                      (format "Aborted (and reset) profile \"%s\" (%s)"
                              (symbol-name profile) err)))
             ((eq ch ?!)
-             (setq prof--ignore-load-errors t))
+             (setq proviso--ignore-load-errors t))
             ))
     nil))
 
-(defun prof--safe-funcall (prof property &rest rem)
+(defun proviso--safe-funcall (prof property &rest rem)
   "Call a function from profile PROF stored in its PROPERTY tag.
 The function is called with arguments REM, if the function exists
 and is bound."
   (let ((func (intern-soft
-               (prof-get prof property))))
+               (proviso-get prof property))))
     (and func (fboundp func) (funcall func rem))))
 
-(defun prof-soft-reset ()
+(defun proviso-soft-reset ()
   "Reset the current profile.
 This does not otherwise remove any profiles from memory."
   (interactive)
   ;; kill-local-variable insufficient due to permanent-local property
-  (setq prof-current nil)
-  (setq prof-local (default-value 'prof-local)))
+  (setq proviso-current nil)
+  (setq proviso-local (default-value 'proviso-local)))
 
-(defun prof-hard-reset (&optional profile)
+(defun proviso-hard-reset (&optional profile)
   "Remove all traces of PROFILE."
   (interactive)
-  (prof--remove-prof-from-alist profile)
-  (prof--remove-prof profile)
-  (prof-soft-reset))
+  (proviso--remove-proviso-from-alist profile)
+  (proviso--remove-prof profile)
+  (proviso-soft-reset))
 
-(defun prof--remove-prof (profile)
+(defun proviso--remove-prof (profile)
   "Delete the profile PROFILE, which can be a symbol or string (name)."
-  (unintern profile prof-obarray))
+  (unintern profile proviso-obarray))
 
-(defun prof--remove-prof-from-alist (profile)
+(defun proviso--remove-proviso-from-alist (profile)
   "Remove profile PROFILE from the internal data structure."
-  (setq prof-path-alist
+  (setq proviso-path-alist
         (seq-remove
          (lambda (elt)
            ;; string-equal handles a symbol using its print-name
            (string-equal (cdr elt) profile))
-         prof-path-alist)))
+         proviso-path-alist)))
 
-(defun prof--validate-include-files (prof)
+(defun proviso--validate-include-files (prof)
   "Validate the set of include files of profile PROF."
-  (let ((remote (prof-get prof :remote-prefix))
-        (root (prof-get prof :root-dir))
-        (lst (prof-get prof :dirs))     ;todo
+  (let ((remote (proviso-get prof :remote-prefix))
+        (root (proviso-get prof :root-dir))
+        (lst (proviso-get prof :dirs))     ;todo
         entry path)
-    (setq prof--ignore-load-errors nil)
+    (setq proviso--ignore-load-errors nil)
     (setq lst
           (seq-filter (lambda (elt)
                         (setq entry (cadr elt)) ;todo
@@ -211,28 +226,28 @@ This does not otherwise remove any profiles from memory."
                                 entry)))
                         (cond ((null entry) nil)
                               ((f-exists? path) path)
-                              (prof--ignore-load-errors nil)
+                              (proviso--ignore-load-errors nil)
                               (t
-                               (prof--query-error
+                               (proviso--query-error
                                 prof
                                 (format "%s does not exist!" path)))))
                       lst))
-    (prof-put prof :dirs lst)))         ;todo
+    (proviso-put prof :dirs lst)))         ;todo
 
-(defun prof-load (prof)
+(defun proviso-load (prof)
   "Load a profile PROF."
   (condition-case err
       t
-    ('prof-error-non-fatal
-     (prof-put prof :inited nil)
+    ('proviso-error-non-fatal
+     (proviso-put prof :inited nil)
      (message "Stopped loading prof \"%s\" (%s)"
               (symbol-name prof) (cdr err)))
-    ((prof-error-aborted prof-error)
+    ((proviso-error-aborted proviso-error)
      (ignore-errors
-       (prof-put prof :inited nil))
+       (proviso-put prof :inited nil))
      (error (cdr err)))))
 
-(defun prof-find-file-upwards-helper (path file)
+(defun proviso-find-file-upwards-helper (path file)
   "Helper function to search upward from PATH for FILE."
   (let* ((parent (file-name-directory path))
          files)
@@ -243,28 +258,30 @@ This does not otherwise remove any profiles from memory."
       nil)
      ((setq files (directory-files parent t file))
       (car files))                      ;found
-     (t (prof-find-file-upwards-helper
+     (t (proviso-find-file-upwards-helper
          (directory-file-name parent) file)))))
 
-(defun prof-find-file-upwards (dir file)
+(defun proviso-find-file-upwards (dir file)
   "Recursively search upward from DIR for FILE.
 Return path to file or nil if not found."
   (interactive)
-  (prof-find-file-upwards-helper (or dir default-directory) file))
+  (proviso-find-file-upwards-helper (or dir default-directory) file))
 
-(defun prof-find-file-dir-upwards (file)
+(defun proviso-find-file-dir-upwards (file)
   "Recursively search upward for FILE.
 Return that file's directory or nil if not found."
   (interactive)
-  (let ((file (prof-find-file-upwards nil file)))
+  (let ((file (proviso-find-file-upwards nil file)))
     (when file (file-name-directory file))))
 
-(defun prof--find-root (dir &optional absolute)
+(defun proviso--find-root (dir &optional absolute)
   "Search for the project root, starting from DIR and moving up the file tree.
 Returns a cons (file, dir) containing the project file and its parent
 directory, if found, else nil.  If ABSOLUTE is non-nil, the path, if found,
 will be absolute.  Profile files can look like any of the following:
-`.eprof', `my.eprof', `.my.eprof'."
+    1) .proviso
+    2) proj.proviso
+    3) .proj.proviso"
   (let (root file)
     (setq root
           (if (functionp 'locate-dominating-file)
@@ -272,22 +289,33 @@ will be absolute.  Profile files can look like any of the following:
                dir
                (lambda (parent)
                  (setq file
-                       (car (directory-files parent t "\\sw+\\.e?prof$")))))
-            (prof-find-file-upwards dir "\\sw+\\.e?prof$")))
+;                       (car (directory-files parent t "\\sw+\\.e?prof$")))))
+                       (car (directory-files parent t "\\sw*\\.proviso$")))))
+;            (proviso-find-file-upwards dir "\\sw+\\.e?prof$")))
+            (proviso-find-file-upwards dir "\\sw*\\.proviso$")))
     (when root
       (if absolute
           (cons file (expand-file-name root))
         (cons file root)))))
 
-(defun prof--compute-basename (name)
-  "Return basename of profile located at NAME.
-For example, given a profile file `.mybase.eprof', the basename would be
-`mybase'."
-  (let ((base (file-name-base name)))
-    (when (string-match "\\.?\\(.+\\)" base)
-      (match-string-no-properties 1 base))))
+(defun proviso--compute-basename-from-file (name)
+  "Compute the basename of the profile located at NAME.
+We first attempt to derive a name from the base of the file.
+Otherwise we look at the current directory.  For example, the
+following examples would all yield `sample':
+    1)  ~/first/second/sample.proviso
+    2)  /home/user/third/.sample.proviso
+    3)  ~/sample/.proviso"
+  (let ((base (file-name-nondirectory name)))
+    (if (string-match
+         (concat "\\.?\\(.+\\)\\." proviso--ext)
+         base)
+        (match-string-no-properties 1 base)
+      (file-name-nondirectory
+       (directory-file-name
+        (file-name-directory name))))))
 
-(defun prof--compute-remote-props (dir)
+(defun proviso--compute-remote-props (dir)
   "Compute the remote properties associated with DIR.
 DIR may be remote."
   (and dir (file-remote-p dir)
@@ -296,108 +324,131 @@ DIR may be remote."
                        ,(tramp-make-tramp-file-name
                          file-method file-user file-host "")))))
 
-(defun prof--compute-stem (prof)
+(defun proviso--compute-stem (prof)
   "Compute a profile PROF's stem.
 This is useful in regexp-matching.  The profile's root-dir is
 probably a relative path, possibly including a `~' that
 represents the user's home directory."
-  (replace-regexp-in-string "~/" "" (prof-get prof :root-dir)))
+  (replace-regexp-in-string "~/" "" (proviso-get prof :root-dir)))
 
-(defun prof--log-profile-loaded (prof)
+(defun proviso--log-profile-loaded (prof)
   "Log a profile PROF upon initialization."
   (let ((name (symbol-name prof)))
     (unless (string-equal name "default")
       (message "Loaded profile %s (project %s) at %s"
                name
-               (prof-get prof :project-name)
-               (prof-get prof :root-dir)))))
+               (proviso-get prof :project-name)
+               (proviso-get prof :root-dir)))))
 
-(defun prof--inited (prof)
+(defun proviso--inited (prof)
   "Initialize a profile PROF."
   )
 
-(defun prof--loaded (prof)
+(defun proviso--loaded (prof)
   "A profile PROF has been loaded.
 This may or may not be for the first time."
-  (unless (prof-get prof :inited)
-    (prof-put prof :inited t)
-    (run-hook-with-args 'prof-on-profile-pre-init prof)
-    (prof--safe-funcall prof :initfun)
-    (prof-load prof)
-    (run-hook-with-args 'prof-on-profile-post-init prof)
-    (prof--log-profile-loaded prof)
+  (unless (proviso-get prof :inited)
+    (proviso-put prof :inited t)
+    (run-hook-with-args 'proviso-on-profile-pre-init prof)
+    (proviso--safe-funcall prof :initfun)
+    (proviso-load prof)
+    (run-hook-with-args 'proviso-on-profile-post-init prof)
+    (proviso--log-profile-loaded prof)
     )
-  (unless (eq prof prof-current)
-    (let ((prof-old prof-current))
-      (setq prof-current prof)
-      (run-hook-with-args 'prof-on-profile-loaded prof prof-old)
+  (unless (eq prof proviso-current)
+    (let ((proviso-old proviso-current))
+      (setq proviso-current prof)
+      (run-hook-with-args 'proviso-on-profile-loaded prof proviso-old)
       )))
 
 ;; (add-hook 'switch-buffer-functions
 ;;           (lambda (prev curr)
-;;             (when (local-variable-p 'prof-local curr)
+;;             (when (local-variable-p 'proviso-local curr)
 ;;               (with-current-buffer curr ;todo: is there a better way?
-;;                 (setq prof-current prof-local)))))
+;;                 (setq proviso-current proviso-local)))))
 
 ;; (defadvice find-file-noselect-1
 ;;     (before before-find-file-no-select-1 activate)
-;;   (prof--file-opened buf filename))
+;;   (proviso--file-opened-advice buf filename))
 
-(advice-add 'find-file-noselect-1 :before 'prof--file-opened)
+(defun proviso--load-file (filename)
+  "Load the settings contained within FILENAME."
+  (load-file filename))
 
-(defun prof--file-opened (buffer filename)
+(advice-add 'find-file-noselect-1 :before 'proviso--file-opened-advice)
+
+(defun proviso--file-opened-advice (buf filename nowarn rawfile truename number)
+  "Advice that helps to initialize a profile, if necessary, for BUF, visiting FILENAME."
+  (proviso--file-opened buf filename))
+
+(defun proviso--file-opened (buffer filename)
   "Initialize a profile, if necessary, for BUFFER, visiting FILENAME."
   (with-current-buffer buffer
-    (make-local-variable 'prof-local)
-    (put 'prof-local 'permanent-local t)
-    (setq prof-local
-          (intern-soft (prof-find-path-alist
+    (make-local-variable 'proviso-local)
+    (put 'proviso-local 'permanent-local t)
+    (setq proviso-local
+          (intern-soft (proviso-find-path-alist
                         (expand-file-name filename))
-                       prof-obarray))
-    (let* ((root (prof--find-root (file-name-directory filename) t))
+                       proviso-obarray))
+    (let* ((root (proviso--find-root (file-name-directory filename) t))
            (root-file (car root))
            (root-dir (cdr root))
-           (remote-props (prof--compute-remote-props root-dir))
+           (remote-props (proviso--compute-remote-props root-dir))
            remote-host remote-localname remote-prefix basename)
       (when remote-props
         (setq remote-host (car remote-props))
         (setq remote-localname (cadr remote-props))
         (setq remote-prefix (caddr remote-props)))
       (when (and root root-file root-dir
-                 (string-match "\\.[er]prof$" root-file)
-                 (or (not prof-local)
+;                 (string-match "\\.[er]prof$" root-file)
+                 (string-match
+                  (concat "\\." proviso--ext "$")
+                  root-file)
+                 (or (not proviso-local)
                      (not (string-equal root-dir
-                                        (prof-get prof-local :root-dir)))))
+                                        (proviso-get proviso-local :root-dir)))))
         ;; a new profile, not yet inited
-        (load-file root-file)
-        (setq basename (prof--compute-basename root-file))
+        (proviso--load-file root-file)
+        ;; project name defaults to filename, unless overridden
+        (princ proviso-path-alist)
+        (message "drh proviso-path-alist %s" proviso-path-alist)
+        (message "drh last profile %s" proviso--last-proviso-defined)
+        (setq basename (proviso-get proviso--last-proviso-defined :project-name))
+        (message "drh basename %s" basename)
+        (unless basename
+          (setq basename (proviso--compute-basename-from-file root-file)))
+        (message "drh basename 2 %s" basename)
+        ;; todo: check for uniqueness; alter if necessary
+        ;; (while (proviso-name-p basename)
         (when remote-props
           (setq root-dir remote-localname))
-        (setq prof-path-alist (cons (cons root-dir basename)
-                                    prof-path-alist))
-        (setq prof-local
-              (intern-soft (prof-find-path-alist
+        (push (cons root-dir basename) proviso-path-alist)
+        (message "drh proviso-path-alist 2 %s" proviso-path-alist)
+        (message "drh looking for %s (%s)"
+                 (expand-file-name filename) filename)
+        (setq proviso-local
+              (intern-soft (proviso-find-path-alist
                             (expand-file-name filename))
-                           prof-obarray))
-        (unless (prof-get prof-local :root-dir)
-          (prof-put prof-local :root-dir root-dir))
+                           proviso-obarray))
+        (unless (proviso-get proviso-local :root-dir)
+          (proviso-put proviso-local :root-dir root-dir))
         ;; change to absolute if necessary: in case the profile listed
         ;; root-dir as relative
-        (when (f-relative? (prof-get prof-local :root-dir))
-          (prof-put prof-local :project-name
-                    (f-long (prof-get prof-local :root-dir))))
-        (unless (prof-get prof-local :project-name)
-          (prof-put prof-local :project-name basename))
-        (unless (prof-get prof-local :remote-host)
-          (prof-put prof-local :remote-host remote-host))
-        (unless (prof-get prof-local :remote-prefix)
-          (prof-put prof-local :remote-prefix remote-prefix))
-        (unless (prof-get prof-local :root-stem)
-          (prof-put prof-local :root-stem
-                    (prof--compute-stem prof-local)))
+        (when (f-relative? (proviso-get proviso-local :root-dir))
+          (proviso-put proviso-local :project-name
+                    (f-long (proviso-get proviso-local :root-dir))))
+        (unless (proviso-get proviso-local :project-name)
+          (proviso-put proviso-local :project-name basename))
+        (unless (proviso-get proviso-local :remote-host)
+          (proviso-put proviso-local :remote-host remote-host))
+        (unless (proviso-get proviso-local :remote-prefix)
+          (proviso-put proviso-local :remote-prefix remote-prefix))
+        (unless (proviso-get proviso-local :root-stem)
+          (proviso-put proviso-local :root-stem
+                    (proviso--compute-stem proviso-local)))
         )
-      (prof--loaded prof-local)
+      (proviso--loaded proviso-local)
       )))
 
-(provide 'profile)
-;;; profile.el ends here
+(provide 'proviso)
+;;; proviso.el ends here
