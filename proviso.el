@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-02-16 08:21:39 dharms>
+;; Modified Time-stamp: <2017-02-16 08:29:35 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -408,6 +408,7 @@ This may or may not be for the first time."
                      (not (string-equal root-dir
                                         (proviso-get proviso-local :root-dir)))))
         ;; a new profile, not yet inited
+        (setq proviso--last-proviso-defined nil)
         (proviso--load-file root-file)
         ;; project name defaults to filename, unless overridden
         (princ proviso-path-alist)
@@ -430,6 +431,7 @@ This may or may not be for the first time."
               (intern-soft (proviso-find-path-alist
                             (expand-file-name filename))
                            proviso-obarray))
+        (message "drh latest proviso is %s" proviso-local)
         (unless (proviso-get proviso-local :root-dir)
           (proviso-put proviso-local :root-dir root-dir))
         ;; change to absolute if necessary: in case the profile listed
