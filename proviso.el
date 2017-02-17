@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-02-16 08:29:35 dharms>
+;; Modified Time-stamp: <2017-02-16 17:53:27 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -47,8 +47,8 @@
   "Alist of pairs of strings (REGEXP . PROFILE-NAME).
 A profile is used for a file if the filename matches REGEXP.  In the case
 of no matches, the default profile is instead used.")
-(defvar proviso-local (intern-soft "default" proviso-obarray))
-(defvar proviso-current nil)
+(defvar-local proviso-local-prof (intern-soft "default" proviso-obarray))
+(defvar proviso-curr-prof nil)
 
 ;; Profile Properties:
 ;;  - External:
@@ -68,11 +68,11 @@ Hook functions are called with one parameter, the new profile.")
 Hook functions are called with two parameters: the new profile,
 and the old one: `lambda(new old)()'.")
 
-(defun proviso-p (prof)
+(defun proviso-prof-p (prof)
   "Return non-nil if PROF is a profile."
   (intern-soft prof proviso-obarray))
 
-(defvar proviso--last-proviso-defined nil
+(defvar proviso--last-profile-defined nil
   "The most recent profile to be defined.")
 
 (defvar proviso--ext "proviso"
@@ -83,14 +83,14 @@ and the old one: `lambda(new old)()'.")
 Add to it the property list PLIST."
   (let ((p (intern profile proviso-obarray)))
     (setplist p plist)
-    (setq proviso--last-proviso-defined p)))
+    (setq proviso--last-profile-defined p)))
 
 (defun proviso-define-derived (profile parent &rest plist)
   "Create or replace a profile named PROFILE.
 Its parent is PARENT.  Add to it the property list PLIST."
   (let ((p (intern profile proviso-obarray)))
     (setplist p (append (list :parent parent) plist))
-    (setq proviso--last-proviso-defined p)))
+    (setq proviso--last-profile-defined p)))
 
 (defun proviso-put (profile property value)
   "Put into PROFILE the PROPERTY with value VALUE."
@@ -183,8 +183,8 @@ and is bound."
 This does not otherwise remove any profiles from memory."
   (interactive)
   ;; kill-local-variable insufficient due to permanent-local property
-  (setq proviso-current nil)
-  (setq proviso-local (default-value 'proviso-local)))
+  (setq proviso-curr-prof nil)
+  (setq proviso-local-prof (default-value 'proviso-local-prof)))
 
 (defun proviso-hard-reset (&optional profile)
   "Remove all traces of PROFILE."
@@ -289,10 +289,14 @@ will be absolute.  Profile files can look like any of the following:
                dir
                (lambda (parent)
                  (setq file
-;                       (car (directory-files parent t "\\sw+\\.e?prof$")))))
-                       (car (directory-files parent t "\\sw*\\.proviso$")))))
-;            (proviso-find-file-upwards dir "\\sw+\\.e?prof$")))
-            (proviso-find-file-upwards dir "\\sw*\\.proviso$")))
+                                        ;                       (car (directory-files parent t "\\sw+\\.e?prof$")))))
+                       (car (directory-files parent t
+                                             (concat "\\sw*\\."
+                                                     proviso--ext "$"))))))
+                                        ;            (proviso-find-file-upwards dir "\\sw+\\.e?prof$")))
+            (proviso-find-file-upwards dir
+                                       (concat "\\sw*\\."
+                                               proviso--ext "$"))))
     (when root
       (if absolute
           (cons file (expand-file-name root))
@@ -347,6 +351,7 @@ represents the user's home directory."
 (defun proviso--loaded (prof)
   "A profile PROF has been loaded.
 This may or may not be for the first time."
+  (message "drh loaded && %s" prof)
   (unless (proviso-get prof :inited)
     (proviso-put prof :inited t)
     (run-hook-with-args 'proviso-on-profile-pre-init prof)
@@ -355,17 +360,18 @@ This may or may not be for the first time."
     (run-hook-with-args 'proviso-on-profile-post-init prof)
     (proviso--log-profile-loaded prof)
     )
-  (unless (eq prof proviso-current)
-    (let ((proviso-old proviso-current))
-      (setq proviso-current prof)
+  (message "drh loaded && %s curr %s" prof proviso-curr-prof)
+  (unless (eq prof proviso-curr-prof)
+    (let ((proviso-old proviso-curr-prof))
+      (setq proviso-curr-prof prof)
       (run-hook-with-args 'proviso-on-profile-loaded prof proviso-old)
       )))
 
 ;; (add-hook 'switch-buffer-functions
 ;;           (lambda (prev curr)
-;;             (when (local-variable-p 'proviso-local curr)
+;;             (when (local-variable-p 'proviso-local-prof curr)
 ;;               (with-current-buffer curr ;todo: is there a better way?
-;;                 (setq proviso-current proviso-local)))))
+;;                 (setq proviso-curr-prof proviso-local-prof)))))
 
 ;; (defadvice find-file-noselect-1
 ;;     (before before-find-file-no-select-1 activate)
@@ -384,9 +390,9 @@ This may or may not be for the first time."
 (defun proviso--file-opened (buffer filename)
   "Initialize a profile, if necessary, for BUFFER, visiting FILENAME."
   (with-current-buffer buffer
-    (make-local-variable 'proviso-local)
-    (put 'proviso-local 'permanent-local t)
-    (setq proviso-local
+    (make-local-variable 'proviso-local-prof)
+    (put 'proviso-local-prof 'permanent-local t)
+    (setq proviso-local-prof
           (intern-soft (proviso-find-path-alist
                         (expand-file-name filename))
                        proviso-obarray))
@@ -400,21 +406,21 @@ This may or may not be for the first time."
         (setq remote-localname (cadr remote-props))
         (setq remote-prefix (caddr remote-props)))
       (when (and root root-file root-dir
-;                 (string-match "\\.[er]prof$" root-file)
+                                        ;                 (string-match "\\.[er]prof$" root-file)
                  (string-match
                   (concat "\\." proviso--ext "$")
                   root-file)
-                 (or (not proviso-local)
+                 (or (not proviso-local-prof)
                      (not (string-equal root-dir
-                                        (proviso-get proviso-local :root-dir)))))
+                                        (proviso-get proviso-local-prof :root-dir)))))
         ;; a new profile, not yet inited
-        (setq proviso--last-proviso-defined nil)
+        (setq proviso--last-profile-defined nil)
         (proviso--load-file root-file)
         ;; project name defaults to filename, unless overridden
         (princ proviso-path-alist)
         (message "drh proviso-path-alist %s" proviso-path-alist)
-        (message "drh last profile %s" proviso--last-proviso-defined)
-        (setq basename (proviso-get proviso--last-proviso-defined :project-name))
+        (message "drh last profile %s" proviso--last-profile-defined)
+        (setq basename (proviso-get proviso--last-profile-defined :project-name))
         (message "drh basename %s" basename)
         (unless basename
           (setq basename (proviso--compute-basename-from-file root-file)))
@@ -427,29 +433,29 @@ This may or may not be for the first time."
         (message "drh proviso-path-alist 2 %s" proviso-path-alist)
         (message "drh looking for %s (%s)"
                  (expand-file-name filename) filename)
-        (setq proviso-local
+        (setq proviso-local-prof
               (intern-soft (proviso-find-path-alist
                             (expand-file-name filename))
                            proviso-obarray))
-        (message "drh latest proviso is %s" proviso-local)
-        (unless (proviso-get proviso-local :root-dir)
-          (proviso-put proviso-local :root-dir root-dir))
+        (message "drh latest proviso is %s" proviso-local-prof)
+        (unless (proviso-get proviso-local-prof :root-dir)
+          (proviso-put proviso-local-prof :root-dir root-dir))
         ;; change to absolute if necessary: in case the profile listed
         ;; root-dir as relative
-        (when (f-relative? (proviso-get proviso-local :root-dir))
-          (proviso-put proviso-local :project-name
-                    (f-long (proviso-get proviso-local :root-dir))))
-        (unless (proviso-get proviso-local :project-name)
-          (proviso-put proviso-local :project-name basename))
-        (unless (proviso-get proviso-local :remote-host)
-          (proviso-put proviso-local :remote-host remote-host))
-        (unless (proviso-get proviso-local :remote-prefix)
-          (proviso-put proviso-local :remote-prefix remote-prefix))
-        (unless (proviso-get proviso-local :root-stem)
-          (proviso-put proviso-local :root-stem
-                    (proviso--compute-stem proviso-local)))
+        (when (f-relative? (proviso-get proviso-local-prof :root-dir))
+          (proviso-put proviso-local-prof :project-name
+                       (f-long (proviso-get proviso-local-prof :root-dir))))
+        (unless (proviso-get proviso-local-prof :project-name)
+          (proviso-put proviso-local-prof :project-name basename))
+        (unless (proviso-get proviso-local-prof :remote-host)
+          (proviso-put proviso-local-prof :remote-host remote-host))
+        (unless (proviso-get proviso-local-prof :remote-prefix)
+          (proviso-put proviso-local-prof :remote-prefix remote-prefix))
+        (unless (proviso-get proviso-local-prof :root-stem)
+          (proviso-put proviso-local-prof :root-stem
+                       (proviso--compute-stem proviso-local-prof)))
         )
-      (proviso--loaded proviso-local)
+      (proviso--loaded proviso-local-prof)
       )))
 
 (provide 'proviso)

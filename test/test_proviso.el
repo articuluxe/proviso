@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-02-16 08:23:55 dharms>
+;; Modified Time-stamp: <2017-02-16 17:49:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles test
 
@@ -53,8 +53,8 @@
   (setq proviso-obarray (make-vector 7 0))
   (intern "default" proviso-obarray)
   (setq proviso-path-alist '())
-  (setq proviso-current nil)
-  (setq proviso-local (default-value 'proviso-local))
+  (setq proviso-curr-prof nil)
+  (setq proviso-local-prof (default-value 'proviso-local-prof))
   )
 
 (ert-deftest proviso-compile-test()
@@ -66,7 +66,7 @@
   (proviso-test-reset-all)
   (proviso-define "test")
   (let ((p (intern-soft "test" proviso-obarray)))
-    (should (proviso-p p))
+    (should (proviso-prof-p p))
     (should-not (proviso-get p :a))
     (proviso-put p :a "avalue")
     (should (string= "avalue" (proviso-get p :a)))
@@ -79,7 +79,7 @@
   (proviso-define "parent" :p 'value)
   (proviso-define-derived "child" "parent")
   (let ((p (intern "child" proviso-obarray)))
-    (should (proviso-p p))
+    (should (proviso-prof-p p))
     (should (eq (proviso-get p :p) 'value))
     (should-not (proviso-get p :p t))
     ))
@@ -125,31 +125,33 @@
 (ert-deftest proviso-open-profile-test ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
-        (contents ""))
-    (cl-flet ((proviso--load-file (_)
-                                  (eval (car (read-from-string contents)))))
+        contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (message "about to read from %s" contents)
+                 (eval (car (read-from-string contents))))))
       ;; open first file, init new profile
       (setq contents "(proviso-define \"c\" :name \"c\")")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p "c"))
+      (should (proviso-name-p (proviso-get proviso-local-prof :project-name)))
       (should (equal proviso-path-alist
                      (cons (cons (concat base "a/b/c/") "c") nil)))
-      (should (eq proviso-local proviso-current))
+      (should (eq proviso-local-prof proviso-curr-prof))
       (should (string= (concat base "a/b/c/")
-                       (proviso-get proviso-local :root-dir)))
-      (should (string= (proviso-get proviso-local :project-name)
+                       (proviso-get proviso-local-prof :root-dir)))
+      (should (string= (proviso-get proviso-local-prof :project-name)
                        "c"))
-      (should (eq (proviso-get proviso-local :inited) t))
+      (should (eq (proviso-get proviso-local-prof :inited) t))
       ;; open 2nd file, same profile
       (find-file (concat base "a/b/c/d/dfile2"))
       (should (equal proviso-path-alist
                      (cons (cons (concat base "a/b/c/") "c") nil)))
-      (should (eq proviso-local proviso-current))
+      (should (eq proviso-local-prof proviso-curr-prof))
       (should (string= (concat base "a/b/c/")
-                       (proviso-get proviso-local :root-dir)))
-      (should (string= (proviso-get proviso-local :project-name)
+                       (proviso-get proviso-local-prof :root-dir)))
+      (should (string= (proviso-get proviso-local-prof :project-name)
                        "c"))
-      (should (eq (proviso-get proviso-local :inited) t))
+      (should (eq (proviso-get proviso-local-prof :inited) t))
       ;; open 3rd file, new profile
       (should (not (proviso-name-p "c2")))
       (find-file (concat base "a/b/c2/d2/dfile3"))
@@ -157,12 +159,12 @@
       (should (equal proviso-path-alist
                      (list (cons (concat base "a/b/c2/") "c2")
                            (cons (concat base "a/b/c/") "c"))))
-      (should (eq proviso-local proviso-current))
+      (should (eq proviso-local-prof proviso-curr-prof))
       (should (string= (concat base "a/b/c2/")
-                       (proviso-get proviso-local :root-dir)))
-      (should (string= (proviso-get proviso-local :project-name)
+                       (proviso-get proviso-local-prof :root-dir)))
+      (should (string= (proviso-get proviso-local-prof :project-name)
                        "c2"))
-      (should (eq (proviso-get proviso-local :inited) t))
+      (should (eq (proviso-get proviso-local-prof :inited) t))
       ;; clean up buffers
       (kill-buffer "dfile1")
       (kill-buffer "dfile2")
