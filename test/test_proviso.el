@@ -1,11 +1,11 @@
 #!/bin/sh
-":"; exec emacs --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; lexical-binding: t; -*-
+":"; exec "$EMACSX" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; lexical-binding: t; -*-
 ;;; profile-tests.el --- test profiles
 ;; Copyright (C) 2016-2017  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-02-16 17:49:56 dharms>
+;; Modified Time-stamp: <2017-02-24 06:05:08 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles test
 
