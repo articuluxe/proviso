@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-02-16 17:53:27 dharms>
+;; Modified Time-stamp: <2017-03-22 17:51:55 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -351,7 +351,6 @@ represents the user's home directory."
 (defun proviso--loaded (prof)
   "A profile PROF has been loaded.
 This may or may not be for the first time."
-  (message "drh loaded && %s" prof)
   (unless (proviso-get prof :inited)
     (proviso-put prof :inited t)
     (run-hook-with-args 'proviso-on-profile-pre-init prof)
@@ -360,7 +359,6 @@ This may or may not be for the first time."
     (run-hook-with-args 'proviso-on-profile-post-init prof)
     (proviso--log-profile-loaded prof)
     )
-  (message "drh loaded && %s curr %s" prof proviso-curr-prof)
   (unless (eq prof proviso-curr-prof)
     (let ((proviso-old proviso-curr-prof))
       (setq proviso-curr-prof prof)
@@ -372,10 +370,6 @@ This may or may not be for the first time."
 ;;             (when (local-variable-p 'proviso-local-prof curr)
 ;;               (with-current-buffer curr ;todo: is there a better way?
 ;;                 (setq proviso-curr-prof proviso-local-prof)))))
-
-;; (defadvice find-file-noselect-1
-;;     (before before-find-file-no-select-1 activate)
-;;   (proviso--file-opened-advice buf filename))
 
 (defun proviso--load-file (filename)
   "Load the settings contained within FILENAME."
@@ -406,7 +400,6 @@ This may or may not be for the first time."
         (setq remote-localname (cadr remote-props))
         (setq remote-prefix (caddr remote-props)))
       (when (and root root-file root-dir
-                                        ;                 (string-match "\\.[er]prof$" root-file)
                  (string-match
                   (concat "\\." proviso--ext "$")
                   root-file)
@@ -418,26 +411,18 @@ This may or may not be for the first time."
         (proviso--load-file root-file)
         ;; project name defaults to filename, unless overridden
         (princ proviso-path-alist)
-        (message "drh proviso-path-alist %s" proviso-path-alist)
-        (message "drh last profile %s" proviso--last-profile-defined)
         (setq basename (proviso-get proviso--last-profile-defined :project-name))
-        (message "drh basename %s" basename)
         (unless basename
           (setq basename (proviso--compute-basename-from-file root-file)))
-        (message "drh basename 2 %s" basename)
         ;; todo: check for uniqueness; alter if necessary
         ;; (while (proviso-name-p basename)
         (when remote-props
           (setq root-dir remote-localname))
         (push (cons root-dir basename) proviso-path-alist)
-        (message "drh proviso-path-alist 2 %s" proviso-path-alist)
-        (message "drh looking for %s (%s)"
-                 (expand-file-name filename) filename)
         (setq proviso-local-prof
               (intern-soft (proviso-find-path-alist
                             (expand-file-name filename))
                            proviso-obarray))
-        (message "drh latest proviso is %s" proviso-local-prof)
         (unless (proviso-get proviso-local-prof :root-dir)
           (proviso-put proviso-local-prof :root-dir root-dir))
         ;; change to absolute if necessary: in case the profile listed

@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-02-24 06:05:08 dharms>
+;; Modified Time-stamp: <2017-03-22 17:42:13 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles test
 
@@ -137,6 +137,7 @@
       (should (equal proviso-path-alist
                      (cons (cons (concat base "a/b/c/") "c") nil)))
       (should (eq proviso-local-prof proviso-curr-prof))
+      (should (eq (proviso-get proviso-local-prof :inited) t))
       (should (string= (concat base "a/b/c/")
                        (proviso-get proviso-local-prof :root-dir)))
       (should (string= (proviso-get proviso-local-prof :project-name)
@@ -153,6 +154,7 @@
                        "c"))
       (should (eq (proviso-get proviso-local-prof :inited) t))
       ;; open 3rd file, new profile
+      (setq contents "(proviso-define \"c2\" :name \"c2\")")
       (should (not (proviso-name-p "c2")))
       (find-file (concat base "a/b/c2/d2/dfile3"))
       (should (proviso-name-p "c2"))
