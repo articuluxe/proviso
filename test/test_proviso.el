@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-27 08:42:18 dharms>
+;; Modified Time-stamp: <2017-03-27 17:38:11 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: projects test
 
@@ -48,6 +48,7 @@
 (require 'ert)
 (require 'proviso)
 
+;; helper defun
 (defun proviso-test-reset-all ()
   "Reset all profile-related data structures to nil."
   (setq proviso-obarray (make-vector 7 0))
@@ -57,70 +58,11 @@
   (setq proviso-local-proj (default-value 'proviso-local-proj))
   )
 
+;; tests
 (ert-deftest proviso-compile-test()
   (let ((byte-compile-error-on-warn t))
     (should (byte-compile-file load-file-name))
     (delete-file (byte-compile-dest-file load-file-name) nil)))
-
-(ert-deftest proviso-manipulate-properties-test ()
-  (proviso-test-reset-all)
-  (proviso-define "test")
-  (let ((p (intern-soft "test" proviso-obarray)))
-    (should (proviso-proj-p p))
-    (should-not (proviso-get p :a))
-    (proviso-put p :a "avalue")
-    (should (string= "avalue" (proviso-get p :a)))
-    (proviso-put p :a nil)
-    (should-not (proviso-get p :a))
-    ))
-
-(ert-deftest proviso-manipulate-properties-derived-test ()
-  (proviso-test-reset-all)
-  (proviso-define "parent" :p 'value)
-  (proviso-define-derived "child" "parent")
-  (let ((p (intern "child" proviso-obarray)))
-    (should (proviso-proj-p p))
-    (should (eq (proviso-get p :p) 'value))
-    (should-not (proviso-get p :p t))
-    ))
-
-(ert-deftest proviso-compute-basename-test ()
-  (should (string= (proviso--compute-basename-from-file "example.proviso")
-                        "example"))
-  (should (string= (proviso--compute-basename-from-file ".this.proviso")
-                        "this"))
-  (should (string= (proviso--compute-basename-from-file
-                    "~/first/second/sample.proviso") "sample"))
-  (should (string= (proviso--compute-basename-from-file
-                    "/home/user/third/.sample.proviso") "sample"))
-  (should (string= (proviso--compute-basename-from-file
-                    "~/sample/.proviso") "sample"))
-  ;; (should (not (string-equal (proviso--compute-basename
-  ;;                             "unknown") "")))
-  )
-
-(ert-deftest proviso-compute-stem-test ()
-  (let ((proj (intern "temp" proviso-obarray)) str)
-    ;; absolute path
-    (setq str "/home/me/temp/")
-    (proviso-put proj :root-dir str)
-    (should (string= (proviso--compute-stem proj) str))
-    ;; absolute, without trailing slash
-    (setq str "/home/me/temp")
-    (proviso-put proj :root-dir str)
-    (should (string= (proviso--compute-stem proj) str))
-    (proviso-put proj :root-dir "~/me")
-    (should (string= (proviso--compute-stem proj) "me"))
-    ))
-
-(ert-deftest proviso-find-root-test ()
-  (let ((base (file-name-directory load-file-name))
-        dir)
-    (setq dir (concat base "a/b/c/d"))
-    (should (equal (proviso--find-root dir t)
-                   (cons (concat base "a/b/c/c.proviso")
-                         (concat base "a/b/c/"))))
-    ))
 
 (ert-deftest proviso-open-project-test ()
   (proviso-test-reset-all)
