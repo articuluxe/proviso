@@ -1,9 +1,9 @@
-;;; proviso.el --- manage profiles
+;;; proviso.el --- manage projects
 ;; Copyright (C) 2016-2017  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-22 17:51:55 dharms>
+;; Modified Time-stamp: <2017-03-27 08:42:16 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -42,67 +42,68 @@
   (let ((intern-obarray (make-vector 7 0)))
     (intern "default" intern-obarray)
     intern-obarray)
-  "Array of profile objects.")
+  "Array of project objects.")
 (defvar proviso-path-alist '()
-  "Alist of pairs of strings (REGEXP . PROFILE-NAME).
-A profile is used for a file if the filename matches REGEXP.  In the case
-of no matches, the default profile is instead used.")
-(defvar-local proviso-local-prof (intern-soft "default" proviso-obarray))
-(defvar proviso-curr-prof nil)
+  "Alist of pairs of strings (REGEXP . PROJECT-NAME).
+A project is used for a file if the filename matches REGEXP.  In the case
+of no matches, the default project is instead used.")
+(defvar-local proviso-local-proj (intern-soft "default" proviso-obarray))
+(defvar proviso-curr-proj nil)
 
-;; Profile Properties:
-;;  - External:
-;;  - Internal:
+;; Project Properties:
+;;   - External:
+;;  :include-files
+;;   - Intenal:
 ;; :root-dir :project-name :inited :initfun
 ;; :remote-prefix :remote-host :root-stem
 
 ;; hooks
-(defvar proviso-on-profile-pre-init '()
-  "Hooks run just before a profile is first initialized.
-Hook functions are called with one parameter, the new profile.")
-(defvar proviso-on-profile-post-init '()
-  "Hooks run just after a profile is first initialized.
-Hook functions are called with one parameter, the new profile.")
-(defvar proviso-on-profile-loaded '()
-  "Hooks run whenever a profile becomes active.
-Hook functions are called with two parameters: the new profile,
+(defvar proviso-on-project-pre-init '()
+  "Hooks run just before a project is first initialized.
+Hook functions are called with one parameter, the new project.")
+(defvar proviso-on-project-post-init '()
+  "Hooks run just after a project is first initialized.
+Hook functions are called with one parameter, the new project.")
+(defvar proviso-on-project-loaded '()
+  "Hooks run whenever a project becomes active.
+Hook functions are called with two parameters: the new project,
 and the old one: `lambda(new old)()'.")
 
-(defun proviso-prof-p (prof)
-  "Return non-nil if PROF is a profile."
-  (intern-soft prof proviso-obarray))
+(defun proviso-proj-p (proj)
+  "Return non-nil if PROJ is a project."
+  (intern-soft proj proviso-obarray))
 
-(defvar proviso--last-profile-defined nil
-  "The most recent profile to be defined.")
+(defvar proviso--last-proj-defined nil
+  "The most recent project to be defined.")
 
 (defvar proviso--ext "proviso"
-  "The extension for profile files.")
+  "The extension for project files.")
 
-(defun proviso-define (profile &rest plist)
-  "Create or replace a profile named PROFILE.
+(defun proviso-define (project &rest plist)
+  "Create or replace a project named PROJECT.
 Add to it the property list PLIST."
-  (let ((p (intern profile proviso-obarray)))
+  (let ((p (intern project proviso-obarray)))
     (setplist p plist)
-    (setq proviso--last-profile-defined p)))
+    (setq proviso--last-proj-defined p)))
 
-(defun proviso-define-derived (profile parent &rest plist)
-  "Create or replace a profile named PROFILE.
+(defun proviso-define-derived (project parent &rest plist)
+  "Create or replace a project named PROJECT.
 Its parent is PARENT.  Add to it the property list PLIST."
-  (let ((p (intern profile proviso-obarray)))
+  (let ((p (intern project proviso-obarray)))
     (setplist p (append (list :parent parent) plist))
-    (setq proviso--last-profile-defined p)))
+    (setq proviso--last-proj-defined p)))
 
-(defun proviso-put (profile property value)
-  "Put into PROFILE the PROPERTY with value VALUE."
-  (let ((p (intern-soft profile proviso-obarray)))
+(defun proviso-put (project property value)
+  "Put into PROJECT the PROPERTY with value VALUE."
+  (let ((p (intern-soft project proviso-obarray)))
     (if p (put p property value)
-      (error "Invalid profile %s" profile))))
+      (error "Invalid project %s" project))))
 
-(defun proviso-get (profile property &optional inhibit-polymorphism)
-  "Get from PROFILE the value associated with PROPERTY.
+(defun proviso-get (project property &optional inhibit-polymorphism)
+  "Get from PROJECT the value associated with PROPERTY.
 INHIBIT-POLYMORPHISM, if non-nil, will constrain lookup from
 searching in any bases."
-  (let ((p (intern-soft profile proviso-obarray))
+  (let ((p (intern-soft project proviso-obarray))
         parent parentname)
     (when p
       (or (get p property)
@@ -117,39 +118,39 @@ searching in any bases."
    (or filename (buffer-file-name) (buffer-name))
    proviso-path-alist 'string-match))
 
-(defun proviso-name-p (prof)
-  "Return non-nil if PROF names an active profile."
+(defun proviso-name-p (proj)
+  "Return non-nil if PROJ names an active project."
   (seq-find (lambda (elt)
-              (string= (cdr elt) prof)) proviso-path-alist))
+              (string= (cdr elt) proj)) proviso-path-alist))
 
-(define-error 'proviso-error "Profile error")
-(define-error 'proviso-error-non-fatal "Profile load stopped" 'proviso-error)
-(define-error 'proviso-error-aborted "Profile load aborted" 'proviso-error)
+(define-error 'proviso-error "Project error")
+(define-error 'proviso-error-non-fatal "Project load stopped" 'proviso-error)
+(define-error 'proviso-error-aborted "Project load aborted" 'proviso-error)
 
 (defvar proviso--ignore-load-errors nil
   "Internal variable is non-nil if user desires errors to be skipped.")
 
-(defun proviso--query-error (profile err)
-  "While loading PROFILE, error ERR has occurred; ask the user what to do."
+(defun proviso--query-error (project err)
+  "While loading PROJECT, error ERR has occurred; ask the user what to do."
   (interactive)
-  (let ((buf (get-buffer-create "*Profile Error*")))
+  (let ((buf (get-buffer-create "*Proviso Error*")))
     (with-current-buffer buf
       (erase-buffer)
       (toggle-truncate-lines -1)
-      (insert "An error occurred while loading profile \""
-              (propertize (symbol-name profile) 'face 'bold)
+      (insert "An error occurred while loading project \""
+              (propertize (symbol-name project) 'face 'bold)
               "\":\n\n"
               (propertize err 'face '(bold error))
-              "\n\nWould you like to continue loading this profile?  "
+              "\n\nWould you like to continue loading this project?  "
               "Please select:\n\n "
               (propertize "[y]" 'face '(bold warning))
-              " Continue loading profile, ignoring this error\n "
+              " Continue loading project, ignoring this error\n "
               (propertize "[!]" 'face '(bold warning))
-              " Continue loading profile, ignoring this and future errors\n "
+              " Continue loading project, ignoring this and future errors\n "
               (propertize "[n]" 'face '(bold warning))
-              " Stop loading profile\n "
+              " Stop loading project\n "
               (propertize "[a]" 'face '(bold warning))
-              " Abort loading of profile, and revert profile load\n"
+              " Abort loading of project, and revert project load\n"
               ))
     (pop-to-buffer buf)
     (let ((choices '(?y ?n ?a ?!))
@@ -161,56 +162,56 @@ searching in any bases."
       (cond ((eq ch ?n)
              (signal 'proviso-error-non-fatal err))
             ((eq ch ?a)
-             (proviso-hard-reset profile)
+             (proviso-hard-reset project)
              (signal 'proviso-error-aborted
-                     (format "Aborted (and reset) profile \"%s\" (%s)"
-                             (symbol-name profile) err)))
+                     (format "Aborted (and reset) project \"%s\" (%s)"
+                             (symbol-name project) err)))
             ((eq ch ?!)
              (setq proviso--ignore-load-errors t))
             ))
     nil))
 
-(defun proviso--safe-funcall (prof property &rest rem)
-  "Call a function from profile PROF stored in its PROPERTY tag.
+(defun proviso--safe-funcall (proj property &rest rem)
+  "Call a function from project PROJ stored in its PROPERTY tag.
 The function is called with arguments REM, if the function exists
 and is bound."
   (let ((func (intern-soft
-               (proviso-get prof property))))
+               (proviso-get proj property))))
     (and func (fboundp func) (funcall func rem))))
 
 (defun proviso-soft-reset ()
-  "Reset the current profile.
-This does not otherwise remove any profiles from memory."
+  "Reset the current project.
+This does not otherwise remove any projects from memory."
   (interactive)
   ;; kill-local-variable insufficient due to permanent-local property
-  (setq proviso-curr-prof nil)
-  (setq proviso-local-prof (default-value 'proviso-local-prof)))
+  (setq proviso-curr-proj nil)
+  (setq proviso-local-proj (default-value 'proviso-local-proj)))
 
-(defun proviso-hard-reset (&optional profile)
-  "Remove all traces of PROFILE."
+(defun proviso-hard-reset (&optional project)
+  "Remove all traces of PROJECT."
   (interactive)
-  (proviso--remove-proviso-from-alist profile)
-  (proviso--remove-prof profile)
+  (proviso--remove-proviso-from-alist project)
+  (proviso--remove-proj project)
   (proviso-soft-reset))
 
-(defun proviso--remove-prof (profile)
-  "Delete the profile PROFILE, which can be a symbol or string (name)."
-  (unintern profile proviso-obarray))
+(defun proviso--remove-proj (project)
+  "Delete the project PROJECT, which can be a symbol or string (name)."
+  (unintern project proviso-obarray))
 
-(defun proviso--remove-proviso-from-alist (profile)
-  "Remove profile PROFILE from the internal data structure."
+(defun proviso--remove-proviso-from-alist (project)
+  "Remove project PROJECT from the internal data structure."
   (setq proviso-path-alist
         (seq-remove
          (lambda (elt)
            ;; string-equal handles a symbol using its print-name
-           (string-equal (cdr elt) profile))
+           (string-equal (cdr elt) project))
          proviso-path-alist)))
 
-(defun proviso--validate-include-files (prof)
-  "Validate the set of include files of profile PROF."
-  (let ((remote (proviso-get prof :remote-prefix))
-        (root (proviso-get prof :root-dir))
-        (lst (proviso-get prof :dirs))     ;todo
+(defun proviso--validate-include-files (proj)
+  "Validate the set of include files of project PROJ."
+  (let ((remote (proviso-get proj :remote-prefix))
+        (root (proviso-get proj :root-dir))
+        (lst (proviso-get proj :dirs))     ;todo
         entry path)
     (setq proviso--ignore-load-errors nil)
     (setq lst
@@ -229,22 +230,22 @@ This does not otherwise remove any profiles from memory."
                               (proviso--ignore-load-errors nil)
                               (t
                                (proviso--query-error
-                                prof
+                                proj
                                 (format "%s does not exist!" path)))))
                       lst))
-    (proviso-put prof :dirs lst)))         ;todo
+    (proviso-put proj :dirs lst)))         ;todo
 
-(defun proviso-load (prof)
-  "Load a profile PROF."
+(defun proviso-load (proj)
+  "Load a project PROJ."
   (condition-case err
       t
     ('proviso-error-non-fatal
-     (proviso-put prof :inited nil)
-     (message "Stopped loading prof \"%s\" (%s)"
-              (symbol-name prof) (cdr err)))
+     (proviso-put proj :inited nil)
+     (message "Stopped loading proj \"%s\" (%s)"
+              (symbol-name proj) (cdr err)))
     ((proviso-error-aborted proviso-error)
      (ignore-errors
-       (proviso-put prof :inited nil))
+       (proviso-put proj :inited nil))
      (error (cdr err)))))
 
 (defun proviso-find-file-upwards-helper (path file)
@@ -278,7 +279,7 @@ Return that file's directory or nil if not found."
   "Search for the project root, starting from DIR and moving up the file tree.
 Returns a cons (file, dir) containing the project file and its parent
 directory, if found, else nil.  If ABSOLUTE is non-nil, the path, if found,
-will be absolute.  Profile files can look like any of the following:
+will be absolute.  Project files can look like any of the following:
     1) .proviso
     2) proj.proviso
     3) .proj.proviso"
@@ -303,7 +304,7 @@ will be absolute.  Profile files can look like any of the following:
         (cons file root)))))
 
 (defun proviso--compute-basename-from-file (name)
-  "Compute the basename of the profile located at NAME.
+  "Compute the basename of the project located at NAME.
 We first attempt to derive a name from the base of the file.
 Otherwise we look at the current directory.  For example, the
 following examples would all yield `sample':
@@ -314,7 +315,7 @@ following examples would all yield `sample':
     (if (string-match
          (concat "\\.?\\(.+\\)\\." proviso--ext)
          base)
-        (match-string-no-properties 1 base)
+        (match-string-no-properties 1 base)y
       (file-name-nondirectory
        (directory-file-name
         (file-name-directory name))))))
@@ -328,48 +329,48 @@ DIR may be remote."
                        ,(tramp-make-tramp-file-name
                          file-method file-user file-host "")))))
 
-(defun proviso--compute-stem (prof)
-  "Compute a profile PROF's stem.
-This is useful in regexp-matching.  The profile's root-dir is
+(defun proviso--compute-stem (proj)
+  "Compute a project PROJ's stem.
+This is useful in regexp-matching.  The project's root-dir is
 probably a relative path, possibly including a `~' that
 represents the user's home directory."
-  (replace-regexp-in-string "~/" "" (proviso-get prof :root-dir)))
+  (replace-regexp-in-string "~/" "" (proviso-get proj :root-dir)))
 
-(defun proviso--log-profile-loaded (prof)
-  "Log a profile PROF upon initialization."
-  (let ((name (symbol-name prof)))
+(defun proviso--log-project-loaded (proj)
+  "Log a project PROJ upon initialization."
+  (let ((name (symbol-name proj)))
     (unless (string-equal name "default")
-      (message "Loaded profile %s (project %s) at %s"
+      (message "Loaded project %s (project %s) at %s"
                name
-               (proviso-get prof :project-name)
-               (proviso-get prof :root-dir)))))
+               (proviso-get proj :project-name)
+               (proviso-get proj :root-dir)))))
 
-(defun proviso--inited (prof)
-  "Initialize a profile PROF."
+(defun proviso--inited (proj)
+  "Initialize a project PROJ."
   )
 
-(defun proviso--loaded (prof)
-  "A profile PROF has been loaded.
+(defun proviso--loaded (proj)
+  "A project PROJ has been loaded.
 This may or may not be for the first time."
-  (unless (proviso-get prof :inited)
-    (proviso-put prof :inited t)
-    (run-hook-with-args 'proviso-on-profile-pre-init prof)
-    (proviso--safe-funcall prof :initfun)
-    (proviso-load prof)
-    (run-hook-with-args 'proviso-on-profile-post-init prof)
-    (proviso--log-profile-loaded prof)
+  (unless (proviso-get proj :inited)
+    (proviso-put proj :inited t)
+    (run-hook-with-args 'proviso-on-project-pre-init proj)
+    (proviso--safe-funcall proj :initfun)
+    (proviso-load proj)
+    (run-hook-with-args 'proviso-on-project-post-init proj)
+    (proviso--log-project-loaded proj)
     )
-  (unless (eq prof proviso-curr-prof)
-    (let ((proviso-old proviso-curr-prof))
-      (setq proviso-curr-prof prof)
-      (run-hook-with-args 'proviso-on-profile-loaded prof proviso-old)
+  (unless (eq proj proviso-curr-proj)
+    (let ((proviso-old proviso-curr-proj))
+      (setq proviso-curr-proj proj)
+      (run-hook-with-args 'proviso-on-project-loaded proj proviso-old)
       )))
 
 ;; (add-hook 'switch-buffer-functions
 ;;           (lambda (prev curr)
-;;             (when (local-variable-p 'proviso-local-prof curr)
+;;             (when (local-variable-p 'proviso-local-proj curr)
 ;;               (with-current-buffer curr ;todo: is there a better way?
-;;                 (setq proviso-curr-prof proviso-local-prof)))))
+;;                 (setq proviso-curr-proj proviso-local-proj)))))
 
 (defun proviso--load-file (filename)
   "Load the settings contained within FILENAME."
@@ -378,15 +379,15 @@ This may or may not be for the first time."
 (advice-add 'find-file-noselect-1 :before 'proviso--file-opened-advice)
 
 (defun proviso--file-opened-advice (buf filename nowarn rawfile truename number)
-  "Advice that helps to initialize a profile, if necessary, for BUF, visiting FILENAME."
+  "Advice that helps to initialize a project, if necessary, for BUF, visiting FILENAME."
   (proviso--file-opened buf filename))
 
 (defun proviso--file-opened (buffer filename)
-  "Initialize a profile, if necessary, for BUFFER, visiting FILENAME."
+  "Initialize a project, if necessary, for BUFFER, visiting FILENAME."
   (with-current-buffer buffer
-    (make-local-variable 'proviso-local-prof)
-    (put 'proviso-local-prof 'permanent-local t)
-    (setq proviso-local-prof
+    (make-local-variable 'proviso-local-proj)
+    (put 'proviso-local-proj 'permanent-local t)
+    (setq proviso-local-proj
           (intern-soft (proviso-find-path-alist
                         (expand-file-name filename))
                        proviso-obarray))
@@ -403,15 +404,15 @@ This may or may not be for the first time."
                  (string-match
                   (concat "\\." proviso--ext "$")
                   root-file)
-                 (or (not proviso-local-prof)
+                 (or (not proviso-local-proj)
                      (not (string-equal root-dir
-                                        (proviso-get proviso-local-prof :root-dir)))))
-        ;; a new profile, not yet inited
-        (setq proviso--last-profile-defined nil)
+                                        (proviso-get proviso-local-proj :root-dir)))))
+        ;; a new project, not yet inited
+        (setq proviso--last-proj-defined nil)
         (proviso--load-file root-file)
         ;; project name defaults to filename, unless overridden
         (princ proviso-path-alist)
-        (setq basename (proviso-get proviso--last-profile-defined :project-name))
+        (setq basename (proviso-get proviso--last-proj-defined :project-name))
         (unless basename
           (setq basename (proviso--compute-basename-from-file root-file)))
         ;; todo: check for uniqueness; alter if necessary
@@ -419,28 +420,28 @@ This may or may not be for the first time."
         (when remote-props
           (setq root-dir remote-localname))
         (push (cons root-dir basename) proviso-path-alist)
-        (setq proviso-local-prof
+        (setq proviso-local-proj
               (intern-soft (proviso-find-path-alist
                             (expand-file-name filename))
                            proviso-obarray))
-        (unless (proviso-get proviso-local-prof :root-dir)
-          (proviso-put proviso-local-prof :root-dir root-dir))
-        ;; change to absolute if necessary: in case the profile listed
+        (unless (proviso-get proviso-local-proj :root-dir)
+          (proviso-put proviso-local-proj :root-dir root-dir))
+        ;; change to absolute if necessary: in case the project listed
         ;; root-dir as relative
-        (when (f-relative? (proviso-get proviso-local-prof :root-dir))
-          (proviso-put proviso-local-prof :project-name
-                       (f-long (proviso-get proviso-local-prof :root-dir))))
-        (unless (proviso-get proviso-local-prof :project-name)
-          (proviso-put proviso-local-prof :project-name basename))
-        (unless (proviso-get proviso-local-prof :remote-host)
-          (proviso-put proviso-local-prof :remote-host remote-host))
-        (unless (proviso-get proviso-local-prof :remote-prefix)
-          (proviso-put proviso-local-prof :remote-prefix remote-prefix))
-        (unless (proviso-get proviso-local-prof :root-stem)
-          (proviso-put proviso-local-prof :root-stem
-                       (proviso--compute-stem proviso-local-prof)))
+        (when (f-relative? (proviso-get proviso-local-proj :root-dir))
+          (proviso-put proviso-local-proj :project-name
+                       (f-long (proviso-get proviso-local-proj :root-dir))))
+        (unless (proviso-get proviso-local-proj :project-name)
+          (proviso-put proviso-local-proj :project-name basename))
+        (unless (proviso-get proviso-local-proj :remote-host)
+          (proviso-put proviso-local-proj :remote-host remote-host))
+        (unless (proviso-get proviso-local-proj :remote-prefix)
+          (proviso-put proviso-local-proj :remote-prefix remote-prefix))
+        (unless (proviso-get proviso-local-proj :root-stem)
+          (proviso-put proviso-local-proj :root-stem
+                       (proviso--compute-stem proviso-local-proj)))
         )
-      (proviso--loaded proviso-local-prof)
+      (proviso--loaded proviso-local-proj)
       )))
 
 (provide 'proviso)
