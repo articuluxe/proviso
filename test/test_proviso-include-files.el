@@ -1,13 +1,13 @@
 #!/bin/sh
 ":"; exec "$EMACSX" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
-;;; test_proviso.el --- test projects
-;; Copyright (C) 2016-2017  Dan Harms (dharms)
+;;; test_proviso-include-files.el --- test proviso include files
+;; Copyright (C) 2017  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
-;; Created: Friday, December  9, 2016
+;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-30 17:27:41 dharms>
+;; Modified Time-stamp: <2017-03-30 17:29:11 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: projects test
+;; Keywords: proviso project include files test
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -58,21 +58,21 @@
   (setq proviso-local-proj (default-value 'proviso-local-proj))
   )
 
-;; tests
-(ert-deftest proviso-compile-test()
-  (let ((byte-compile-error-on-warn t))
-    (should (byte-compile-file load-file-name))
-    (delete-file (byte-compile-dest-file load-file-name) nil)))
-
-(ert-deftest proviso-open-project-test ()
+(ert-deftest proviso-open-project-naming ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--load-file)
                (lambda (_)
                  (proviso-eval-string file-contents))))
-      ;; open first file, init new project
-      (setq file-contents "(proviso-define \"c\" :name \"c\")")
+      ;; open file
+      (setq file-contents "
+(defun do-init (proj)
+  (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"\")
+                  )))
+(proviso-define \"c\" :name \"c\" :initfun 'do-init)
+")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (equal proviso-path-alist
@@ -84,38 +84,13 @@
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (eq (proviso-get proviso-local-proj :inited) t))
-      ;; open 2nd file, same project
-      (find-file (concat base "a/b/c/d/dfile2"))
-      (should (equal proviso-path-alist
-                     (cons (cons (concat base "a/b/c/") "c") nil)))
-      (should (eq proviso-local-proj proviso-curr-proj))
-      (should (string= (concat base "a/b/c/")
-                       (proviso-get proviso-local-proj :root-dir)))
-      (should (string= (proviso-get proviso-local-proj :project-name)
-                       "c"))
-      (should (eq (proviso-get proviso-local-proj :inited) t))
-      ;; open 3rd file, new project
-      (setq file-contents "(proviso-define \"c2\" :name \"c2\")")
-      (should (not (proviso-name-p "c2")))
-      (find-file (concat base "a/b/c2/d2/dfile3"))
-      (should (proviso-name-p "c2"))
-      (should (equal proviso-path-alist
-                     (list (cons (concat base "a/b/c2/") "c2")
-                           (cons (concat base "a/b/c/") "c"))))
-      (should (eq proviso-local-proj proviso-curr-proj))
-      (should (string= (concat base "a/b/c2/")
-                       (proviso-get proviso-local-proj :root-dir)))
-      (should (string= (proviso-get proviso-local-proj :project-name)
-                       "c2"))
-      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (equal (proviso-get proviso-local-proj :include-files)
+                  (list (concat base "a/b/c/"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
-      (kill-buffer "dfile2")
-      (kill-buffer "dfile3")
       )))
-
 
 
 (ert-run-tests-batch-and-exit (car argv))
 
-;;; test_proviso.el ends here
+;;; test_proviso-include-files.el ends here

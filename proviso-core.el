@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-30 07:45:49 dharms>
+;; Modified Time-stamp: <2017-03-30 17:21:17 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -51,6 +51,9 @@ of no matches, the default project is instead used.")
 ;; hooks
 (defvar proviso-on-project-pre-init '()
   "Hooks run just before a project is first initialized.
+Hook functions are called with one parameter, the new project.")
+(defvar proviso-on-project-init '()
+  "Hooks run as a project is first initialized.
 Hook functions are called with one parameter, the new project.")
 (defvar proviso-on-project-post-init '()
   "Hooks run just after a project is first initialized.

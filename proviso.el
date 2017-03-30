@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-30 17:03:36 dharms>
+;; Modified Time-stamp: <2017-03-30 17:29:10 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -29,6 +29,7 @@
 ;;; Code:
 
 (require 'proviso-core)
+(require 'proviso-include-files)
 (require 'proviso-tags)
 (require 'proviso-sml)
 
@@ -36,56 +37,14 @@
   (require 'cl))
 (require 'switch-buffer-functions)
 
-(defun proviso--validate-include-files (proj)
-  "Validate the set of include files of project PROJ."
-  (let ((remote (proviso-get proj :remote-prefix))
-        (root (proviso-get proj :root-dir))
-        (lst (proviso-get proj :proj-alist))
-        entry path)
-    (setq proviso--ignore-load-errors nil)
-    (setq lst
-          (seq-filter (lambda (elt)
-                        (setq entry (plist-get elt :dir))
-                        (setq path
-                              (concat
-                               remote
-                               (concat
-                                (when (or (zerop (length entry))
-                                          (f-relative? entry))
-                                  root)
-                                entry)))
-                        (cond ((null entry) nil)
-                              ((f-exists? path) path)
-                              (proviso--ignore-load-errors nil)
-                              (t
-                               (proviso--query-error
-                                proj
-                                (format "%s does not exist!" path)))))
-                      lst))
-    (proviso-put proj :proj-alist lst)))
-
-(defun proviso--set-include-files (proj)
-  "Set include files according to PROJ's project definition."
-  (let ((remote (proviso-get proj :remote-prefix))
-        (root (proviso-get proj :root-dir))
-        (lst (proviso-get proj :proj-alist))
-        elt entry includes ff-includes)
-    (dolist (element lst)
-      (setq entry (plist-get element :dir))
-      (setq elt (concat (when (or (null entry) (f-relative? entry)) root) entry))
-      (push elt includes)
-      (push (concat remote elt) ff-includes))
-    (proviso-put proj :include-files includes)
-    (proviso-put proj :include-ff-files (mapcar 'directory-file-name ff-includes))
-    ))
-
 (defun proviso-init (proj)
   "Load a project PROJ."
   (condition-case err
-      (progn
-        (proviso--validate-include-files proj)
-        (proviso--set-include-files proj)
-        )
+      (run-hook-with-args 'proviso-on-project-init proj)
+      ;; (progn
+      ;;   (proviso--validate-include-files proj)
+      ;;   (proviso--set-include-files proj)
+      ;;   )
     ('proviso-error-non-fatal
      (proviso-put proj :inited nil)
      (message "Stopped loading proj \"%s\" (%s)"
