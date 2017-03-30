@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-27 17:38:11 dharms>
+;; Modified Time-stamp: <2017-03-30 17:01:25 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: projects test
 
@@ -67,13 +67,12 @@
 (ert-deftest proviso-open-project-test ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
-        contents)
+        file-contents)
     (cl-letf (((symbol-function 'proviso--load-file)
                (lambda (_)
-                 (message "about to read from %s" contents)
-                 (eval (car (read-from-string contents))))))
+                 (proviso-eval-string file-contents))))
       ;; open first file, init new project
-      (setq contents "(proviso-define \"c\" :name \"c\")")
+      (setq file-contents "(proviso-define \"c\" :name \"c\")")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (equal proviso-path-alist
@@ -96,7 +95,7 @@
                        "c"))
       (should (eq (proviso-get proviso-local-proj :inited) t))
       ;; open 3rd file, new project
-      (setq contents "(proviso-define \"c2\" :name \"c2\")")
+      (setq file-contents "(proviso-define \"c2\" :name \"c2\")")
       (should (not (proviso-name-p "c2")))
       (find-file (concat base "a/b/c2/d2/dfile3"))
       (should (proviso-name-p "c2"))
@@ -118,15 +117,18 @@
 (ert-deftest proviso-open-project-naming ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
-        contents)
+        file-contents)
     (cl-letf (((symbol-function 'proviso--load-file)
                (lambda (_)
-                 (message "about to read from %s" contents)
-                 (eval (car (read-from-string contents))))))
+                 (proviso-eval-string file-contents))))
       ;; open file
-      (setq contents "(proviso-define \"c\") :data
-'( (:name \"base\" :root \"\")
-)")
+      (setq file-contents "
+(defun do-init (proj)
+  (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"\")
+                  )))
+(proviso-define \"c\" :name \"c\" :initfun 'do-init)
+")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (equal proviso-path-alist
@@ -138,6 +140,8 @@
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (equal (proviso-get proviso-local-proj :include-files)
+                  (list (concat base "a/b/c/"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))

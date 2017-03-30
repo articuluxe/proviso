@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-27 08:50:55 dharms>
+;; Modified Time-stamp: <2017-03-30 17:03:36 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -40,12 +40,12 @@
   "Validate the set of include files of project PROJ."
   (let ((remote (proviso-get proj :remote-prefix))
         (root (proviso-get proj :root-dir))
-        (lst (proviso-get proj :dirs))     ;todo
+        (lst (proviso-get proj :proj-alist))
         entry path)
     (setq proviso--ignore-load-errors nil)
     (setq lst
           (seq-filter (lambda (elt)
-                        (setq entry (cadr elt)) ;todo
+                        (setq entry (plist-get elt :dir))
                         (setq path
                               (concat
                                remote
@@ -62,12 +62,30 @@
                                 proj
                                 (format "%s does not exist!" path)))))
                       lst))
-    (proviso-put proj :dirs lst)))         ;todo
+    (proviso-put proj :proj-alist lst)))
 
-(defun proviso-load (proj)
+(defun proviso--set-include-files (proj)
+  "Set include files according to PROJ's project definition."
+  (let ((remote (proviso-get proj :remote-prefix))
+        (root (proviso-get proj :root-dir))
+        (lst (proviso-get proj :proj-alist))
+        elt entry includes ff-includes)
+    (dolist (element lst)
+      (setq entry (plist-get element :dir))
+      (setq elt (concat (when (or (null entry) (f-relative? entry)) root) entry))
+      (push elt includes)
+      (push (concat remote elt) ff-includes))
+    (proviso-put proj :include-files includes)
+    (proviso-put proj :include-ff-files (mapcar 'directory-file-name ff-includes))
+    ))
+
+(defun proviso-init (proj)
   "Load a project PROJ."
   (condition-case err
-      t
+      (progn
+        (proviso--validate-include-files proj)
+        (proviso--set-include-files proj)
+        )
     ('proviso-error-non-fatal
      (proviso-put proj :inited nil)
      (message "Stopped loading proj \"%s\" (%s)"
@@ -78,7 +96,7 @@
      (error (cdr err)))))
 
 
-(defun proviso--log-project-loaded (proj)
+(defun proviso--log-project-inited (proj)
   "Log a project PROJ upon initialization."
   (let ((name (symbol-name proj)))
     (unless (string-equal name "default")
@@ -97,15 +115,15 @@ This may or may not be for the first time."
   (unless (proviso-get proj :inited)
     (proviso-put proj :inited t)
     (run-hook-with-args 'proviso-on-project-pre-init proj)
-    (proviso--safe-funcall proj :initfun)
-    (proviso-load proj)
+    (proviso--safe-funcall proj :initfun proj)
+    (proviso-init proj)
     (run-hook-with-args 'proviso-on-project-post-init proj)
-    (proviso--log-project-loaded proj)
+    (proviso--log-project-inited proj)
     )
   (unless (eq proj proviso-curr-proj)
-    (let ((proviso-old proviso-curr-proj))
+    (let ((proviso-old-proj proviso-curr-proj))
       (setq proviso-curr-proj proj)
-      (run-hook-with-args 'proviso-on-project-loaded proj proviso-old)
+      (run-hook-with-args 'proviso-on-project-active proj proviso-old-proj)
       )))
 
 ;; (add-hook 'switch-buffer-functions
@@ -153,7 +171,6 @@ This may or may not be for the first time."
         (setq proviso--last-proj-defined nil)
         (proviso--load-file root-file)
         ;; project name defaults to filename, unless overridden
-        (princ proviso-path-alist)
         (setq basename (proviso-get proviso--last-proj-defined :project-name))
         (unless basename
           (setq basename (proviso--compute-basename-from-file root-file)))

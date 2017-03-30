@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-02-16 08:15:41 dharms>
+;; Modified Time-stamp: <2017-03-30 17:19:16 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso tags
 
@@ -25,26 +25,26 @@
 ;;
 
 ;;; Code:
-
+(require 'proviso-core)
 (require 'tramp)
 
-(defun proviso-tags-compute-remote-subdir-stem (prof)
-  "Compute remote profile PROF's stem.
+(defun proviso-tags-compute-remote-subdir-stem (proj)
+  "Compute remote profile PROJ's stem.
 Format is useful for uniquely naming the local TAGS directory."
   (concat
    (replace-regexp-in-string
     "/\\|\\\\" "!"
-    (prof-get prof :remote-host) t t)
+    (proviso-get proj :remote-host) t t)
    "!"
    (replace-regexp-in-string
     "/\\|\\\\" "!"
-    (prof-get prof :root-stem))))
+    (proviso-get proj :root-stem))))
 
-(defun proviso-tags-compute-tags-dir (prof dir)
-  "Compute where a profile PROF's local TAGS should live.
+(defun proviso-tags-compute-tags-dir (proj dir)
+  "Compute where a profile PROJ's local TAGS should live.
 DIR gives the root directory."
   (let ((base (or (getenv "EMACS_TAGS_DIR") "~"))
-        (sub (or (prof-get prof :tags-subdir) ".tags/"))
+        (sub (or (proviso-get proj :tags-subdir) ".tags/"))
         dest)
     (unless dir (setq dir default-directory))
     (unless (tramp-tramp-file-p dir)
@@ -53,20 +53,20 @@ DIR gives the root directory."
     (setq dest (concat (file-name-as-directory base) sub))
     (if (tramp-tramp-file-p dir)
         (concat dest (file-name-as-directory
-                      (proviso-tags-compute-remote-subdir-stem prof)))
+                      (proviso-tags-compute-remote-subdir-stem proj)))
       dest)))
 
-(defun proviso-tags-on-init (prof)
-  "Initialize tags functionality when profile PROF is initialized."
-  (let ((root (prof-get prof :root-dir)))
-    (and root (not (prof-get prof :tags-dir))
-         (prof-put prof :tags-dir
+(defun proviso-tags-on-init (proj)
+  "Initialize tags functionality when profile PROJ is initialized."
+  (let ((root (proviso-get proj :root-dir)))
+    (and root (not (proviso-get proj :tags-dir))
+         (proviso-put proj :tags-dir
                    (proviso-tags-compute-tags-dir
-                    prof
-                    (concat (prof-get prof :remote-prefix)
+                    proj
+                    (concat (proviso-get proj :remote-prefix)
                             root))))))
 
-(add-hook 'prof-on-proviso-pre-init 'proviso-tags-on-init)
+(add-hook 'proviso-on-project-pre-init 'proviso-tags-on-init)
 
 (provide 'proviso-tags)
 ;;; proviso-tags.el ends here

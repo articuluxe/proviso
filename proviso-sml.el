@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January  6, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-02-16 08:16:03 dharms>
+;; Modified Time-stamp: <2017-03-30 17:08:58 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso smart-mode-line
 
@@ -25,7 +25,7 @@
 ;;
 
 ;;; Code:
-
+(require 'proviso-core)
 (require 'smart-mode-line)
 
 
