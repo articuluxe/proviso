@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-27 17:38:11 dharms>
+;; Modified Time-stamp: <2017-03-31 08:32:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -27,39 +27,10 @@
 ;;
 
 ;;; Code:
-;; transfer dependencies from argv into load-path
-(let ((lst (cdr argv))
-      add elt)
-  (setq argv nil)
-  (while lst
-    (setq elt (car lst))
-    (if add
-        (progn
-          (push elt load-path)
-          (setq add nil))
-      (unless
-          (setq add (string= elt "-L"))
-        (push elt argv)))
-      (setq lst (cdr lst))))
-(push (concat (file-name-directory load-file-name) "/..") load-path)
-(push (file-name-directory load-file-name) load-path)
-
-
-(require 'ert)
-(require 'proviso-core)
-
-;; helper defun
-(defun proviso-test-reset-all ()
-  "Reset all profile-related data structures to nil."
-  (setq proviso-obarray (make-vector 7 0))
-  (intern "default" proviso-obarray)
-  (setq proviso-path-alist '())
-  (setq proviso-curr-proj nil)
-  (setq proviso-local-proj (default-value 'proviso-local-proj))
-  )
+(load-file "test/proviso-test-common.el")
 
 ;; tests
-(ert-deftest proviso-manipulate-properties-test ()
+(ert-deftest proviso-core-manipulate-properties-test ()
   (proviso-test-reset-all)
   (proviso-define "test")
   (let ((p (intern-soft "test" proviso-obarray)))
@@ -71,7 +42,7 @@
     (should-not (proviso-get p :a))
     ))
 
-(ert-deftest proviso-manipulate-properties-derived-test ()
+(ert-deftest proviso-core-manipulate-properties-derived-test ()
   (proviso-test-reset-all)
   (proviso-define "parent" :p 'value)
   (proviso-define-derived "child" "parent")
@@ -81,7 +52,7 @@
     (should-not (proviso-get p :p t))
     ))
 
-(ert-deftest proviso-compute-basename-test ()
+(ert-deftest proviso-core-compute-basename-test ()
   (should (string= (proviso--compute-basename-from-file "example.proviso")
                         "example"))
   (should (string= (proviso--compute-basename-from-file ".this.proviso")
@@ -96,7 +67,7 @@
   ;;                             "unknown") "")))
   )
 
-(ert-deftest proviso-compute-stem-test ()
+(ert-deftest proviso-core-compute-stem-test ()
   (let ((proj (intern "temp" proviso-obarray)) str)
     ;; absolute path
     (setq str "/home/me/temp/")
@@ -110,7 +81,7 @@
     (should (string= (proviso--compute-stem proj) "me"))
     ))
 
-(ert-deftest proviso-find-root-test ()
+(ert-deftest proviso-core-find-root-test ()
   (let ((base (file-name-directory load-file-name))
         dir)
     (setq dir (concat base "a/b/c/d"))

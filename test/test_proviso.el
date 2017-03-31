@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-30 17:27:41 dharms>
+;; Modified Time-stamp: <2017-03-31 08:37:14 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: projects test
 
@@ -27,36 +27,8 @@
 ;;
 
 ;;; Code:
-;; transfer dependencies from argv into load-path
-(let ((lst (cdr argv))
-      add elt)
-  (setq argv nil)
-  (while lst
-    (setq elt (car lst))
-    (if add
-        (progn
-          (push elt load-path)
-          (setq add nil))
-      (unless
-          (setq add (string= elt "-L"))
-        (push elt argv)))
-      (setq lst (cdr lst))))
-(push (concat (file-name-directory load-file-name) "/..") load-path)
-(push (file-name-directory load-file-name) load-path)
-
-
-(require 'ert)
+(load-file "test/proviso-test-common.el")
 (require 'proviso)
-
-;; helper defun
-(defun proviso-test-reset-all ()
-  "Reset all profile-related data structures to nil."
-  (setq proviso-obarray (make-vector 7 0))
-  (intern "default" proviso-obarray)
-  (setq proviso-path-alist '())
-  (setq proviso-curr-proj nil)
-  (setq proviso-local-proj (default-value 'proviso-local-proj))
-  )
 
 ;; tests
 (ert-deftest proviso-compile-test()
