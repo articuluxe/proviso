@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-30 17:29:10 dharms>
+;; Modified Time-stamp: <2017-03-31 17:33:52 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -135,6 +135,8 @@ This may or may not be for the first time."
           (setq basename (proviso--compute-basename-from-file root-file)))
         ;; todo: check for uniqueness; alter if necessary
         ;; (while (proviso-name-p basename)
+        (unless proviso--last-proj-defined
+          (proviso-define basename))
         (when remote-props
           (setq root-dir remote-localname))
         (push (cons root-dir basename) proviso-path-alist)

@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-30 17:21:17 dharms>
+;; Modified Time-stamp: <2017-03-31 17:36:42 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -67,7 +67,7 @@ and the old one: `lambda(new old)()'.")
   "Return non-nil if PROJ is a project."
   (intern-soft proj proviso-obarray))
 
-(defvar proviso--last-proj-defined nil
+(defvar-local proviso--last-proj-defined nil
   "The most recent project to be defined.")
 
 (defvar proviso--ext "proviso"

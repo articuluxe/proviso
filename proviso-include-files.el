@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-30 17:25:18 dharms>
+;; Modified Time-stamp: <2017-03-31 17:40:38 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 
@@ -61,12 +61,16 @@
         (root (proviso-get proj :root-dir))
         (lst (proviso-get proj :proj-alist))
         elt entry includes ff-includes)
+    ;; in case there are no entries, add a default one (will resolve to root-dir)
+    (when (zerop (length lst))
+      (push (list) lst))
     (dolist (element lst)
       (setq entry (plist-get element :dir))
       (setq elt (concat (when (or (null entry) (f-relative? entry)) root) entry))
       (push elt includes)
       (push (concat remote elt) ff-includes))
     (proviso-put proj :include-files includes)
+    ;; ff-search-directories doesn't want a trailing slash
     (proviso-put proj :include-ff-files (mapcar 'directory-file-name ff-includes))
     ))
 
