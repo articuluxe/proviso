@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-31 17:33:52 dharms>
+;; Modified Time-stamp: <2017-04-01 13:45:07 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -30,6 +30,7 @@
 
 (require 'proviso-core)
 (require 'proviso-include-files)
+(require 'proviso-grep)
 (require 'proviso-tags)
 (require 'proviso-sml)
 
@@ -41,10 +42,6 @@
   "Load a project PROJ."
   (condition-case err
       (run-hook-with-args 'proviso-on-project-init proj)
-      ;; (progn
-      ;;   (proviso--validate-include-files proj)
-      ;;   (proviso--set-include-files proj)
-      ;;   )
     ('proviso-error-non-fatal
      (proviso-put proj :inited nil)
      (message "Stopped loading proj \"%s\" (%s)"

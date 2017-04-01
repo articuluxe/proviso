@@ -1,13 +1,13 @@
 #!/bin/sh
 ":"; exec "$EMACSX" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
-;;; test_proviso-include-files.el --- test proviso include files
+;;; test_proviso-grep.el --- test proviso grep dirs
 ;; Copyright (C) 2017  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
-;; Created: Thursday, March 30, 2017
+;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-01 13:52:54 dharms>
+;; Modified Time-stamp: <2017-04-01 14:06:31 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: proviso project include files test
+;; Keywords: proviso project grep test
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 (load-file "test/proviso-test-common.el")
 (require 'proviso)
 
-(ert-deftest proviso-include-open-project-empty-dir ()
+(ert-deftest proviso-grep-open-project-empty-dir ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents)
@@ -51,15 +51,13 @@
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
-      (should (equal (proviso-get proviso-local-proj :include-files)
-                  (list (concat base "a/b/c/"))))
-      (should (equal (proviso-get proviso-local-proj :include-ff-files)
-                  (list (concat base "a/b/c"))))
+      (should (equal (proviso-get proviso-local-proj :grep-dirs)
+                     (list (concat base "a/b/c/"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
 
-(ert-deftest proviso-include-open-project-absolute-dir ()
+(ert-deftest proviso-grep-open-project-absolute-dir ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents)
@@ -80,15 +78,13 @@
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
-      (should (equal (proviso-get proviso-local-proj :include-files)
-                  (list "/home/")))
-      (should (equal (proviso-get proviso-local-proj :include-ff-files)
-                  (list "/home")))
+      (should (equal (proviso-get proviso-local-proj :grep-dirs)
+                     (list "/home/" (concat base "a/b/c/"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
 
-(ert-deftest proviso-include-open-project-relative-dir ()
+(ert-deftest proviso-grep-open-project-relative-dir ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents)
@@ -109,15 +105,14 @@
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
-      (should (equal (proviso-get proviso-local-proj :include-files)
-                  (list (concat base "a/b/c/d/"))))
-      (should (equal (proviso-get proviso-local-proj :include-ff-files)
-                  (list (concat base "a/b/c/d"))))
+      (should (equal (proviso-get proviso-local-proj :grep-dirs)
+                     (list (concat base "a/b/c/d/")
+                           (concat base "a/b/c/"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
 
-(ert-deftest proviso-include-open-project-no-def ()
+(ert-deftest proviso-grep-open-project-no-dir ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents)
@@ -132,15 +127,13 @@
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
-      (should (equal (proviso-get proviso-local-proj :include-files)
-                  (list (concat base "a/b/c/"))))
-      (should (equal (proviso-get proviso-local-proj :include-ff-files)
-                  (list (concat base "a/b/c"))))
+      ;; no dirs specified, so just the root dir
+      (should (equal (proviso-get proviso-local-proj :grep-dirs)
+                     (list (concat base "a/b/c/"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
 
-
 (ert-run-tests-batch-and-exit (car argv))
 
-;;; test_proviso-include-files.el ends here
+;;; test_proviso-grep.el ends here
