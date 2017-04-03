@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January  6, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-30 17:08:58 dharms>
+;; Modified Time-stamp: <2017-04-03 08:44:16 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso smart-mode-line
 
@@ -27,7 +27,43 @@
 ;;; Code:
 (require 'proviso-core)
 (require 'smart-mode-line)
+(require 'subr-x)
 
+(defvar proviso-orig-sml-replacer-regexp-list '()
+  "The original value of `sml/replacer-regexp-list'.")
+
+(with-eval-after-load 'smart-mode-line
+  (setq proviso-orig-sml-replacer-regexp-list 'sml/replacer-regexp-list))
+
+(defun proviso--set-sml-abbrevs (proj)
+  "Set mode-line abbreviations according to PROJ's project definition."
+  (let ((root (proviso-get proj :root-dir))
+        (lst (proviso-get proj :proj-alist))
+        title elt entry result)
+    (dolist (element lst)
+      (setq title (plist-get element :name))
+      (setq entry (plist-get element :dir))
+      (setq elt (if (and entry (file-name-absolute-p entry))
+                    entry
+                  (concat root entry)))
+      (setq elt (proviso--abbreviate-dir elt))
+      (push (list elt (concat (upcase title) ":")) result))
+    (setq sml/replacer-regexp-list
+          (append sml/replacer-regexp-list result))))
+
+;; todo: add equivalent of 'profile-set-sml-and-registers-from-build-sub-dirs
+
+(defun proviso--abbreviate-dir (name)
+  "Abbreviate NAME, a (possibly remote) project root, as necessary.
+It is usually preferable to have a short project prefix.  This
+may just come down to substituting `~' for the home directory.
+Note that `abbreviate-file-name' doesn't work for remote paths,
+in case you are tempted to try to use it."
+  (let ((home
+         (string-trim (shell-command-to-string "echo ~"))))
+    (replace-regexp-in-string home "~" name t)))
+
+(add-hook 'proviso-on-project-init 'proviso--set-sml-abbrevs)
 
 (provide 'proviso-sml)
 ;;; proviso-sml.el ends here
