@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-01 13:45:07 dharms>
+;; Modified Time-stamp: <2017-04-03 17:38:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -76,17 +76,21 @@ This may or may not be for the first time."
     (run-hook-with-args 'proviso-on-project-post-init proj)
     (proviso--log-project-inited proj)
     )
+  (proviso--on-proj-loaded proj))
+
+(defun proviso--on-proj-loaded (proj)
+  "Called when a project PROJ is made active."
   (unless (eq proj proviso-curr-proj)
     (let ((proviso-old-proj proviso-curr-proj))
       (setq proviso-curr-proj proj)
       (run-hook-with-args 'proviso-on-project-active proj proviso-old-proj)
       )))
 
-;; (add-hook 'switch-buffer-functions
-;;           (lambda (prev curr)
-;;             (when (local-variable-p 'proviso-local-proj curr)
-;;               (with-current-buffer curr ;todo: is there a better way?
-;;                 (setq proviso-curr-proj proviso-local-proj)))))
+(add-hook 'switch-buffer-functions
+          (lambda (prev curr)
+            (when (local-variable-p 'proviso-local-proj curr)
+              (proviso--on-proj-loaded
+               (buffer-local-value 'proviso-local-proj curr)))))
 
 (defun proviso--load-file (filename)
   "Load the settings contained within FILENAME."

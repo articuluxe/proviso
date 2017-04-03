@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January  6, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-03 08:44:16 dharms>
+;; Modified Time-stamp: <2017-04-03 17:52:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso smart-mode-line
 
@@ -51,7 +51,20 @@
     (setq sml/replacer-regexp-list
           (append sml/replacer-regexp-list result))))
 
-;; todo: add equivalent of 'profile-set-sml-and-registers-from-build-sub-dirs
+(defun proviso--sml-set-build-dirs (proj)
+  "Set sml modeline according to `:build-subdirs' setting of project PROJ.
+See `sml/replacer-regexp-list'."
+  (let ((remote (proviso-get proj :remote-prefix))
+        (root (proviso-get proj :root-dir))
+        (lst (proviso-get proj ::build-subdirs))
+        dir name)
+    (dolist (element lst)
+      (setq dir (plist-get element :dir))
+      (setq name (or (plist-get element :name)
+                     (concat (upcase (directory-file-name dir)) ":")))
+      (unless (zerop (length dir))
+        (add-to-list 'sml/replacer-regexp-list (list dir name) t))
+      )))
 
 (defun proviso--abbreviate-dir (name)
   "Abbreviate NAME, a (possibly remote) project root, as necessary.
