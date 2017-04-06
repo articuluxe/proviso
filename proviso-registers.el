@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April  4, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-04 08:53:27 dharms>
+;; Modified Time-stamp: <2017-04-06 17:47:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project register
 
@@ -27,9 +27,6 @@
 ;;; Code:
 (require 'proviso-core)
 
-(defvar proviso--register-alist '()
-  "Alist of (register . dir) pairs per project.")
-
 (defun proviso--set-registers (proj)
   "Set registers for quick navigation according to PROJ's project definition."
   (let ((remote (proviso-get proj :remote-prefix))
@@ -40,13 +37,26 @@
     (dolist (element srcdirs)
       (setq reg (plist-get element :register))
       (setq dir (plist-get element :dir))
+      (unless (and dir (file-name-absolute-p dir))
+        (setq dir (concat root dir)))
       (when (and reg (characterp reg))
-        (push (cons reg (cons 'file (concat remote root dir))) lst)))
+        (push (cons reg (cons 'file (concat remote dir))) lst)))
     (dolist (element blddirs)
       (setq reg (plist-get element :register))
       (setq dir (plist-get element :dir))
+      (unless (and dir (file-name-absolute-p dir))
+        (setq dir (concat root dir)))
       (when (and reg (characterp reg))
-        (push (cons reg (cons 'file (concat remote root dir))) lst)))
+        (push (cons reg (cons 'file (concat remote dir))) lst)))
+    ;; also set a global register to go to the root
+    (push (cons ?r (cons 'file (concat remote root))) lst)
+    ;; and another to go to the first (privileged) source dir
+    (when (< 0 (length srcdirs))
+      (push (cons ?c (cons 'file
+                           (let ((dir (plist-get (car srcdirs) :dir)))
+                             (if (and dir (file-name-absolute-p dir))
+                                 (concat remote dir)
+                               (concat remote root dir))))) lst))
     (proviso-put proj :registers lst)
     ))
 
@@ -56,8 +66,7 @@ PROJ is now the active project, replacing OLD.
 Registers should have been stored in :registers."
   (let ((lst (proviso-get proj :registers)))
     (dolist (elt lst)
-      (set-register (car elt)
-                    (cdr elt)))))
+      (set-register (car elt) (cdr elt)))))
 
 (add-hook 'proviso-on-project-init 'proviso--set-registers)
 (add-hook 'proviso-on-project-active 'proviso--activate-registers)

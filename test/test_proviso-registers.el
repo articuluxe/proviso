@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April  4, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-04 08:52:17 dharms>
+;; Modified Time-stamp: <2017-04-06 17:50:44 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project registers test
 
@@ -29,6 +29,309 @@
 ;;; Code:
 (load-file "test/proviso-test-common.el")
 (require 'proviso)
+
+(defun proviso-register-reset-registers()
+  (set-register ?c nil)
+  (set-register ?r nil)
+  (set-register ?1 nil)
+  (set-register ?2 nil)
+  )
+
+(ert-deftest proviso-register-test-root-register ()
+  (proviso-test-reset-all)
+  (proviso-register-reset-registers)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"\")
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
+      (should (equal (get-register ?c) (cons 'file (concat base "a/b/c/"))))
+      (should (equal (get-register ?1) nil))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-register-test-empty-dir ()
+  (proviso-test-reset-all)
+  (proviso-register-reset-registers)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"\" :register ?1)
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
+      (should (equal (get-register ?c) (cons 'file (concat base "a/b/c/"))))
+      (should (equal (get-register ?1) (cons 'file (concat base "a/b/c/"))))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-register-test-relative-dir ()
+  (proviso-test-reset-all)
+  (proviso-register-reset-registers)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"d/\" :register ?1)
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
+      (should (equal (get-register ?c) (cons 'file (concat base "a/b/c/d/"))))
+      (should (equal (get-register ?1) (cons 'file (concat base "a/b/c/d/"))))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-register-test-absolute-dir ()
+  (proviso-test-reset-all)
+  (proviso-register-reset-registers)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"/home/\" :register ?1)
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
+      (should (equal (get-register ?c) (cons 'file "/home/")))
+      (should (equal (get-register ?1) (cons 'file "/home/")))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-register-test-build-dirs-relative ()
+  (proviso-test-reset-all)
+  (proviso-register-reset-registers)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"/home/\" :register ?1)
+                  ))
+   (proviso-put proj :build-subdirs
+               '( (:name \"subdir\" :dir \"d2/\" :register ?2)
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
+      (should (equal (get-register ?c) (cons 'file "/home/")))
+      (should (equal (get-register ?1) (cons 'file "/home/")))
+      (should (equal (get-register ?2) (cons 'file (concat base "a/b/c/d2/"))))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-register-test-build-dirs-absolute ()
+  (proviso-test-reset-all)
+  (proviso-register-reset-registers)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"/home/\" :register ?1)
+                  ))
+   (proviso-put proj :build-subdirs
+               '( (:name \"subdir\" :dir \"/home/\" :register ?2)
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
+      (should (equal (get-register ?c) (cons 'file "/home/")))
+      (should (equal (get-register ?1) (cons 'file "/home/")))
+      (should (equal (get-register ?2) (cons 'file "/home/")))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-register-test-build-dirs-empty-dir ()
+  (proviso-test-reset-all)
+  (proviso-register-reset-registers)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"/home/\" :register ?1)
+                  ))
+   (proviso-put proj :build-subdirs
+               '( (:name \"subdir\" :dir \"\" :register ?2)
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
+      (should (equal (get-register ?c) (cons 'file "/home/")))
+      (should (equal (get-register ?1) (cons 'file "/home/")))
+      (should (equal (get-register ?2) (cons 'file (concat base "a/b/c/"))))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-register-test-switch-projects ()
+  (proviso-test-reset-all)
+  (proviso-register-reset-registers)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"/home/\" :register ?1)
+                  ))
+   (proviso-put proj :build-subdirs
+               '( (:name \"subdir\" :dir \"d2/\" :register ?2)
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
+      (should (equal (get-register ?c) (cons 'file "/home/")))
+      (should (equal (get-register ?1) (cons 'file "/home/")))
+      (should (equal (get-register ?2) (cons 'file (concat base "a/b/c/d2/"))))
+      ;; open 2nd file, same project
+      (find-file (concat base "a/b/c/d/dfile2"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
+      (should (equal (get-register ?c) (cons 'file "/home/")))
+      (should (equal (get-register ?1) (cons 'file "/home/")))
+      (should (equal (get-register ?2) (cons 'file (concat base "a/b/c/d2/"))))
+      ;; open 3rd file, new project
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"\" :register ?1)
+                  ))
+   (proviso-put proj :build-subdirs
+               '( (:name \"subdir\" :dir \"d2/\" :register ?2)
+                  )))
+ (proviso-define \"c2\" :initfun 'do-init)
+")
+      (should (not (proviso-name-p "c2")))
+      (find-file (concat base "a/b/c2/d2/dfile3"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c2/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c2"))
+      (should (equal (get-register ?r) (cons 'file (concat base "a/b/c2/"))))
+      (should (equal (get-register ?c) (cons 'file (concat base "a/b/c2/"))))
+      (should (equal (get-register ?1) (cons 'file (concat base "a/b/c2/"))))
+      (should (equal (get-register ?2) (cons 'file (concat base "a/b/c2/d2/"))))
+      ;; switch back to initial buffer
+      (switch-to-buffer "dfile1")
+      (run-hooks 'post-command-hook)    ;simulate interactive use
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
+      (should (equal (get-register ?c) (cons 'file "/home/")))
+      (should (equal (get-register ?1) (cons 'file "/home/")))
+      (should (equal (get-register ?2) (cons 'file (concat base "a/b/c/d2/"))))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      (kill-buffer "dfile2")
+      (kill-buffer "dfile3")
+      )))
 
 
 (ert-run-tests-batch-and-exit (car argv))

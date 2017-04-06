@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-04 08:52:16 dharms>
+;; Modified Time-stamp: <2017-04-06 17:56:02 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -87,11 +87,18 @@ This may or may not be for the first time."
       (run-hook-with-args 'proviso-on-project-active proj proviso-old-proj)
       )))
 
-(add-hook 'switch-buffer-functions
-          (lambda (prev curr)
-            (when (local-variable-p 'proviso-local-proj curr)
-              (proviso--on-proj-loaded
-               (buffer-local-value 'proviso-local-proj curr)))))
+(defun proviso-refresh-current-project ()
+  "Make sure the current buffer's project is up-to-date."
+  (interactive)
+  (proviso--on-proj-loaded 'proviso-local-proj))
+
+(defun proviso-switch-buffer-defun (prev curr)
+  "Called on buffer change events, with PREV and CURR the buffers that changed."
+  (when (local-variable-p 'proviso-local-proj curr)
+    (proviso--on-proj-loaded
+     (buffer-local-value 'proviso-local-proj curr))))
+
+(add-hook 'switch-buffer-functions 'proviso-switch-buffer-defun)
 
 (defun proviso--load-file (filename)
   "Load the settings contained within FILENAME."
@@ -100,7 +107,8 @@ This may or may not be for the first time."
 (advice-add 'find-file-noselect-1 :before 'proviso--file-opened-advice)
 
 (defun proviso--file-opened-advice (buf filename nowarn rawfile truename number)
-  "Advice that helps to initialize a project, if necessary, for BUF, visiting FILENAME."
+  "Advice to initialize a project, if necessary, for BUF, visiting FILENAME.
+NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
   (proviso--file-opened buf filename))
 
 (defun proviso--file-opened (buffer filename)
