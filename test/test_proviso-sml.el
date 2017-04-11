@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-03 08:37:46 dharms>
+;; Modified Time-stamp: <2017-04-12 08:13:14 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project sml test
 
@@ -30,7 +30,243 @@
 (load-file "test/proviso-test-common.el")
 (require 'proviso)
 
-;; todo
+(ert-deftest proviso-sml-test-empty ()
+  (proviso-test-reset-all)
+  (let* ((base (file-name-directory load-file-name))
+         (base-abbrev (proviso--abbreviate-dir base))
+         file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_) (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"\")
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      ;; to only check the last element
+      (should (equal (car (last sml/replacer-regexp-list))
+                     (list (concat base-abbrev "a/b/c/") "BASE:")))
+      ;; check all elements also; must update if sml updates
+      (should (equal sml/replacer-regexp-list
+                     (list (list "^~/org/" ":Org:")
+                           (list "^~/\\.emacs\\.d/" ":ED:")
+                           (list "^/sudo:.*:" ":SU:")
+                           (list "^~/Documents/" ":Doc:")
+                           (list "^~/Dropbox/" ":DB:")
+                           (list "^:\\([^:]*\\):Documento?s/" ":\\1/Doc:")
+                           (list "^~/[Gg]it/" ":Git:")
+                           (list "^~/[Gg]it[Hh]ub/" ":Git:")
+                           (list "^~/[Gg]it\\([Hh]ub\\|\\)-?[Pp]rojects/" ":Git:")
+                           (list (concat base-abbrev "a/b/c/") "BASE:"))))
+
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-sml-test-relative ()
+  (proviso-test-reset-all)
+  (let* ((base (file-name-directory load-file-name))
+         (base-abbrev (proviso--abbreviate-dir base))
+         file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_) (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"rel\" :dir \"d/\")
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      ;; to only check the last element
+      (should (equal (car (last sml/replacer-regexp-list))
+                     (list (concat base-abbrev "a/b/c/d/") "REL:")))
+      ;; check all elements also; must update if sml updates
+      (should (equal sml/replacer-regexp-list
+                     (list (list "^~/org/" ":Org:")
+                           (list "^~/\\.emacs\\.d/" ":ED:")
+                           (list "^/sudo:.*:" ":SU:")
+                           (list "^~/Documents/" ":Doc:")
+                           (list "^~/Dropbox/" ":DB:")
+                           (list "^:\\([^:]*\\):Documento?s/" ":\\1/Doc:")
+                           (list "^~/[Gg]it/" ":Git:")
+                           (list "^~/[Gg]it[Hh]ub/" ":Git:")
+                           (list "^~/[Gg]it\\([Hh]ub\\|\\)-?[Pp]rojects/" ":Git:")
+                           (list (concat base-abbrev "a/b/c/d/") "REL:"))))
+
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-sml-test-absolute ()
+  (proviso-test-reset-all)
+  (let* ((base (file-name-directory load-file-name))
+         (base-abbrev (proviso--abbreviate-dir base))
+         file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_) (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"absolute\" :dir \"/home/\")
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      ;; to only check the last element
+      (should (equal (car (last sml/replacer-regexp-list))
+                     (list "/home/" "ABSOLUTE:")))
+      ;; check all elements also; must update if sml updates
+      (should (equal sml/replacer-regexp-list
+                     (list (list "^~/org/" ":Org:")
+                           (list "^~/\\.emacs\\.d/" ":ED:")
+                           (list "^/sudo:.*:" ":SU:")
+                           (list "^~/Documents/" ":Doc:")
+                           (list "^~/Dropbox/" ":DB:")
+                           (list "^:\\([^:]*\\):Documento?s/" ":\\1/Doc:")
+                           (list "^~/[Gg]it/" ":Git:")
+                           (list "^~/[Gg]it[Hh]ub/" ":Git:")
+                           (list "^~/[Gg]it\\([Hh]ub\\|\\)-?[Pp]rojects/" ":Git:")
+                           (list "/home/" "ABSOLUTE:"))))
+
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-sml-test-switch-projects ()
+  (proviso-test-reset-all)
+  (let* ((base (file-name-directory load-file-name))
+         (base-abbrev (proviso--abbreviate-dir base))
+         file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_) (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"\")
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      ;; open 1st file
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      ;; to only check the last element
+      (should (equal (car (last sml/replacer-regexp-list))
+                     (list (concat base-abbrev "a/b/c/") "BASE:")))
+      ;; check all elements also; must update if sml updates
+      (should (equal sml/replacer-regexp-list
+                     (list (list "^~/org/" ":Org:")
+                           (list "^~/\\.emacs\\.d/" ":ED:")
+                           (list "^/sudo:.*:" ":SU:")
+                           (list "^~/Documents/" ":Doc:")
+                           (list "^~/Dropbox/" ":DB:")
+                           (list "^:\\([^:]*\\):Documento?s/" ":\\1/Doc:")
+                           (list "^~/[Gg]it/" ":Git:")
+                           (list "^~/[Gg]it[Hh]ub/" ":Git:")
+                           (list "^~/[Gg]it\\([Hh]ub\\|\\)-?[Pp]rojects/" ":Git:")
+                           (list (concat base-abbrev "a/b/c/") "BASE:"))))
+      ;; open 2nd file, same project
+      (find-file (concat base "a/b/c/d/dfile2"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      ;; to only check the last element
+      (should (equal (car (last sml/replacer-regexp-list))
+                     (list (concat base-abbrev "a/b/c/") "BASE:")))
+      ;; check all elements also; must update if sml updates
+      (should (equal sml/replacer-regexp-list
+                     (list (list "^~/org/" ":Org:")
+                           (list "^~/\\.emacs\\.d/" ":ED:")
+                           (list "^/sudo:.*:" ":SU:")
+                           (list "^~/Documents/" ":Doc:")
+                           (list "^~/Dropbox/" ":DB:")
+                           (list "^:\\([^:]*\\):Documento?s/" ":\\1/Doc:")
+                           (list "^~/[Gg]it/" ":Git:")
+                           (list "^~/[Gg]it[Hh]ub/" ":Git:")
+                           (list "^~/[Gg]it\\([Hh]ub\\|\\)-?[Pp]rojects/" ":Git:")
+                           (list (concat base-abbrev "a/b/c/") "BASE:"))))
+      ;; open 3rd file, new project
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"second\" :dir \"d2/\")
+                  )))
+ (proviso-define \"c2\" :initfun 'do-init)
+")
+      (should (not (proviso-name-p "c2")))
+      (find-file (concat base "a/b/c2/d2/dfile3"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c2/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c2"))
+      ;; to only check the last element
+      (should (equal (car (last sml/replacer-regexp-list))
+                     (list (concat base-abbrev "a/b/c2/d2/") "SECOND:")))
+      ;; check all elements also; must update if sml updates
+      (should (equal sml/replacer-regexp-list
+                     (list (list "^~/org/" ":Org:")
+                           (list "^~/\\.emacs\\.d/" ":ED:")
+                           (list "^/sudo:.*:" ":SU:")
+                           (list "^~/Documents/" ":Doc:")
+                           (list "^~/Dropbox/" ":DB:")
+                           (list "^:\\([^:]*\\):Documento?s/" ":\\1/Doc:")
+                           (list "^~/[Gg]it/" ":Git:")
+                           (list "^~/[Gg]it[Hh]ub/" ":Git:")
+                           (list "^~/[Gg]it\\([Hh]ub\\|\\)-?[Pp]rojects/" ":Git:")
+                           (list (concat base-abbrev "a/b/c2/d2/") "SECOND:"))))
+
+      ;; switch back to initial buffer
+      (switch-to-buffer "dfile1")
+      (run-hooks 'post-command-hook)    ;simulate interactive use
+      ;; to only check the last element
+      (should (equal (car (last sml/replacer-regexp-list))
+                     (list (concat base-abbrev "a/b/c/") "BASE:")))
+      ;; check all elements also; must update if sml updates
+      (should (equal sml/replacer-regexp-list
+                     (list (list "^~/org/" ":Org:")
+                           (list "^~/\\.emacs\\.d/" ":ED:")
+                           (list "^/sudo:.*:" ":SU:")
+                           (list "^~/Documents/" ":Doc:")
+                           (list "^~/Dropbox/" ":DB:")
+                           (list "^:\\([^:]*\\):Documento?s/" ":\\1/Doc:")
+                           (list "^~/[Gg]it/" ":Git:")
+                           (list "^~/[Gg]it[Hh]ub/" ":Git:")
+                           (list "^~/[Gg]it\\([Hh]ub\\|\\)-?[Pp]rojects/" ":Git:")
+                           (list (concat base-abbrev "a/b/c/") "BASE:"))))
+
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      (kill-buffer "dfile2")
+      (kill-buffer "dfile3")
+      )))
 
 (ert-run-tests-batch-and-exit (car argv))
 

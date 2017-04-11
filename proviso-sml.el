@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January  6, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-03 17:52:41 dharms>
+;; Modified Time-stamp: <2017-04-11 17:48:12 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso smart-mode-line
 
@@ -33,7 +33,8 @@
   "The original value of `sml/replacer-regexp-list'.")
 
 (with-eval-after-load 'smart-mode-line
-  (setq proviso-orig-sml-replacer-regexp-list 'sml/replacer-regexp-list))
+  (setq proviso-orig-sml-replacer-regexp-list
+        (copy-tree sml/replacer-regexp-list)))
 
 (defun proviso--set-sml-abbrevs (proj)
   "Set mode-line abbreviations according to PROJ's project definition."
@@ -48,8 +49,9 @@
                   (concat root entry)))
       (setq elt (proviso--abbreviate-dir elt))
       (push (list elt (concat (upcase title) ":")) result))
-    (setq sml/replacer-regexp-list
-          (append sml/replacer-regexp-list result))))
+    (proviso-put proj :sml-abbrevs
+                 (append (proviso-get proj :sml-abbrevs)
+                         result))))
 
 (defun proviso--sml-set-build-dirs (proj)
   "Set sml modeline according to `:build-subdirs' setting of project PROJ.
@@ -57,14 +59,23 @@ See `sml/replacer-regexp-list'."
   (let ((remote (proviso-get proj :remote-prefix))
         (root (proviso-get proj :root-dir))
         (lst (proviso-get proj ::build-subdirs))
-        dir name)
+        dir name result)
     (dolist (element lst)
       (setq dir (plist-get element :dir))
       (setq name (or (plist-get element :name)
                      (concat (upcase (directory-file-name dir)) ":")))
       (unless (zerop (length dir))
-        (add-to-list 'sml/replacer-regexp-list (list dir name) t))
-      )))
+        (push (list dir name) result)))
+    (proviso-put proj :sml-abbrevs
+                 (append (proviso-get proj :sml-abbrevs)
+                         result))))
+
+(defun proviso--activate-sml-abbrevs (proj old)
+  "Activate the sml regexps as defined in PROJ.
+PROJ is now the active project, replacing OLD."
+  (setq sml/replacer-regexp-list
+        (append proviso-orig-sml-replacer-regexp-list
+                (proviso-get proj :sml-abbrevs))))
 
 (defun proviso--abbreviate-dir (name)
   "Abbreviate NAME, a (possibly remote) project root, as necessary.
@@ -77,6 +88,7 @@ in case you are tempted to try to use it."
     (replace-regexp-in-string home "~" name t)))
 
 (add-hook 'proviso-on-project-init 'proviso--set-sml-abbrevs)
+(add-hook 'proviso-on-project-active 'proviso--activate-sml-abbrevs)
 
 (provide 'proviso-sml)
 ;;; proviso-sml.el ends here
