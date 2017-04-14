@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-13 07:58:18 dharms>
+;; Modified Time-stamp: <2017-04-14 08:44:21 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso tags
 
@@ -77,16 +77,35 @@ DIR gives the root directory."
       dest)))
 
 (defun proviso-tags-on-init (proj)
-  "Initialize tags functionality when profile PROJ is initialized."
-  (let ((root (proviso-get proj :root-dir)))
-    (and root (not (proviso-get proj :tags-dir))
-         (proviso-put proj :tags-dir
-                   (proviso-tags-compute-tags-dir
-                    proj
-                    (concat (proviso-get proj :remote-prefix)
-                            root))))))
+  "Initialize tags functionality when profile PROJ is initialized.
+This includes storing the setting for `etags-table-alist'
+into :tags-alist."
+  (let ((remote (proviso-get proj :remote-prefix))
+        (root (proviso-get proj :root-dir))
+        (lst (proviso-get proj :proj-alist))
+        tag-root names curr entry)
+    (setq tag-root
+          (proviso-tags-compute-tags-dir
+           proj
+           (concat (proviso-get proj :remote-prefix) root)))
+    (dolist (element lst)
+      (setq curr (proviso-get proj :name))
+      (setq entry (expand-file-name
+                   (concat tag-root curr "-tags")))
+      (push entry names))
+    (proviso-put proj :tags-alist
+                 (append (list (concat
+                                (proviso-get proj :root-stem)
+                                "\\(.*\\)$"))
+                         names))))
 
 (add-hook 'proviso-on-project-pre-init 'proviso-tags-on-init)
+(add-hook 'proviso-on-project-active 'proviso-activate-tags-table)
+
+(defun proviso-activate-tags-table (proj old)
+  "Activate the TAGS table specified in `:tags-alist'.
+PROJ is now the active project, replacing OLD."
+  (setq etags-table-alist (proviso-get proj :tags-alist)))
 
 (defun proviso-etags--real-file-name (filename)
   "Return the tag's correct destination file for FILENAME.
@@ -95,8 +114,9 @@ This may prepend a remote prefix."
    (proviso-get proviso-tags-lookup-target-project :remote-prefix)
    (if (file-name-absolute-p filename)
        filename
-     ;; todo: used to append 'src-sub-dir here?
-     (proviso-get proviso-tags-lookup-target-project :root-dir))))
+     (concat
+      (proviso-get proviso-tags-lookup-target-project :root-dir)
+      (proviso-get proviso-tags-lookup-target-project :src-sub-dir)))))
 
 ;; point etags-select to our function
 (setq etags-select-real-file-name 'proviso-etags--real-file-name)
