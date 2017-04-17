@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, April 13, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-13 07:57:12 dharms>
+;; Modified Time-stamp: <2017-04-16 19:57:11 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project tags etags
 
@@ -41,7 +41,10 @@
       (setq file-contents "
  (defun do-init (proj)
    (proviso-put proj :proj-alist
-               '( (:name \"base\" :dir \"\")
+               '( (:name \"first\" :dir \"\")
+                  (:name \"second\" :dir \"d/\")
+                  (:name \"third\" :dir \"d2/\")
+                  (:name \"fourth\" :dir \"/home/\")
                   )))
  (proviso-define \"c\" :initfun 'do-init)
 ")
@@ -51,9 +54,14 @@
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
-      (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
-      (should (equal (get-register ?c) (cons 'file (concat base "a/b/c/"))))
-      (should (equal (get-register ?1) nil))
+      (should (equal (proviso-get proviso-local-proj :tags-alist)
+                     (list (concat base "a/b/c/" "\\(.*\\)$")
+                           (concat base "a/b/c/.tags/fourth-tags")
+                           (concat base "a/b/c/.tags/third-tags")
+                           (concat base "a/b/c/.tags/second-tags")
+                           (concat base "a/b/c/.tags/first-tags")
+                                   )))
+
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))

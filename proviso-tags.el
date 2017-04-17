@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-14 08:44:21 dharms>
+;; Modified Time-stamp: <2017-04-16 19:55:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso tags
 
@@ -86,10 +86,9 @@ into :tags-alist."
         tag-root names curr entry)
     (setq tag-root
           (proviso-tags-compute-tags-dir
-           proj
-           (concat (proviso-get proj :remote-prefix) root)))
+           proj (concat remote root)))
     (dolist (element lst)
-      (setq curr (proviso-get proj :name))
+      (setq curr (plist-get element :name))
       (setq entry (expand-file-name
                    (concat tag-root curr "-tags")))
       (push entry names))
@@ -99,7 +98,7 @@ into :tags-alist."
                                 "\\(.*\\)$"))
                          names))))
 
-(add-hook 'proviso-on-project-pre-init 'proviso-tags-on-init)
+(add-hook 'proviso-on-project-init 'proviso-tags-on-init)
 (add-hook 'proviso-on-project-active 'proviso-activate-tags-table)
 
 (defun proviso-activate-tags-table (proj old)
