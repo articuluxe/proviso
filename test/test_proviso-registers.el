@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April  4, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-06 17:50:44 dharms>
+;; Modified Time-stamp: <2017-04-17 17:41:54 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project registers test
 
@@ -248,6 +248,27 @@
       (should (equal (get-register ?c) (cons 'file "/home/")))
       (should (equal (get-register ?1) (cons 'file "/home/")))
       (should (equal (get-register ?2) (cons 'file (concat base "a/b/c/"))))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-register-test-no-project-file ()
+  (proviso-test-reset-all)
+  (proviso-register-reset-registers)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))

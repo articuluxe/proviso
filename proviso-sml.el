@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January  6, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-11 17:48:12 dharms>
+;; Modified Time-stamp: <2017-04-17 17:54:11 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso smart-mode-line
 
@@ -49,6 +49,11 @@
                   (concat root entry)))
       (setq elt (proviso--abbreviate-dir elt))
       (push (list elt (concat (upcase title) ":")) result))
+    ;; if no directories, point to the root
+    (when (seq-empty-p lst)
+      (push (list (proviso--abbreviate-dir root)
+                  (concat (upcase (proviso-get proj :project-name)) ":"))
+            result))
     (proviso-put proj :sml-abbrevs
                  (append (proviso-get proj :sml-abbrevs)
                          result))))
