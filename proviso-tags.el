@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-16 19:55:09 dharms>
+;; Modified Time-stamp: <2017-04-17 17:24:27 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso tags
 
@@ -70,7 +70,8 @@ DIR gives the root directory."
     (unless (tramp-tramp-file-p dir)
       ;; in the local case, set the base according to the project
       (setq base dir))
-    (setq dest (concat (file-name-as-directory base) sub))
+    (setq dest (concat (file-name-as-directory base)
+                       (file-name-as-directory sub)))
     (if (tramp-tramp-file-p dir)
         (concat dest (file-name-as-directory
                       (proviso-tags-compute-remote-subdir-stem proj)))
@@ -92,6 +93,11 @@ into :tags-alist."
       (setq entry (expand-file-name
                    (concat tag-root curr "-tags")))
       (push entry names))
+    (when (seq-empty-p names)
+      ;; if nothing specified, add an entry for the root
+      (push (expand-file-name
+             (concat
+              tag-root (proviso-get proj :project-name) "-tags")) names))
     (proviso-put proj :tags-alist
                  (append (list (concat
                                 (proviso-get proj :root-stem)
