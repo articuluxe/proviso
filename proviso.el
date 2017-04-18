@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-06 17:56:02 dharms>
+;; Modified Time-stamp: <2017-04-18 17:26:11 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -31,6 +31,9 @@
 (require 'proviso-core)
 (require 'proviso-include-files)
 (require 'proviso-grep)
+;; bookmarks must come before registers so that registers runs first;
+;; otherwise the latter gets overwritten
+(require 'proviso-bookmarks)
 (require 'proviso-registers)
 (require 'proviso-tags)
 (require 'proviso-sml)
@@ -69,15 +72,15 @@
 (defun proviso--loaded (proj)
   "A project PROJ has been loaded.
 This may or may not be for the first time."
-  (unless (proviso-get proj :inited)
-    (proviso-put proj :inited t)
-    (run-hook-with-args 'proviso-on-project-pre-init proj)
-    (proviso--safe-funcall proj :initfun proj)
-    (proviso-init proj)
-    (run-hook-with-args 'proviso-on-project-post-init proj)
-    (proviso--log-project-inited proj)
-    )
-  (proviso--on-proj-loaded proj))
+  (when proj
+    (unless (proviso-get proj :inited)
+      (proviso-put proj :inited t)
+      (run-hook-with-args 'proviso-on-project-pre-init proj)
+      (proviso--safe-funcall proj :initfun proj)
+      (proviso-init proj)
+      (run-hook-with-args 'proviso-on-project-post-init proj)
+      (proviso--log-project-inited proj))
+    (proviso--on-proj-loaded proj)))
 
 (defun proviso--on-proj-loaded (proj)
   "Called when a project PROJ is made active."
