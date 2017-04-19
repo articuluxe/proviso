@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-18 17:30:45 dharms>
+;; Modified Time-stamp: <2017-04-19 08:34:10 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project bookmarks
 
@@ -34,10 +34,18 @@
   (let ((remote (proviso-get proj :remote-prefix))
         (root (proviso-get proj :root-dir))
         (name (proviso-get proj :project-name)))
-    (bmkp-switch-bookmark-file-create
-     (concat remote root name ".bmk") t)))
+    (proviso-put proj :bookmark-file
+     (concat remote root name ".bmk"))))
+
+(defun proviso--activate-bookmarks (proj old)
+  "Activate the bookmark file as defined by PROJ's settings.
+PROJ is now the active project, replacing OLD.
+The bookmark file should have been stored in :bookmark-file."
+  (bmkp-switch-bookmark-file-create
+   (proviso-get proj :bookmark-file) t))
 
 (add-hook 'proviso-on-project-init 'proviso--init-bookmarks)
+(add-hook 'proviso-on-project-active 'proviso--activate-bookmarks)
 
 (provide 'proviso-bookmarks)
 ;;; proviso-bookmarks.el ends here

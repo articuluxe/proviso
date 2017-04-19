@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-18 17:32:27 dharms>
+;; Modified Time-stamp: <2017-04-19 08:49:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso bookmark test
 
@@ -55,9 +55,118 @@
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (f-exists? (concat base "a/b/c/c.bmk")))
+      (should (string= bmkp-current-bookmark-file
+                       (abbreviate-file-name (concat base "a/b/c/c.bmk"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       (f-delete (concat base "a/b/c/c.bmk"))
+      )))
+
+(ert-deftest proviso-register-test-bookmark-empty-project-file ()
+  (proviso-test-reset-all)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "")
+      (ignore-errors
+        (f-delete (concat base "a/b/c/c.bmk") t))
+      (should (not (f-exists? (concat base "a/b/c/c.bmk"))))
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (f-exists? (concat base "a/b/c/c.bmk")))
+      (should (string= bmkp-current-bookmark-file
+                       (abbreviate-file-name (concat base "a/b/c/c.bmk"))))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      (f-delete (concat base "a/b/c/c.bmk"))
+      )))
+
+(ert-deftest proviso-register-test-bookmark-switch-projects ()
+  (proviso-test-reset-all)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"d/\")
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (ignore-errors
+        (f-delete (concat base "a/b/c/c.bmk") t))
+      (should (not (f-exists? (concat base "a/b/c/c.bmk"))))
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (f-exists? (concat base "a/b/c/c.bmk")))
+      (should (string= bmkp-current-bookmark-file
+                       (abbreviate-file-name (concat base "a/b/c/c.bmk"))))
+      ;; open 2nd file, same project
+      (find-file (concat base "a/b/c/d/dfile2"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (f-exists? (concat base "a/b/c/c.bmk")))
+      (should (string= bmkp-current-bookmark-file
+                       (abbreviate-file-name (concat base "a/b/c/c.bmk"))))
+      ;; open 3rd file, new project
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"\" :register ?1)
+                  ))
+   (proviso-put proj :build-subdirs
+               '( (:name \"subdir\" :dir \"d2/\" :register ?2)
+                  )))
+ (proviso-define \"c2\" :initfun 'do-init)
+")
+      (should (not (proviso-name-p "c2")))
+      (find-file (concat base "a/b/c2/d2/dfile3"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c2/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c2"))
+      (should (f-exists? (concat base "a/b/c/c.bmk")))
+      (should (f-exists? (concat base "a/b/c2/c2.bmk")))
+      (should (string= bmkp-current-bookmark-file
+                       (abbreviate-file-name (concat base "a/b/c2/c2.bmk"))))
+      ;; switch back to initial buffer
+      (switch-to-buffer "dfile1")
+      (run-hooks 'post-command-hook)    ;simulate interactive use
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (f-exists? (concat base "a/b/c/c.bmk")))
+      (should (f-exists? (concat base "a/b/c2/c2.bmk")))
+      (should (string= bmkp-current-bookmark-file
+                       (abbreviate-file-name (concat base "a/b/c/c.bmk"))))
+
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      (kill-buffer "dfile2")
+      (kill-buffer "dfile3")
+      (f-delete (concat base "a/b/c/c.bmk"))
+      (f-delete (concat base "a/b/c2/c2.bmk"))
       )))
 
 (ert-run-tests-batch-and-exit (car argv))
