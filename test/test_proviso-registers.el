@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April  4, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-17 17:41:54 dharms>
+;; Modified Time-stamp: <2017-04-20 08:31:14 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project registers test
 
@@ -272,6 +272,58 @@
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
+
+;; (ert-deftest proviso-register-test-remote ()
+;;   (proviso-test-reset-all)
+;;   (proviso-register-reset-registers)
+;;   (let ((base (file-name-directory load-file-name))
+;;         file-contents)
+;;     (cl-letf (((symbol-function 'proviso--load-file)
+;;                (lambda (_)
+;;                  (proviso-eval-string file-contents)))
+;;               ((symbol-function 'proviso--compute-remote-props)
+;;                (lambda (dir)
+;;                  (list "viking" dir "/ssh:dharms@viking:")))
+;;               ((symbol-function 'file-remote-p)
+;;                (lambda (_) nil))
+;;               ((symbol-function 'tramp-tramp-file-p)
+;;                (lambda (_) nil))
+;;               ((symbol-function 'proviso-tags-compute-tags-dir)
+;;                (lambda (proj dir)
+;;                  (let ((base (or (getenv "EMACS_TAGS_DIR") "~"))
+;;                        (sub (or (proviso-get proj :tags-subdir) ".tags/"))
+;;                        dest)
+;;                    (unless dir (setq dir default-directory))
+;;                    ;; (unless (tramp-tramp-file-p dir)
+;;                      ;; in the local case, set the base according to the project
+;;                      (setq base dir);)
+;;                    (setq dest (concat (file-name-as-directory base)
+;;                                       (file-name-as-directory sub)))
+;;                    ;; (if (tramp-tramp-file-p dir)
+;;                        (concat dest (file-name-as-directory
+;;                                      (proviso-tags-compute-remote-subdir-stem proj))))))
+;;                      ;; dest))))
+;;               )
+;;       ;; open file
+;;       (setq file-contents "
+;;  (defun do-init (proj)
+;;    (proviso-put proj :proj-alist
+;;                '( (:name \"base\" :dir \"d/\" :register ?1)
+;;                   )))
+;;  (proviso-define \"c\" :initfun 'do-init)
+;; ")
+;;       (find-file (concat base "a/b/c/d/dfile1"))
+;;       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+;;       (should (string= (proviso-get proviso-local-proj :root-dir)
+;;                        (concat base "a/b/c/")))
+;;       (should (string= (proviso-get proviso-local-proj :project-name)
+;;                        "c"))
+;;       (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
+;;       (should (equal (get-register ?c) (cons 'file (concat base "a/b/c/d/"))))
+;;       (should (equal (get-register ?1) (cons 'file (concat base "a/b/c/d/"))))
+;;       ;; clean up buffers
+;;       (kill-buffer "dfile1")
+;;       )))
 
 (ert-deftest proviso-register-test-switch-projects ()
   (proviso-test-reset-all)
