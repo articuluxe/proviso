@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-20 08:49:05 dharms>
+;; Modified Time-stamp: <2017-04-20 18:07:44 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -47,7 +47,7 @@
       (run-hook-with-args 'proviso-on-project-init proj)
     ('proviso-error-non-fatal
      (proviso-put proj :inited nil)
-     (message "Stopped loading proj \"%s\" (%s)"
+     (message "Stopped loading project \"%s\" (%s)"
               (symbol-name proj) (cdr err)))
     ((proviso-error-aborted proviso-error)
      (ignore-errors
@@ -59,9 +59,9 @@
   "Log a project PROJ upon initialization."
   (let ((name (symbol-name proj)))
     (unless (string-equal name "default")
-      (message "Loaded project %s (project %s) at %s"
-               name
+      (message "Loaded project %s (%s) at %s"
                (proviso-get proj :project-name)
+               name
                (proviso-get proj :root-dir)))))
 
 (defun proviso--inited (proj)
