@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January  6, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-17 17:54:11 dharms>
+;; Modified Time-stamp: <2017-04-20 09:07:19 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso smart-mode-line
 
@@ -47,7 +47,8 @@
       (setq elt (if (and entry (file-name-absolute-p entry))
                     entry
                   (concat root entry)))
-      (setq elt (proviso--abbreviate-dir elt))
+      ;; ensure a trailing slash
+      (setq elt (proviso--abbreviate-dir (file-name-as-directory elt)))
       (push (list elt (concat (upcase title) ":")) result))
     ;; if no directories, point to the root
     (when (seq-empty-p lst)

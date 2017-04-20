@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-19 08:52:06 dharms>
+;; Modified Time-stamp: <2017-04-20 08:49:05 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -29,13 +29,13 @@
 ;;; Code:
 
 (require 'proviso-core)
-(require 'proviso-include-files)
-(require 'proviso-grep)
+(require 'proviso-tags)
 ;; bookmarks must come before registers so that registers runs first
 (require 'proviso-bookmarks)
-(require 'proviso-registers)
-(require 'proviso-tags)
 (require 'proviso-sml)
+(require 'proviso-registers)
+(require 'proviso-grep)
+(require 'proviso-include-files)
 
 (eval-when-compile
   (require 'cl))

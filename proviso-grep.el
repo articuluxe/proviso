@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-01 14:05:57 dharms>
+;; Modified Time-stamp: <2017-04-20 08:55:39 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep
 
@@ -37,7 +37,8 @@
       (setq elt (if (and entry (file-name-absolute-p entry))
                     entry
                   (concat root entry)))
-      (push elt dirs))
+      ;; ensure trailing slash
+      (push (file-name-as-directory elt) dirs))
     (proviso-put proj :grep-dirs (delete-dups (append dirs `(,root))))
     ))
 

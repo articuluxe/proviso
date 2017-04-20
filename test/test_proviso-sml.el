@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-17 17:45:08 dharms>
+;; Modified Time-stamp: <2017-04-20 09:07:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project sml test
 
@@ -183,6 +183,55 @@
                            (list "^~/[Gg]it[Hh]ub/" ":Git:")
                            (list "^~/[Gg]it\\([Hh]ub\\|\\)-?[Pp]rojects/" ":Git:")
                            (list (concat base-abbrev "a/b/c/") "C:"))))
+
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-sml-test-no-trailing-slash ()
+  (proviso-test-reset-all)
+  (let* ((base (file-name-directory load-file-name))
+         (base-abbrev (proviso--abbreviate-dir base))
+         file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_) (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '(
+                  (:name \"one\" :dir \"\")
+                  (:name \"two\" :dir \"/home\")
+                  (:name \"three\" :dir \"d\")
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      ;; so parent directories should go first in this list, so that they're
+      ;; later in the sml list, so that subdirs have a chance to go first
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      ;; to only check the last element
+      (should (equal (car (last sml/replacer-regexp-list))
+                     (list (concat base-abbrev "a/b/c/") "ONE:")))
+      ;; check all elements also; must update if sml updates
+      (should (equal sml/replacer-regexp-list
+                     (list (list "^~/org/" ":Org:")
+                           (list "^~/\\.emacs\\.d/" ":ED:")
+                           (list "^/sudo:.*:" ":SU:")
+                           (list "^~/Documents/" ":Doc:")
+                           (list "^~/Dropbox/" ":DB:")
+                           (list "^:\\([^:]*\\):Documento?s/" ":\\1/Doc:")
+                           (list "^~/[Gg]it/" ":Git:")
+                           (list "^~/[Gg]it[Hh]ub/" ":Git:")
+                           (list "^~/[Gg]it\\([Hh]ub\\|\\)-?[Pp]rojects/" ":Git:")
+                           (list (concat base-abbrev "a/b/c/d/") "THREE:")
+                           (list "/home/" "TWO:")
+                           (list (concat base-abbrev "a/b/c/") "ONE:")
+                           )))
 
       ;; clean up buffers
       (kill-buffer "dfile1")

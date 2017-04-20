@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-01 14:06:31 dharms>
+;; Modified Time-stamp: <2017-04-20 08:54:30 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep test
 
@@ -130,6 +130,39 @@
       ;; no dirs specified, so just the root dir
       (should (equal (proviso-get proviso-local-proj :grep-dirs)
                      (list (concat base "a/b/c/"))))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-grep-open-project-no-trailing-slashes ()
+  (proviso-test-reset-all)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"one\" :dir \"\")
+                  (:name \"two\" :dir \"/home\")
+                  (:name \"three\" :dir \"d\")
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (proviso-get proviso-local-proj :grep-dirs)
+                     (list
+                      (concat base "a/b/c/d/")
+                      "/home/"
+                      (concat base "a/b/c/")
+                      )))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))

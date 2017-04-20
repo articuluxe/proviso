@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-31 17:40:38 dharms>
+;; Modified Time-stamp: <2017-04-20 08:47:52 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 
@@ -67,7 +67,7 @@
     (dolist (element lst)
       (setq entry (plist-get element :dir))
       (setq elt (concat (when (or (null entry) (f-relative? entry)) root) entry))
-      (push elt includes)
+      (push (file-name-as-directory elt) includes) ;ensure trailing slash
       (push (concat remote elt) ff-includes))
     (proviso-put proj :include-files includes)
     ;; ff-search-directories doesn't want a trailing slash
