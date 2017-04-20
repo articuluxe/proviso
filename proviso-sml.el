@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January  6, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-20 09:07:19 dharms>
+;; Modified Time-stamp: <2017-04-20 17:56:24 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso smart-mode-line
 
@@ -45,8 +45,7 @@
       (setq title (plist-get element :name))
       (setq entry (plist-get element :dir))
       (setq elt (if (and entry (file-name-absolute-p entry))
-                    entry
-                  (concat root entry)))
+                    entry (concat root entry)))
       ;; ensure a trailing slash
       (setq elt (proviso--abbreviate-dir (file-name-as-directory elt)))
       (push (list elt (concat (upcase title) ":")) result))
@@ -64,14 +63,18 @@
 See `sml/replacer-regexp-list'."
   (let ((remote (proviso-get proj :remote-prefix))
         (root (proviso-get proj :root-dir))
-        (lst (proviso-get proj ::build-subdirs))
-        dir name result)
+        (lst (proviso-get proj :build-subdirs))
+        entry dir name result)
     (dolist (element lst)
-      (setq dir (plist-get element :dir))
+      (setq entry (plist-get element :dir))
+      (setq dir (if (and entry (file-name-absolute-p entry))
+                    entry (concat root entry)))
       (setq name (or (plist-get element :name)
-                     (concat (upcase (directory-file-name dir)) ":")))
+                     (directory-file-name dir)))
       (unless (zerop (length dir))
-        (push (list dir name) result)))
+        (push (list
+               (proviso--abbreviate-dir (file-name-as-directory dir))
+               (concat (upcase name) ":")) result)))
     (proviso-put proj :sml-abbrevs
                  (append (proviso-get proj :sml-abbrevs)
                          result))))
@@ -93,6 +96,7 @@ in case you are tempted to try to use it."
          (string-trim (shell-command-to-string "echo ~"))))
     (replace-regexp-in-string home "~" name t)))
 
+(add-hook 'proviso-on-project-init 'proviso--sml-set-build-dirs)
 (add-hook 'proviso-on-project-init 'proviso--set-sml-abbrevs)
 (add-hook 'proviso-on-project-active 'proviso--activate-sml-abbrevs)
 
