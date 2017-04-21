@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-13 17:31:53 dharms>
+;; Modified Time-stamp: <2017-04-21 08:20:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -51,19 +51,22 @@ of no matches, the default project is instead used.")
 ;; :registers :tags-alist
 
 ;; hooks
-(defvar proviso-on-project-pre-init '()
+(defvar proviso-hook-on-project-pre-init '()
   "Hooks run just before a project is first initialized.
 Hook functions are called with one parameter, the new project.")
-(defvar proviso-on-project-init '()
+(defvar proviso-hook-on-project-init '()
   "Hooks run as a project is first initialized.
 Hook functions are called with one parameter, the new project.")
-(defvar proviso-on-project-post-init '()
+(defvar proviso-hook-on-project-post-init '()
   "Hooks run just after a project is first initialized.
 Hook functions are called with one parameter, the new project.")
-(defvar proviso-on-project-active '()
+(defvar proviso-hook-on-project-active '()
   "Hooks run whenever a project becomes active.
 Hook functions are called with two parameters: the new project,
 and the old one: `lambda(new old)()'.")
+(defvar proviso-hook-on-file-opened '()
+  "Hooks run whenever a file is opened that belongs to a project.
+Hook functions are called with one parameter: the file's major mode.")
 
 (defun proviso-proj-p (proj)
   "Return non-nil if PROJ is a project."

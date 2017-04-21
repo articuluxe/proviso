@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January  6, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-20 17:56:24 dharms>
+;; Modified Time-stamp: <2017-04-21 08:20:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso smart-mode-line
 
@@ -96,9 +96,9 @@ in case you are tempted to try to use it."
          (string-trim (shell-command-to-string "echo ~"))))
     (replace-regexp-in-string home "~" name t)))
 
-(add-hook 'proviso-on-project-init 'proviso--sml-set-build-dirs)
-(add-hook 'proviso-on-project-init 'proviso--set-sml-abbrevs)
-(add-hook 'proviso-on-project-active 'proviso--activate-sml-abbrevs)
+(add-hook 'proviso-hook-on-project-init 'proviso--sml-set-build-dirs)
+(add-hook 'proviso-hook-on-project-init 'proviso--set-sml-abbrevs)
+(add-hook 'proviso-hook-on-project-active 'proviso--activate-sml-abbrevs)
 
 (provide 'proviso-sml)
 ;;; proviso-sml.el ends here

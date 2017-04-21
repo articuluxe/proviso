@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April  4, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-06 17:47:32 dharms>
+;; Modified Time-stamp: <2017-04-21 08:20:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project register
 
@@ -68,8 +68,8 @@ Registers should have been stored in :registers."
     (dolist (elt lst)
       (set-register (car elt) (cdr elt)))))
 
-(add-hook 'proviso-on-project-init 'proviso--set-registers)
-(add-hook 'proviso-on-project-active 'proviso--activate-registers)
+(add-hook 'proviso-hook-on-project-init 'proviso--set-registers)
+(add-hook 'proviso-hook-on-project-active 'proviso--activate-registers)
 
 (provide 'proviso-registers)
 ;;; proviso-registers.el ends here

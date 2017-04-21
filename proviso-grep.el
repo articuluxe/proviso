@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-20 08:55:39 dharms>
+;; Modified Time-stamp: <2017-04-21 08:19:28 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep
 
@@ -42,7 +42,7 @@
     (proviso-put proj :grep-dirs (delete-dups (append dirs `(,root))))
     ))
 
-(add-hook 'proviso-on-project-init 'proviso--set-grep-dirs)
+(add-hook 'proviso-hook-on-project-init 'proviso--set-grep-dirs)
 
 (provide 'proviso-grep)
 ;;; proviso-grep.el ends here

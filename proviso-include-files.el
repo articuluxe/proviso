@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-20 08:47:52 dharms>
+;; Modified Time-stamp: <2017-04-21 08:49:52 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 
@@ -26,6 +26,8 @@
 
 ;;; Code:
 (require 'proviso-core)
+(require 'auto-complete-c-headers)
+(require 'find-file)
 
 (defun proviso--validate-include-files (proj)
   "Validate the set of include files of project PROJ."
@@ -70,13 +72,25 @@
       (push (file-name-as-directory elt) includes) ;ensure trailing slash
       (push (concat remote elt) ff-includes))
     (proviso-put proj :include-files includes)
+    ;; for ff-search-directories, prepend current dir and append root
+    (setq includes (append '(".") includes
+                           `,(concat remote root)))
     ;; ff-search-directories doesn't want a trailing slash
     (proviso-put proj :include-ff-files (mapcar 'directory-file-name ff-includes))
     ))
 
-(add-hook 'proviso-on-project-init 'proviso--set-include-files)
+(defun proviso--include-on-file-opened (proj mode)
+  "A file has been opened in mode MODE for project PROJ."
+  (setq ff-search-directories (proviso-get proj :include-ff-files))
+  (when (bound-and-true-p c-buffer-is-cc-mode)
+    (set (make-local-variable 'achead:include-directories)
+         (proviso-get proj :include-files))
+    ))
+
+(add-hook 'proviso-hook-on-project-init 'proviso--set-include-files)
 ;; add the validation last so it runs first
-(add-hook 'proviso-on-project-init 'proviso--validate-include-files)
+(add-hook 'proviso-hook-on-project-init 'proviso--validate-include-files)
+(add-hook 'proviso-hook-on-file-opened 'proviso--include-on-file-opened)
 
 (provide 'proviso-include-files)
 ;;; proviso-include-files.el ends here

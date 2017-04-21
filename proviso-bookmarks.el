@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-19 08:34:10 dharms>
+;; Modified Time-stamp: <2017-04-21 08:20:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project bookmarks
 
@@ -44,8 +44,8 @@ The bookmark file should have been stored in :bookmark-file."
   (bmkp-switch-bookmark-file-create
    (proviso-get proj :bookmark-file) t))
 
-(add-hook 'proviso-on-project-init 'proviso--init-bookmarks)
-(add-hook 'proviso-on-project-active 'proviso--activate-bookmarks)
+(add-hook 'proviso-hook-on-project-init 'proviso--init-bookmarks)
+(add-hook 'proviso-hook-on-project-active 'proviso--activate-bookmarks)
 
 (provide 'proviso-bookmarks)
 ;;; proviso-bookmarks.el ends here

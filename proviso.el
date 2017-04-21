@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-20 18:07:44 dharms>
+;; Modified Time-stamp: <2017-04-21 08:32:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -44,7 +44,7 @@
 (defun proviso-init (proj)
   "Load a project PROJ."
   (condition-case err
-      (run-hook-with-args 'proviso-on-project-init proj)
+      (run-hook-with-args 'proviso-hook-on-project-init proj)
     ('proviso-error-non-fatal
      (proviso-put proj :inited nil)
      (message "Stopped loading project \"%s\" (%s)"
@@ -74,19 +74,27 @@ This may or may not be for the first time."
   (when proj
     (unless (proviso-get proj :inited)
       (proviso-put proj :inited t)
-      (run-hook-with-args 'proviso-on-project-pre-init proj)
+      (run-hook-with-args 'proviso-hook-on-project-pre-init proj)
       (proviso--safe-funcall proj :initfun proj)
       (proviso-init proj)
-      (run-hook-with-args 'proviso-on-project-post-init proj)
+      (run-hook-with-args 'proviso-hook-on-project-post-init proj)
       (proviso--log-project-inited proj))
     (proviso--on-proj-loaded proj)))
+
+(defun proviso-on-file-opened ()
+  "Called when a file is opened."
+  (when proviso-local-proj
+    (run-hook-with-args 'proviso-hook-on-file-opened
+                        proviso-local-proj major-mode)))
+
+(add-hook 'find-file-hook 'proviso-on-file-opened)
 
 (defun proviso--on-proj-loaded (proj)
   "Called when a project PROJ is made active."
   (unless (eq proj proviso-curr-proj)
     (let ((proviso-old-proj proviso-curr-proj))
       (setq proviso-curr-proj proj)
-      (run-hook-with-args 'proviso-on-project-active proj proviso-old-proj)
+      (run-hook-with-args 'proviso-hook-on-project-active proj proviso-old-proj)
       )))
 
 (defun proviso-refresh-current-project ()
