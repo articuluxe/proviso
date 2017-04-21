@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-21 08:49:52 dharms>
+;; Modified Time-stamp: <2017-04-21 17:29:29 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 
@@ -80,7 +80,7 @@
     ))
 
 (defun proviso--include-on-file-opened (proj mode)
-  "A file has been opened in mode MODE for project PROJ."
+  "A file has been opened for project PROJ in mode MODE."
   (setq ff-search-directories (proviso-get proj :include-ff-files))
   (when (bound-and-true-p c-buffer-is-cc-mode)
     (set (make-local-variable 'achead:include-directories)

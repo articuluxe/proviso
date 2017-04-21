@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-21 08:32:41 dharms>
+;; Modified Time-stamp: <2017-04-21 17:44:43 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -63,10 +63,6 @@
                (proviso-get proj :project-name)
                name
                (proviso-get proj :root-dir)))))
-
-(defun proviso--inited (proj)
-  "Initialize a project PROJ."
-  )
 
 (defun proviso--loaded (proj)
   "A project PROJ has been loaded.
