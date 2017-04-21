@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-20 08:54:30 dharms>
+;; Modified Time-stamp: <2017-04-21 17:50:02 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep test
 
@@ -163,8 +163,59 @@
                       "/home/"
                       (concat base "a/b/c/")
                       )))
+      ;; open 2nd file, same project
+      (find-file (concat base "a/b/c/d/dfile2"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (proviso-get proviso-local-proj :grep-dirs)
+                     (list
+                      (concat base "a/b/c/d/")
+                      "/home/"
+                      (concat base "a/b/c/")
+                      )))
+      ;; open 3rd file, new project
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"d2/\")
+                  )))
+ (proviso-define \"c2\" :initfun 'do-init)
+")
+      (should (not (proviso-name-p "c2")))
+      (find-file (concat base "a/b/c2/d2/dfile3"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c2/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c2"))
+      (should (equal (proviso-get proviso-local-proj :grep-dirs)
+                     (list
+                      (concat base "a/b/c2/d2/")
+                      (concat base "a/b/c2/")
+                      )))
+      ;; switch back to initial buffer
+      (switch-to-buffer "dfile1")
+      (run-hooks 'post-command-hook)    ;simulate interactive use
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (equal (proviso-get proviso-local-proj :grep-dirs)
+                     (list
+                      (concat base "a/b/c/d/")
+                      "/home/"
+                      (concat base "a/b/c/")
+                      )))
+
       ;; clean up buffers
       (kill-buffer "dfile1")
+      (kill-buffer "dfile2")
+      (kill-buffer "dfile3")
       )))
 
 (ert-run-tests-batch-and-exit (car argv))
