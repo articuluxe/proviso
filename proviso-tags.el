@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-21 08:20:01 dharms>
+;; Modified Time-stamp: <2017-04-24 17:49:16 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso tags
 
@@ -29,23 +29,16 @@
 (require 'tramp)
 (require 'proviso-etags-select)
 
-(defvar proviso-tags-lookup-target-project nil
-  "The active project when a tag is first looked up.")
-
-(defun proviso-tags-store-project ()
-  "Store the current project."
-  (setq proviso-tags-lookup-target-project (symbol-name proviso-local-proj)))
-
 (defun proviso-tags-find-tag ()
   "Find a tag based on the current profile."
   (interactive)
-  (proviso-tags-store-project)
+  ;; todo: any need to store proviso-curr-proj?
   (etags-select-find-tag))
 
 (defun proviso-tags-find-tag-at-point ()
   "Find the tag at point based on the current profile."
   (interactive)
-  (proviso-tags-store-project)
+  ;; todo: any need to store proviso-curr-proj?
   (etags-select-find-tag-at-point))
 
 (defun proviso-tags-compute-remote-subdir-stem (proj)
@@ -98,6 +91,7 @@ into :tags-alist."
       (push (expand-file-name
              (concat
               tag-root (proviso-get proj :project-name) "-tags")) names))
+    (proviso-put proj :tags-dir tag-root)
     (proviso-put proj :tags-alist
                  (append (list (concat
                                 (proviso-get proj :root-stem)
@@ -116,12 +110,12 @@ PROJ is now the active project, replacing OLD."
   "Return the tag's correct destination file for FILENAME.
 This may prepend a remote prefix."
   (concat
-   (proviso-get proviso-tags-lookup-target-project :remote-prefix)
+   (proviso-get proviso-curr-proj :remote-prefix)
    (if (file-name-absolute-p filename)
        filename
      (concat
-      (proviso-get proviso-tags-lookup-target-project :root-dir)
-      (proviso-get proviso-tags-lookup-target-project :src-sub-dir)))))
+      (proviso-get proviso-curr-proj :root-dir)
+      (proviso-get proviso-curr-proj :src-sub-dir)))))
 
 ;; point etags-select to our function
 (setq etags-select-real-file-name 'proviso-etags--real-file-name)
@@ -131,8 +125,8 @@ This may prepend a remote prefix."
 TAG-FILE-PATH is the TAGS file being looked at."
   (if (file-name-absolute-p filename)
       filename
-    (concat (proviso-get proviso-tags-lookup-target-project :root-dir)
-            (proviso-get proviso-tags-lookup-target-project :src-sub-dir)
+    (concat (proviso-get proviso-curr-proj :root-dir)
+            (proviso-get proviso-curr-proj :src-sub-dir)
             filename)))
 
 ;; point etags-select to our function

@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-03 17:31:26 dharms>
+;; Modified Time-stamp: <2017-04-24 17:49:48 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project etags ctags
 
@@ -25,7 +25,7 @@
 ;;
 
 ;;; Code:
-
+(require 'proviso-core)
 (require 'find-file)
 
 ;; customization variables
@@ -43,51 +43,17 @@
   "Default ctags cpp options.")
 (defvar proviso-gentags-copy-remote nil)
 
-;; client-facing convenience functions
-(defun proviso-gentags-collect-tag-filestems (alist)
-  "Extract the TAGS file stems from ALIST, which is in the format of a
-list of lists of properties.  See `ctags-alist'. Return a list of the
-results."
-  (mapcar (lambda(name)
-            (concat name "-tags"))
-          (mapcar 'car alist)))
-
-(defun proviso-gentags-collect-tag-filenames (lst root)
-  "Extract the TAGS file names from LST, which is a list of file stems,
-see `proviso-gentags-collect-tag-filestems'.  Return a list of the results."
-  (mapcar (lambda(name)
-            (expand-file-name
-             (concat root name))) lst))
-
-(defun proviso-gentags-set-tags-table (profile)
-  "Set the tags table (for use by `etags-table') according to profile
-PROFILE, see `ctags-alist'."
-  (let* ((tag-filestems (proviso-gentags-collect-tag-filestems
-                         (profile-get profile 'ctags-alist)))
-         (tag-filenames (proviso-gentags-collect-tag-filenames
-                         tag-filestems
-                         (profile-get profile 'tags-dir))))
-    (setq etags-table-alist
-          (cons (append
-                 (list
-                  ;; this first element needs to capture the entire path
-                  (concat "^\\(.*\\)"
-                          (profile-get profile 'project-root-stem)
-                          "\\(.*\\)$"))
-                 tag-filenames
-                 ) etags-table-alist))))
-
 ;; internal variables
 (defvar proviso-gentags--iter nil "Current item being processed.")
 (defvar proviso-gentags--total-num 0 "Total number of TAGS files to create.")
 (defvar proviso-gentags--curr-num 0 "Current number of TAGS file being created.")
-(defvar proviso-gentags--buffer nil "proviso-gentags buffer.")
+(defvar proviso-gentags--buffer nil "Buffer used by proviso-gentags.")
 (defvar proviso-gentags--remote nil
   "Are tags being generating for a remote source repository?")
 (defvar proviso-gentags--msg)
 (defvar proviso-gentags--start-time 0
   "Time TAGS generation commenced.")
-(defvar proviso-gentags--curr-profile nil "Current profile name.")
+(defvar proviso-gentags--curr-proj nil "Current project.")
 (defvar proviso-gentags--intermediate-dest-dir nil
   "An intermediate staging location for each TAGS file being generated.
 This is useful for generating TAGS on a remote server.")
@@ -105,8 +71,8 @@ this will be the same as the tags-dir.")
 ARG is supplied, also copy them to the local machine, if you are
 running on a remote host."
   (interactive)
-  (unless (profile-current-get 'project-name)
-    (error "Could not generate tags: no active profile"))
+  (unless (proviso-get proviso-curr-proj :project-name)
+    (error "Could not generate tags: no active project"))
   (setq proviso-gentags-copy-remote current-prefix-arg)
   (proviso-gentags--first-file))
 
@@ -122,16 +88,16 @@ running on a remote host."
 
 (defun proviso-gentags--first-file ()
   "Start generating a series of TAGS files."
-  (let ((tags-alist (profile-current-get 'ctags-alist))
+  (let ((tags-alist (proviso-get proviso-curr-proj :proj-alist))
         (remote-tags-dir (or
-                          (profile-current-get 'remote-tags-dir)
+                          (proviso-get proviso-curr-proj :remote-tags-dir) ;todo get directory name
                           ".tags/")))
-    (setq proviso-gentags--curr-profile (symbol-name profile-current))
+    (setq proviso-gentags--curr-proj (symbol-name proviso-curr-proj))
     (setq proviso-gentags--buffer (get-buffer-create " *proviso-gentags*"))
     (setq proviso-gentags--total-num (length tags-alist))
     (setq proviso-gentags--iter tags-alist)
-    (setq proviso-gentags--remote (profile-current-get 'remote-prefix))
-    (setq proviso-gentags--final-dest-dir (profile-current-get 'tags-dir))
+    (setq proviso-gentags--remote (proviso-get proviso-curr-proj :remote-prefix))
+    (setq proviso-gentags--final-dest-dir (proviso-get proviso-curr-proj :tags-dir))
     (if proviso-gentags--remote
         ;; we're generating TAGS on a remote host, so set up a
         ;; staging area for generation, before we copy them to the
@@ -140,7 +106,7 @@ running on a remote host."
           (setq proviso-gentags--intermediate-dest-dir
                 (if (file-name-absolute-p remote-tags-dir)
                     remote-tags-dir
-                  (concat (profile-current-get 'project-root-dir)
+                  (concat (proviso-get proviso-curr-proj :root-dir)
                           remote-tags-dir)))
           (make-directory (concat proviso-gentags--remote
                                   proviso-gentags--intermediate-dest-dir) t))
@@ -159,7 +125,7 @@ running on a remote host."
 
 (defun proviso-gentags--try-gen-next-file ()
   "Generate a tags file."
-  (profile-set-current proviso-gentags--curr-profile)
+  (proviso-set-current proviso-gentags--curr-proj)
   (if proviso-gentags--iter
       (proviso-gentags--gen-next-file)
     (proviso-gentags--on-finish)))
@@ -173,7 +139,7 @@ running on a remote host."
            (if (file-name-absolute-p src-dir)
                src-dir
              (concat
-              (profile-current-get 'project-root-dir)
+              (proviso-get proviso-curr-proj :root-dir)
               src-dir)))
          (sub-name (concat src-name "-tags"))
          process args)

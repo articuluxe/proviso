@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April  4, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-20 08:31:14 dharms>
+;; Modified Time-stamp: <2017-04-24 08:49:13 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project registers test
 
@@ -361,6 +361,7 @@
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
+      (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
       (should (equal (get-register ?c) (cons 'file "/home/")))
       (should (equal (get-register ?1) (cons 'file "/home/")))
@@ -383,6 +384,7 @@
                        (concat base "a/b/c2/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c2"))
+      (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (get-register ?r) (cons 'file (concat base "a/b/c2/"))))
       (should (equal (get-register ?c) (cons 'file (concat base "a/b/c2/"))))
       (should (equal (get-register ?1) (cons 'file (concat base "a/b/c2/"))))
