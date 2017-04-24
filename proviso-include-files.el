@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-21 17:29:29 dharms>
+;; Modified Time-stamp: <2017-04-24 08:29:36 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 
@@ -79,13 +79,59 @@
     (proviso-put proj :include-ff-files (mapcar 'directory-file-name ff-includes))
     ))
 
+(defun proviso--gather-compiler-includes (compiler)
+  "Return a list of include directories for COMPILER.  They will be absolute."
+  (let ((cmd (concat "echo | " compiler " -v -x c++ -E - 2>&1 | "
+                     "grep -A 20 starts | grep include | grep -v search")))
+    (split-string (shell-command-to-string cmd))))
+(defvar proviso-clang-standard-version "c++14")
+(defvar proviso-gcc-standard-version "c++14")
+
 (defun proviso--include-on-file-opened (proj mode)
   "A file has been opened for project PROJ in mode MODE."
   (setq ff-search-directories (proviso-get proj :include-ff-files))
   (when (bound-and-true-p c-buffer-is-cc-mode)
     (set (make-local-variable 'achead:include-directories)
          (proviso-get proj :include-files))
-    ))
+    ;; set 'compiler-include-dirs for ac-clang
+    (when (executable-find "clang")
+      (or (proviso-get proj :compiler-include-dirs)
+          (proviso-put proj :compiler-include-dirs
+                       (mapcar (lambda(x) (concat "-I" x))
+                               (proviso--gather-compiler-includes
+                                (or (getenv "CXX") "g++")))))
+      (set (make-local-variable 'ac-clang-flags)
+           (append
+            `(,(concat "-std=" proviso-clang-standard-version)
+              "-code-completion-macros" "-code-completion-patterns")
+            (mapcar (lambda(x) (concat "-I" (expand-file-name x)))
+                    (proviso-get proj :include-files))
+            (list `,(concat "-I"
+                            (proviso-get proj :remote-prefix)
+                            (directory-file-name
+                             (expand-file-name
+                              (proviso-get proj :root-dir)))))
+            (proviso-get proj :compiler-include-dirs_
+            ))))
+    ;; set flycheck for c++
+    (when (eq major-mode 'c++-mode)
+      (if (executable-find "clang")
+          (progn                        ;clang
+            (set (make-local-variable 'flycheck-clang-language-standard)
+                 proviso-clang-standard-version)
+            (set (make-local-variable 'flycheck-clang-standard-library)
+                 "libc++")
+            (set (make-local-variable 'flycheck-clang-include-path)
+                 (proviso-get :proj :include-files))
+            (add-to-list 'flycheck-disabled-checkers 'c/c++-gcc)
+            )
+        ;; gcc
+        (set (make-local-variable 'flycheck-gcc-language-standard)
+             proviso-gcc-standard-version)
+        (set (make-local-variable 'flycheck-gcc-include-path)
+             (proviso-get proj :include-files))
+        (add-to-list 'flycheck-disabled-checkers 'c/c++-clang)
+        ))))
 
 (add-hook 'proviso-hook-on-project-init 'proviso--set-include-files)
 ;; add the validation last so it runs first
