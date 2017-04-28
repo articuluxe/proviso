@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-21 17:44:43 dharms>
+;; Modified Time-stamp: <2017-04-25 08:31:27 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -30,6 +30,7 @@
 
 (require 'proviso-core)
 (require 'proviso-tags)
+(require 'proviso-gentags)
 ;; bookmarks must come before registers so that registers runs first
 (require 'proviso-bookmarks)
 (require 'proviso-sml)

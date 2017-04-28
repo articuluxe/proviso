@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-24 17:49:16 dharms>
+;; Modified Time-stamp: <2017-04-28 14:07:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso tags
 
@@ -27,19 +27,20 @@
 ;;; Code:
 (require 'proviso-core)
 (require 'tramp)
+(require 'etags-table)
 (require 'proviso-etags-select)
 
-(defun proviso-tags-find-tag ()
-  "Find a tag based on the current profile."
-  (interactive)
-  ;; todo: any need to store proviso-curr-proj?
-  (etags-select-find-tag))
+;; (defun proviso-tags-find-tag ()
+;;   "Find a tag based on the current profile."
+;;   (interactive)
+;;   ;; todo: any need to store proviso-curr-proj?
+;;   (etags-select-find-tag))
 
-(defun proviso-tags-find-tag-at-point ()
-  "Find the tag at point based on the current profile."
-  (interactive)
-  ;; todo: any need to store proviso-curr-proj?
-  (etags-select-find-tag-at-point))
+;; (defun proviso-tags-find-tag-at-point ()
+;;   "Find the tag at point based on the current profile."
+;;   (interactive)
+;;   ;; todo: any need to store proviso-curr-proj?
+;;   (etags-select-find-tag-at-point))
 
 (defun proviso-tags-compute-remote-subdir-stem (proj)
   "Compute remote profile PROJ's stem.
@@ -53,19 +54,19 @@ Format is useful for uniquely naming the local TAGS directory."
     "/\\|\\\\" "!"
     (proviso-get proj :root-stem))))
 
-(defun proviso-tags-compute-tags-dir (proj dir)
+(defun proviso-tags-compute-tags-dir (proj base)
   "Compute where a profile PROJ's local TAGS should live.
-DIR gives the root directory."
-  (let ((base (or (getenv "EMACS_TAGS_DIR") "~"))
+BASE gives the root directory."
+  (let ((tags-base (or (getenv "EMACS_TAGS_DIR") "~"))
         (sub (or (proviso-get proj :tags-subdir) ".tags/"))
         dest)
-    (unless dir (setq dir default-directory))
-    (unless (tramp-tramp-file-p dir)
-      ;; in the local case, set the base according to the project
-      (setq base dir))
-    (setq dest (concat (file-name-as-directory base)
+    (unless base (setq base default-directory))
+    (unless (tramp-tramp-file-p base)
+      ;; in the local case, set the tags-base according to the project
+      (setq tags-base base))
+    (setq dest (concat (file-name-as-directory tags-base)
                        (file-name-as-directory sub)))
-    (if (tramp-tramp-file-p dir)
+    (if (tramp-tramp-file-p base)
         (concat dest (file-name-as-directory
                       (proviso-tags-compute-remote-subdir-stem proj)))
       dest)))
