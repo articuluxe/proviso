@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-28 14:38:56 dharms>
+;; Modified Time-stamp: <2017-04-28 14:39:53 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso tags
 
@@ -103,8 +103,7 @@ This may prepend a remote prefix."
    (if (file-name-absolute-p filename)
        filename
      (concat
-      (proviso-get proviso-curr-proj :root-dir)
-      (proviso-get proviso-curr-proj :src-sub-dir)))))
+      (proviso-get proviso-curr-proj :root-dir)))))
 
 ;; point etags-select to our function
 (setq etags-select-real-file-name 'proviso-etags--real-file-name)
@@ -115,7 +114,6 @@ TAG-FILE-PATH is the TAGS file being looked at."
   (if (file-name-absolute-p filename)
       filename
     (concat (proviso-get proviso-curr-proj :root-dir)
-            (proviso-get proviso-curr-proj :src-sub-dir)
             filename)))
 
 ;; point etags-select to our function
