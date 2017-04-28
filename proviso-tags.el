@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-28 14:07:37 dharms>
+;; Modified Time-stamp: <2017-04-28 14:38:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso tags
 
@@ -29,18 +29,6 @@
 (require 'tramp)
 (require 'etags-table)
 (require 'proviso-etags-select)
-
-;; (defun proviso-tags-find-tag ()
-;;   "Find a tag based on the current profile."
-;;   (interactive)
-;;   ;; todo: any need to store proviso-curr-proj?
-;;   (etags-select-find-tag))
-
-;; (defun proviso-tags-find-tag-at-point ()
-;;   "Find the tag at point based on the current profile."
-;;   (interactive)
-;;   ;; todo: any need to store proviso-curr-proj?
-;;   (etags-select-find-tag-at-point))
 
 (defun proviso-tags-compute-remote-subdir-stem (proj)
   "Compute remote profile PROJ's stem.
