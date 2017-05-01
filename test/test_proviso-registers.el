@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April  4, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-24 08:49:13 dharms>
+;; Modified Time-stamp: <2017-05-01 08:32:25 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project registers test
 
@@ -354,6 +354,7 @@
       (should (equal (get-register ?c) (cons 'file "/home/")))
       (should (equal (get-register ?1) (cons 'file "/home/")))
       (should (equal (get-register ?2) (cons 'file (concat base "a/b/c/d2/"))))
+      (should (eq proviso-local-proj proviso-curr-proj))
       ;; open 2nd file, same project
       (find-file (concat base "a/b/c/d/dfile2"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -361,6 +362,7 @@
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
+      (should (eq proviso-local-proj proviso-curr-proj))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
       (should (equal (get-register ?c) (cons 'file "/home/")))
@@ -385,6 +387,7 @@
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c2"))
       (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (get-register ?r) (cons 'file (concat base "a/b/c2/"))))
       (should (equal (get-register ?c) (cons 'file (concat base "a/b/c2/"))))
       (should (equal (get-register ?1) (cons 'file (concat base "a/b/c2/"))))
@@ -397,6 +400,7 @@
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
+      (should (eq proviso-local-proj proviso-curr-proj))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
       (should (equal (get-register ?c) (cons 'file "/home/")))

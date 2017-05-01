@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-28 14:35:38 dharms>
+;; Modified Time-stamp: <2017-05-01 08:42:08 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project etags ctags
 
@@ -195,5 +195,4 @@ machine, if you are running on a remote host."
       (proviso-gentags--try-gen-next-file))))
 
 (provide 'proviso-gentags)
-
-;; code ends here
+;;; code ends here
