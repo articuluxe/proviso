@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-03 17:32:03 dharms>
+;; Modified Time-stamp: <2017-05-04 08:56:58 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep command
 
@@ -31,8 +31,15 @@
 (require 'proviso)
 
 (ert-deftest proviso-grep-cmd-test ()
-  (should t)
-  )
+  (let ((base (file-name-directory load-file-name))
+        (proviso-extensions '(".cpp" ".hpp")))
+    (should (string= (proviso-grep--create-extensions-str)
+                     (concat
+                      " \"(\" -name \"*moc_*\" -o -name \"*qrc_*\" \")\" "
+                      "-prune -o -type f \"(\" -name \"*"
+                      ".cpp\" -o -name \"*.hpp"
+                      "\" \")\" -print0 | xargs -0 grep -Isn ")))
+    ))
 
 (ert-run-tests-batch-and-exit (car argv))
 

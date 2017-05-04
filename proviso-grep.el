@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-03 09:08:35 dharms>
+;; Modified Time-stamp: <2017-05-04 08:56:38 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep
 
@@ -47,8 +47,27 @@
 
 (add-hook 'proviso-hook-on-project-init 'proviso--set-grep-dirs)
 
-(defun proviso-grep-create-command (&optional arg)
-  "Create a command suitable for grep to search for a string."
+(defvar proviso-extensions '(".cpp" ".cc" ".cxx" ".c" ".C"
+                             ".hpp" ".hh" ".hxx" ".h" ".H"
+                             ".in" ".ac" ".cmake"
+                             ".xml" ".json" ".sql"
+                             ".el" ".py" ".sh" ".cs" ".java"
+                             ".proto" ".dart"
+                             )
+  "List of interesting file extensions.")
+
+(defvar proviso-grep--extension-str "" "Sub-list of interesting extensions.")
+
+(defun proviso-grep--create-extensions-str ()
+  "Create a grep command string."
+  (concat " \"(\" -name \"*moc_*\" -o -name \"*qrc_*\" \")\" "
+          "-prune -o -type f \"(\" -name \"*"
+          (mapconcat 'identity proviso-extensions "\" -o -name \"*")
+          "\" \")\" -print0 | xargs -0 grep -Isn "))
+
+(defun proviso-grep--create-command (&optional arg)
+  "Create a command suitable for grep to search for a string.
+ARG allows customizing the selection of the root search directory."
   (let ((root (proviso-get proviso-curr-proj :root-dir))
         (dirs (proviso-get proviso-curr-proj :grep-dirs))
         (prompt "Grep root: ")
@@ -70,18 +89,12 @@
             ;; some variants of grep don't handle relative paths
             ;; (but expand-file-name doesn't work remotely)
             (expand-file-name dir)))
+    (unless proviso-grep--extension-str
+      (setq proviso-grep--extension-str (proviso-grep--create-extensions-str)))
     (concat "find -P "
-            (directory-file-name dir)   ;some greps dislike trailing slashes
-            " \"(\" -name \"*moc_*\" -o -name \"*qrc_*\" \")\" "
-            "-prune -o -type f \"(\" -name \"*.cpp\" -o -name \"*.h\" "
-            "-o -name \"*.cc\" -o -name \"*.hh\" -o -name \"*.cxx\" "
-            "-o -name \"*.hxx\" -o -name \"*.h\" -o -name \"*.c\" "
-            "-o -name \"*.H\" -o -name \"*.C\" -o -name \"*.hpp\" "
-            "-o -name \"*.in\" -o -name \"*.ac\" -o -name \"*.el\" "
-            "-o -name \"*.sql\" -o -name \"*.py\" -o -name \"*.proto\" "
-            "-o -name \"*.sh\" -o -name \"*.cs\" -o -name \"*.dart\" "
-            "-o -name \"*.xml\" -o -name \"*.json\" "
-            "\")\" -print0 | xargs -0 grep -Isn "
+            ;; some grep variants barf on trailing slashes
+            (directory-file-name dir)
+            proviso-grep--extension-str
             (when search-string
               (s-replace
                "\\*" "\\\\*"
@@ -90,9 +103,10 @@
                (shell-quote-argument search-string))))))
 
 (defun proviso-grep (&optional arg)
-  "Grep for a search string in a directory or project."
+  "Grep for a search string in a directory or project.
+ARG allows customizing the root search directory, see `proviso-grep--create-command'."
   (interactive)
-  (grep-apply-setting 'grep-command (proviso-grep-create-command arg))
+  (grep-apply-setting 'grep-command (proviso-grep--create-command arg))
   (command-execute 'grep))
 
 (provide 'proviso-grep)
