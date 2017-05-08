@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-04 08:56:38 dharms>
+;; Modified Time-stamp: <2017-05-08 17:47:47 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep
 
@@ -89,7 +89,7 @@ ARG allows customizing the selection of the root search directory."
             ;; some variants of grep don't handle relative paths
             ;; (but expand-file-name doesn't work remotely)
             (expand-file-name dir)))
-    (unless proviso-grep--extension-str
+    (when (string-empty-p proviso-grep--extension-str)
       (setq proviso-grep--extension-str (proviso-grep--create-extensions-str)))
     (concat "find -P "
             ;; some grep variants barf on trailing slashes
@@ -102,10 +102,11 @@ ARG allows customizing the selection of the root search directory."
                ;; escapes embedded `*' but grep needs them double-escaped.
                (shell-quote-argument search-string))))))
 
+;;;###autoload
 (defun proviso-grep (&optional arg)
   "Grep for a search string in a directory or project.
 ARG allows customizing the root search directory, see `proviso-grep--create-command'."
-  (interactive)
+  (interactive "p")
   (grep-apply-setting 'grep-command (proviso-grep--create-command arg))
   (command-execute 'grep))
 

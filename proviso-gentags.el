@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-01 08:42:08 dharms>
+;; Modified Time-stamp: <2017-05-08 17:42:26 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project etags ctags
 
@@ -69,6 +69,7 @@ this will be the same as the tags-dir.")
 (defvar proviso-gentags--final-dest-file nil
   "The final file being written for the current TAGS generation.")
 
+;;;###autoload
 (defun proviso-gentags-generate-tags (&optional arg)
   "Generate TAGS files according to the current project.
 If optional ARG is supplied, also copy them to the local
