@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-28 14:38:29 dharms>
+;; Modified Time-stamp: <2017-05-11 07:49:47 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -92,6 +92,10 @@ Its parent is PARENT.  Add to it the property list PLIST."
   (let ((p (intern project proviso-obarray)))
     (setplist p (append (list :parent parent) plist))
     (setq proviso--last-proj-defined p)))
+
+(defun proviso-get-plist (project)
+  "Return the plist associated with project PROJECT."
+  (symbol-plist (intern-soft project proviso-obarray)))
 
 (defun proviso-put (project property value)
   "Put into PROJECT the PROPERTY with value VALUE."
