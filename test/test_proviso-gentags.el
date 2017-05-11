@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-28 14:34:27 dharms>
+;; Modified Time-stamp: <2017-05-11 07:34:48 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project tags gentags
 
@@ -38,7 +38,7 @@
                (lambda (_)
                  (proviso-eval-string file-contents)))
               ((symbol-function 'set-process-sentinel)
-               (lambda (_ _)
+               (lambda (_ _2)
                  (pop proviso-gentags--iter)
                  (proviso-gentags--try-gen-next-file)))
               ((symbol-function 'start-file-process)
@@ -92,6 +92,47 @@
       (kill-buffer "dfile1")
       )))
 
+(ert-deftest proviso-gentags-test-empty-proviso-file ()
+  (proviso-test-reset-all)
+  (let ((base (file-name-directory load-file-name))
+        file-contents arg-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents)))
+              ((symbol-function 'set-process-sentinel)
+               (lambda (_ _2)
+                 (pop proviso-gentags--iter)
+                 (proviso-gentags--try-gen-next-file)))
+              ((symbol-function 'start-file-process)
+               (lambda (name buf prog &rest args)
+                 (let ((str (mapconcat 'identity args " ")))
+                   (should (string= (car arg-contents) str))
+                   (pop arg-contents)))))
+      (should-error (proviso-gentags-generate-tags))
+      ;; open file
+      (setq file-contents "")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (equal (proviso-get proviso-local-proj :tags-alist)
+                     (list (concat base "a/b/c/" "\\(.*\\)$")
+                           (concat base "a/b/c/.tags/c-tags")
+                           )))
+      (setq arg-contents (list
+                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                           base "a/b/c/.tags/c-tags "
+                           base "a/b/c")
+                          ))
+      (proviso-gentags-generate-tags)
+
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
 (ert-deftest proviso-gentags-test-tags-dirs-without-trailing-slashes ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
@@ -100,7 +141,7 @@
                (lambda (_)
                  (proviso-eval-string file-contents)))
               ((symbol-function 'set-process-sentinel)
-               (lambda (_ _)
+               (lambda (_ _2)
                  (pop proviso-gentags--iter)
                  (proviso-gentags--try-gen-next-file)))
               ((symbol-function 'start-file-process)
@@ -162,7 +203,7 @@
                (lambda (_)
                  (proviso-eval-string file-contents)))
               ((symbol-function 'set-process-sentinel)
-               (lambda (_ _)
+               (lambda (_ _2)
                  (pop proviso-gentags--iter)
                  (proviso-gentags--try-gen-next-file)))
               ((symbol-function 'start-file-process)
@@ -224,7 +265,7 @@
                (lambda (_)
                  (proviso-eval-string file-contents)))
               ((symbol-function 'set-process-sentinel)
-               (lambda (_ _)
+               (lambda (_ _2)
                  (pop proviso-gentags--iter)
                  (proviso-gentags--try-gen-next-file)))
               ((symbol-function 'start-file-process)
@@ -286,7 +327,7 @@
                (lambda (_)
                  (proviso-eval-string file-contents)))
               ((symbol-function 'set-process-sentinel)
-               (lambda (_ _)
+               (lambda (_ _2)
                  (pop proviso-gentags--iter)
                  (proviso-gentags--try-gen-next-file)))
               ((symbol-function 'start-file-process)
@@ -349,7 +390,7 @@
                (lambda (_)
                  (proviso-eval-string file-contents)))
               ((symbol-function 'set-process-sentinel)
-               (lambda (_ _)
+               (lambda (_ _2)
                  (pop proviso-gentags--iter)
                  (proviso-gentags--try-gen-next-file)))
               ((symbol-function 'start-file-process)
@@ -412,7 +453,7 @@
                (lambda (_)
                  (proviso-eval-string file-contents)))
               ((symbol-function 'set-process-sentinel)
-               (lambda (_ _)
+               (lambda (_ _2)
                  (pop proviso-gentags--iter)
                  (proviso-gentags--try-gen-next-file)))
               ((symbol-function 'start-file-process)
@@ -474,7 +515,7 @@
                (lambda (_)
                  (proviso-eval-string file-contents)))
               ((symbol-function 'set-process-sentinel)
-               (lambda (_ _)
+               (lambda (_ _2)
                  (pop proviso-gentags--iter)
                  (proviso-gentags--try-gen-next-file)))
               ((symbol-function 'start-file-process)
