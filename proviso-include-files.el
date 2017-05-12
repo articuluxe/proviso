@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-25 17:52:06 dharms>
+;; Modified Time-stamp: <2017-05-12 07:06:48 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 
@@ -37,6 +37,9 @@
         (root (proviso-get proj :root-dir))
         (lst (proviso-get proj :proj-alist))
         entry path)
+    ;; in case there are no entries, add a default one (will resolve to root-dir)
+    (when (zerop (length lst))
+      (push (list :name (proviso-get proj :project-name)) lst))
     (setq proviso--ignore-load-errors nil)
     (setq lst
           (seq-filter (lambda (elt)
@@ -49,7 +52,7 @@
                                           (f-relative? entry))
                                   root)
                                 entry)))
-                        (cond ((null entry) nil)
+                        (cond ((string-empty-p path) nil)
                               ((f-exists? path) path)
                               (proviso--ignore-load-errors nil)
                               (t
@@ -65,9 +68,6 @@
         (root (proviso-get proj :root-dir))
         (lst (proviso-get proj :proj-alist))
         elt entry includes ff-includes)
-    ;; in case there are no entries, add a default one (will resolve to root-dir)
-    (when (zerop (length lst))
-      (push (list) lst))
     (dolist (element lst)
       (setq entry (plist-get element :dir))
       (setq elt (concat (when (or (null entry) (f-relative? entry)) root) entry))

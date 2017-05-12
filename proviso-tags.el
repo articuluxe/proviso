@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-28 14:39:53 dharms>
+;; Modified Time-stamp: <2017-05-12 07:09:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso tags
 
@@ -93,7 +93,9 @@ into :tags-alist."
 (defun proviso-activate-tags-table (proj old)
   "Activate the TAGS table specified in `:tags-alist'.
 PROJ is now the active project, replacing OLD."
-  (setq etags-table-alist (proviso-get proj :tags-alist)))
+  ;; todo: instead of overwriting etags-table-alist, we could
+  ;; maintain a global value comprised of all known projects
+  (setq etags-table-alist `( ,(proviso-get proj :tags-alist))))
 
 (defun proviso-etags--real-file-name (filename)
   "Return the tag's correct destination file for FILENAME.

@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-11 07:59:01 dharms>
+;; Modified Time-stamp: <2017-05-11 17:32:16 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project display
 
@@ -33,7 +33,7 @@
 
 (defun proviso-display-print-project (proj)
   "Return a string containing a textual representation of PROJ."
-  (with-output-to-string (pp (proviso-get-plist)))
+  (with-output-to-string (pp (proviso-get-plist proviso-curr-proj))))
 
 (defun proviso-display--get-project-names ()
   "Return a list containing the current project names in `proviso-obarray'."
