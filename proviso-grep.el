@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-08 17:47:47 dharms>
+;; Modified Time-stamp: <2017-05-23 08:52:38 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep
 
@@ -42,10 +42,16 @@
                   (concat root entry)))
       ;; ensure trailing slash
       (push (file-name-as-directory elt) dirs))
-    (proviso-put proj :grep-dirs (delete-dups (append dirs `(,root))))
+    (proviso-put proj :grep-dirs (delete-dups (append (nreverse dirs) `(,root))))
     ))
 
 (add-hook 'proviso-hook-on-project-init 'proviso--set-grep-dirs)
+
+(defun proviso-grep-get-project-dir ()
+  "Return the current or last-known project."
+  (cond (proviso-local-proj proviso-local-proj
+         proviso-curr-proj proviso-curr-proj
+         t default-directory)))
 
 (defvar proviso-extensions '(".cpp" ".cc" ".cxx" ".c" ".C"
                              ".hpp" ".hh" ".hxx" ".h" ".H"
@@ -56,7 +62,7 @@
                              )
   "List of interesting file extensions.")
 
-(defvar proviso-grep--extension-str "" "Sub-list of interesting extensions.")
+(defvar proviso-grep--extension-str "" "Sub-list cache of interesting extensions.")
 
 (defun proviso-grep--create-extensions-str ()
   "Create a grep command string."
@@ -77,10 +83,14 @@ ARG allows customizing the selection of the root search directory."
         (remote (file-remote-p default-directory))
         first dir)
     (setq first (if (consp (car dirs)) (cdr (car dirs)) (car dirs)))
-    (setq dir (cond ((or (null root) (null dirs) (= arg 64))
-                     (read-directory-name prompt nil nil t))
-                    ((= arg 16) ".")
-                    ((= arg 4) (ivy-read prompt dirs))
+    (setq dir (cond ((= arg 64)
+                     (read-directory-name prompt (proviso-grep-get-project-dir) nil t))
+                    ((= arg 16)
+                     ".")
+                    ((and (= arg 4) dirs)
+                     (ivy-read prompt dirs))
+                    ((or (null root) (null dirs) (string-empty-p first))
+                     (proviso-grep-get-project-dir))
                     (t first)))
     (setq dir
           (if remote

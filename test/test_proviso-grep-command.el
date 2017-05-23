@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-10 17:52:36 dharms>
+;; Modified Time-stamp: <2017-05-23 17:34:33 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep command
 
@@ -41,11 +41,89 @@
                       "\" \")\" -print0 | xargs -0 grep -Isn ")))
     ))
 
-(ert-deftest proviso-grep-cmd-test-create-cmd ()
-  (let ((base (file-name-directory load-file-name))
-        )
-    ;; (should (string= (proviso-grep--create-command
-    ))
+(ert-deftest proviso-grep-cmd-open-project-dir ()
+  (proviso-test-reset-all)
+  (let* ((base (file-name-directory load-file-name))
+         (default-directory base)
+         file-contents read-result)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents)))
+              ((symbol-function 'ivy-read)
+               (lambda (_ _2)
+                 read-result))
+              ((symbol-function 'read-directory-name)
+               (lambda (_ _2 _3 _4)
+                 read-result)))
+      ;; test grep without a current project
+      ;; empty settings; arg 0 uses default-directory
+      (should (equal (proviso-grep--create-command 0)
+                     (concat "find -P " (directory-file-name base)
+                             (proviso-grep--create-extensions-str)
+                     )))
+      ;; empty settings; arg 4 uses default-directory
+      (should (equal (proviso-grep--create-command 4)
+                     (concat "find -P " (directory-file-name base)
+                             (proviso-grep--create-extensions-str)
+                             )))
+      ;; empty settings: arg 16 expands current dir
+      (should (equal (proviso-grep--create-command 16)
+                     (concat "find -P " (directory-file-name base)
+                             (proviso-grep--create-extensions-str)
+                             )))
+      ;; empty settings: arg 64 reads dir from user
+      (setq read-result (concat (directory-file-name base) "/a/b/c/d/e/"))
+      (should (equal (proviso-grep--create-command 64)
+                     (concat "find -P "
+                             (concat (directory-file-name base) "/a/b/c/d/e")
+                             (proviso-grep--create-extensions-str)
+                     )))
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"d/e/\")
+                  (:name \"two\" :dir \"d/e/f\")
+                  )))
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (proviso-get proviso-local-proj :grep-dirs)
+                     (list
+                      (concat base "a/b/c/d/e/")
+                      (concat base "a/b/c/d/e/f/")
+                      (concat base "a/b/c/"))))
+      ;; arg 0 takes from the first element of dirs
+      (should (equal (proviso-grep--create-command 0)
+                     (concat "find -P " base "a/b/c/d/e"
+                             (proviso-grep--create-extensions-str)
+                             )))
+      ;; arg 4 lets user select dir
+      (setq read-result (concat base "/a/b/c/d/e/f/"))
+      (should (equal (proviso-grep--create-command 4)
+                     (concat "find -P " base "a/b/c/d/e/f"
+                             (proviso-grep--create-extensions-str)
+                     )))
+      ;; arg 16 uses default directory, which is in a/b/c/d (current file)
+      (should (equal (proviso-grep--create-command 16)
+                     (concat "find -P " base "a/b/c/d"
+                             (proviso-grep--create-extensions-str)
+                     )))
+      ;; arg 64 asks user for dir
+      (setq read-result (concat base "/a/b/c/d/e/f/"))
+      (should (equal (proviso-grep--create-command 64)
+                     (concat "find -P " base "a/b/c/d/e/f"
+                             (proviso-grep--create-extensions-str)
+                     )))
+
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
 
 (ert-run-tests-batch-and-exit (car argv))
 

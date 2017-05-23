@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-21 17:50:02 dharms>
+;; Modified Time-stamp: <2017-05-23 17:27:47 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep test
 
@@ -159,9 +159,9 @@
                        "c"))
       (should (equal (proviso-get proviso-local-proj :grep-dirs)
                      (list
-                      (concat base "a/b/c/d/")
-                      "/home/"
                       (concat base "a/b/c/")
+                      "/home/"
+                      (concat base "a/b/c/d/")
                       )))
       ;; open 2nd file, same project
       (find-file (concat base "a/b/c/d/dfile2"))
@@ -172,9 +172,9 @@
                        "c"))
       (should (equal (proviso-get proviso-local-proj :grep-dirs)
                      (list
-                      (concat base "a/b/c/d/")
-                      "/home/"
                       (concat base "a/b/c/")
+                      "/home/"
+                      (concat base "a/b/c/d/")
                       )))
       ;; open 3rd file, new project
       (setq file-contents "
@@ -207,9 +207,9 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :grep-dirs)
                      (list
-                      (concat base "a/b/c/d/")
-                      "/home/"
                       (concat base "a/b/c/")
+                      "/home/"
+                      (concat base "a/b/c/d/")
                       )))
 
       ;; clean up buffers
