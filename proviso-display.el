@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-11 17:32:16 dharms>
+;; Modified Time-stamp: <2017-05-19 17:31:24 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project display
 
@@ -69,7 +69,29 @@
       (setq proj (intern-soft name proviso-obarray))
       (insert "%s  --  %s" name (car elt))
       ;; (put-text-property
-      )))
+      )
+    (proviso-display-mode)
+    ))
+
+(defcustom proviso-prefix-key
+  "\C-cp"
+  "Prefix key for `proviso'.")
+
+(defvar proviso-display-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map proviso-prefix-key #'proviso-display-mode)
+    map)
+  "Keymap for `proviso-display-mode'.")
+
+(defun proviso-display-mode ()
+  "Provide a mode to view information about proviso projects."
+  (kill-all-local-variables)
+  (use-local-map proviso-display-mode-map)
+  (setq truncate-lines t)
+  (setq buffer-read-only t)
+  (setq major-mode 'proviso-display-mode)
+  (setq mode-name "Proviso")
+  (run-mode-hooks 'proviso-display-mode-hook))
 
 (provide 'proviso-display)
 ;;; proviso-display.el ends here
