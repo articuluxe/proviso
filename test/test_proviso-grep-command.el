@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-23 17:34:33 dharms>
+;; Modified Time-stamp: <2017-05-24 08:37:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep command
 
@@ -56,8 +56,8 @@
                (lambda (_ _2 _3 _4)
                  read-result)))
       ;; test grep without a current project
-      ;; empty settings; arg 0 uses default-directory
-      (should (equal (proviso-grep--create-command 0)
+      ;; empty settings; no arg uses default-directory
+      (should (equal (proviso-grep--create-command)
                      (concat "find -P " (directory-file-name base)
                              (proviso-grep--create-extensions-str)
                      )))
@@ -66,14 +66,9 @@
                      (concat "find -P " (directory-file-name base)
                              (proviso-grep--create-extensions-str)
                              )))
-      ;; empty settings: arg 16 expands current dir
-      (should (equal (proviso-grep--create-command 16)
-                     (concat "find -P " (directory-file-name base)
-                             (proviso-grep--create-extensions-str)
-                             )))
-      ;; empty settings: arg 64 reads dir from user
+      ;; empty settings: arg 16 reads dir from user
       (setq read-result (concat (directory-file-name base) "/a/b/c/d/e/"))
-      (should (equal (proviso-grep--create-command 64)
+      (should (equal (proviso-grep--create-command 16)
                      (concat "find -P "
                              (concat (directory-file-name base) "/a/b/c/d/e")
                              (proviso-grep--create-extensions-str)
@@ -98,8 +93,8 @@
                       (concat base "a/b/c/d/e/")
                       (concat base "a/b/c/d/e/f/")
                       (concat base "a/b/c/"))))
-      ;; arg 0 takes from the first element of dirs
-      (should (equal (proviso-grep--create-command 0)
+      ;; no arg takes from the first element of dirs
+      (should (equal (proviso-grep--create-command)
                      (concat "find -P " base "a/b/c/d/e"
                              (proviso-grep--create-extensions-str)
                              )))
@@ -109,14 +104,9 @@
                      (concat "find -P " base "a/b/c/d/e/f"
                              (proviso-grep--create-extensions-str)
                      )))
-      ;; arg 16 uses default directory, which is in a/b/c/d (current file)
-      (should (equal (proviso-grep--create-command 16)
-                     (concat "find -P " base "a/b/c/d"
-                             (proviso-grep--create-extensions-str)
-                     )))
-      ;; arg 64 asks user for dir
+      ;; arg 16 asks user for dir
       (setq read-result (concat base "/a/b/c/d/e/f/"))
-      (should (equal (proviso-grep--create-command 64)
+      (should (equal (proviso-grep--create-command 16)
                      (concat "find -P " base "a/b/c/d/e/f"
                              (proviso-grep--create-extensions-str)
                      )))

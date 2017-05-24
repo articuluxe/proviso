@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-23 08:52:38 dharms>
+;; Modified Time-stamp: <2017-05-24 08:37:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep
 
@@ -49,8 +49,8 @@
 
 (defun proviso-grep-get-project-dir ()
   "Return the current or last-known project."
-  (cond (proviso-local-proj proviso-local-proj
-         proviso-curr-proj proviso-curr-proj
+  (cond (proviso-local-proj (proviso-get proviso-local-proj :root-dir)
+         proviso-curr-proj (proviso-get proviso-curr-proj :root-dir)
          t default-directory)))
 
 (defvar proviso-extensions '(".cpp" ".cc" ".cxx" ".c" ".C"
@@ -83,13 +83,11 @@ ARG allows customizing the selection of the root search directory."
         (remote (file-remote-p default-directory))
         first dir)
     (setq first (if (consp (car dirs)) (cdr (car dirs)) (car dirs)))
-    (setq dir (cond ((= arg 64)
+    (setq dir (cond ((and arg (= (prefix-numeric-value arg) 16))
                      (read-directory-name prompt (proviso-grep-get-project-dir) nil t))
-                    ((= arg 16)
-                     ".")
-                    ((and (= arg 4) dirs)
+                    ((and arg (= (prefix-numeric-value arg) 4) dirs)
                      (ivy-read prompt dirs))
-                    ((or (null root) (null dirs) (string-empty-p first))
+                    ((or (null dirs) (null first) (string-empty-p first))
                      (proviso-grep-get-project-dir))
                     (t first)))
     (setq dir
@@ -116,7 +114,7 @@ ARG allows customizing the selection of the root search directory."
 (defun proviso-grep (&optional arg)
   "Grep for a search string in a directory or project.
 ARG allows customizing the root search directory, see `proviso-grep--create-command'."
-  (interactive "p")
+  (interactive "P")
   (grep-apply-setting 'grep-command (proviso-grep--create-command arg))
   (command-execute 'grep))
 
