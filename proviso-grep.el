@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-24 08:37:56 dharms>
+;; Modified Time-stamp: <2017-05-24 17:22:48 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep
 
@@ -47,12 +47,6 @@
 
 (add-hook 'proviso-hook-on-project-init 'proviso--set-grep-dirs)
 
-(defun proviso-grep-get-project-dir ()
-  "Return the current or last-known project."
-  (cond (proviso-local-proj (proviso-get proviso-local-proj :root-dir)
-         proviso-curr-proj (proviso-get proviso-curr-proj :root-dir)
-         t default-directory)))
-
 (defvar proviso-extensions '(".cpp" ".cc" ".cxx" ".c" ".C"
                              ".hpp" ".hh" ".hxx" ".h" ".H"
                              ".in" ".ac" ".cmake"
@@ -84,11 +78,11 @@ ARG allows customizing the selection of the root search directory."
         first dir)
     (setq first (if (consp (car dirs)) (cdr (car dirs)) (car dirs)))
     (setq dir (cond ((and arg (= (prefix-numeric-value arg) 16))
-                     (read-directory-name prompt (proviso-grep-get-project-dir) nil t))
+                     (read-directory-name prompt (proviso-current-project-root) nil t))
                     ((and arg (= (prefix-numeric-value arg) 4) dirs)
                      (ivy-read prompt dirs))
                     ((or (null dirs) (null first) (string-empty-p first))
-                     (proviso-grep-get-project-dir))
+                     (proviso-current-project-root))
                     (t first)))
     (setq dir
           (if remote
