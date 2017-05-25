@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-24 17:22:48 dharms>
+;; Modified Time-stamp: <2017-05-25 08:50:17 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep
 
@@ -27,7 +27,6 @@
 ;;; Code:
 (require 'proviso-core)
 (require 'grep)
-(require 'ivy)
 (require 's)
 
 (defun proviso--set-grep-dirs (proj)
@@ -80,7 +79,7 @@ ARG allows customizing the selection of the root search directory."
     (setq dir (cond ((and arg (= (prefix-numeric-value arg) 16))
                      (read-directory-name prompt (proviso-current-project-root) nil t))
                     ((and arg (= (prefix-numeric-value arg) 4) dirs)
-                     (ivy-read prompt dirs))
+                     (completing-read prompt dirs))
                     ((or (null dirs) (null first) (string-empty-p first))
                      (proviso-current-project-root))
                     (t first)))

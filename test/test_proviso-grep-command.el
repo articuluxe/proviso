@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-24 08:37:50 dharms>
+;; Modified Time-stamp: <2017-05-25 08:50:18 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep command
 
@@ -49,7 +49,7 @@
     (cl-letf (((symbol-function 'proviso--load-file)
                (lambda (_)
                  (proviso-eval-string file-contents)))
-              ((symbol-function 'ivy-read)
+              ((symbol-function 'completing-read)
                (lambda (_ _2)
                  read-result))
               ((symbol-function 'read-directory-name)

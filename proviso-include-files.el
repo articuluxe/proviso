@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-12 07:06:48 dharms>
+;; Modified Time-stamp: <2017-05-24 17:46:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 
@@ -113,8 +113,8 @@
                             (directory-file-name
                              (expand-file-name
                               (proviso-get proj :root-dir)))))
-            (proviso-get proj :compiler-include-dirs_
-            ))))
+            (proviso-get proj :compiler-include-dirs)
+            )))
     ;; set flycheck for c++
     (when (eq major-mode 'c++-mode)
       (if (executable-find "clang")
