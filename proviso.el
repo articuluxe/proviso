@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-10 08:16:19 dharms>
+;; Modified Time-stamp: <2017-05-24 08:53:57 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -29,6 +29,7 @@
 ;;; Code:
 
 (require 'proviso-core)
+(require 'proviso-compile)
 (require 'proviso-display)
 (require 'proviso-tags)
 (require 'proviso-gentags)
