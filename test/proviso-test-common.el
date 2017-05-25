@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, March 31, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-31 08:29:42 dharms>
+;; Modified Time-stamp: <2017-05-25 17:29:35 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso test
 
@@ -44,6 +44,9 @@
 (push (file-name-directory load-file-name) load-path)
 
 (require 'ert)
+(setq debug-on-error t)
+
+;; test-specific code begins here
 (require 'proviso-core)
 
 ;; helper defun
