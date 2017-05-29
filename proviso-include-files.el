@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-24 17:46:04 dharms>
+;; Modified Time-stamp: <2017-05-29 09:30:58 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 
@@ -30,6 +30,7 @@
 (require 'find-file)
 (require 'flycheck)
 (require 'auto-complete-clang)
+(require 'cl)
 
 (defun proviso--validate-include-files (proj)
   "Validate the set of include files of project PROJ."
@@ -75,11 +76,14 @@
       (push (concat remote elt) ff-includes))
     (proviso-put proj :include-files includes)
     ;; for ff-search-directories, prepend current dir and append root
-    (setq includes (append '(".") includes
-                           `,(concat remote root)))
-    ;; ff-search-directories doesn't want a trailing slash
-    (proviso-put proj :include-ff-files (mapcar 'directory-file-name ff-includes))
-    ))
+    (proviso-put proj :include-ff-files
+                 (remove-duplicates
+                  ;; ff-search-directories doesn't want a trailing slash
+                  (mapcar 'directory-file-name
+                          (append '(".")
+                                  ff-includes
+                                  `,(list (concat remote root))))
+                  :test 'string=))))
 
 (defun proviso--gather-compiler-includes (compiler)
   "Return a list of include directories for COMPILER.  They will be absolute."

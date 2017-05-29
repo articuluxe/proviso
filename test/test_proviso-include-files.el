@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-21 17:43:27 dharms>
+;; Modified Time-stamp: <2017-05-29 09:32:02 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files test
 
@@ -54,7 +54,8 @@
       (should (equal (proviso-get proviso-local-proj :include-files)
                   (list (concat base "a/b/c/"))))
       (should (equal (proviso-get proviso-local-proj :include-ff-files)
-                  (list (concat base "a/b/c"))))
+                     (list "."
+                           (concat base "a/b/c"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
@@ -83,7 +84,7 @@
       (should (equal (proviso-get proviso-local-proj :include-files)
                   (list "/home/")))
       (should (equal (proviso-get proviso-local-proj :include-ff-files)
-                  (list "/home")))
+                  (list "." "/home" (concat base "a/b/c"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
@@ -112,7 +113,8 @@
       (should (equal (proviso-get proviso-local-proj :include-files)
                   (list (concat base "a/b/c/d/"))))
       (should (equal (proviso-get proviso-local-proj :include-ff-files)
-                  (list (concat base "a/b/c/d"))))
+                     (list "." (concat base "a/b/c/d")
+                           (concat base "a/b/c"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
@@ -135,7 +137,8 @@
       (should (equal (proviso-get proviso-local-proj :include-files)
                   (list (concat base "a/b/c/"))))
       (should (equal (proviso-get proviso-local-proj :include-ff-files)
-                  (list (concat base "a/b/c"))))
+                     (list "." (concat base "a/b/c")
+                           )))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
@@ -171,6 +174,7 @@
                       )))
       (should (equal (proviso-get proviso-local-proj :include-ff-files)
                      (list
+                      "."
                       (concat base "a/b/c/d")
                       "/home"
                       (concat base "a/b/c")
@@ -210,13 +214,15 @@
                       )))
       (should (equal (proviso-get proviso-local-proj :include-ff-files)
                      (list
+                      "."
                       (concat base "a/b/c/d")
                       "/home"
                       (concat base "a/b/c")
                       )))
       (should (local-variable-p 'ff-search-directories (get-buffer "dfile1")))
       (should (equal ff-search-directories
-                     (list (concat base "a/b/c/d")
+                     (list "."
+                           (concat base "a/b/c/d")
                            "/home"
                            (concat base "a/b/c"))))
       ;; open 2nd file, same project
@@ -228,7 +234,8 @@
                        "c"))
       (should (local-variable-p 'ff-search-directories (get-buffer "dfile2")))
       (should (equal ff-search-directories
-                     (list (concat base "a/b/c/d")
+                     (list "."
+                           (concat base "a/b/c/d")
                            "/home"
                            (concat base "a/b/c"))))
       ;; open 3rd file, new project
@@ -248,7 +255,9 @@
                        "c2"))
       (should (local-variable-p 'ff-search-directories (get-buffer "dfile3")))
       (should (equal ff-search-directories
-                     (list (concat base "a/b/c2/d2"))))
+                     (list "."
+                           (concat base "a/b/c2/d2")
+                           (concat base "a/b/c2"))))
       ;; switch back to initial buffer
       (switch-to-buffer "dfile1")
       (run-hooks 'post-command-hook)    ;simulate interactive use
@@ -260,7 +269,8 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (local-variable-p 'ff-search-directories (get-buffer "dfile1")))
       (should (equal ff-search-directories
-                     (list (concat base "a/b/c/d")
+                     (list "."
+                           (concat base "a/b/c/d")
                            "/home"
                            (concat base "a/b/c"))))
 
