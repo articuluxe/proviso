@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-25 08:55:54 dharms>
+;; Modified Time-stamp: <2017-05-29 17:03:44 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project compile
 
@@ -26,6 +26,7 @@
 
 ;;; Code:
 (require 'proviso-core)
+(require 'seq)
 
 (defvar proviso-compile--should-close-compile-window nil
   "Internal setting controls closing of the window post-compile.")
@@ -48,20 +49,46 @@ ARG allows customizing behavior."
         (cmd (or (proviso-get proviso-curr-proj :compile-command) "make"))
         (dirs (proviso-get proviso-curr-proj :build-subdirs))
         dir sub-dir)
-    (when (and arg (eq (prefix-numeric-value arg) 4))
-      (setq root (read-directory-name "Root dir: " root nil t))
-      (when (file-remote-p root)
-        (setq root (with-parsed-tramp-file-name
-                       root file file-localname))))
+    (when arg
+      (cond ((and (eq (prefix-numeric-value arg) 4) (not (seq-empty-p dirs)))
+             (setq root (completing-read "Root dir: " dirs nil nil nil
+                                         'proviso-compile-dir-history
+                                         root)))
+            ((eq (prefix-numeric-value arg) 16)
+             (setq root (read-directory-name "Root dir: " root nil t)))
+            ))
+    (and root (file-remote-p root)
+         (setq root (with-parsed-tramp-file-name root file file-localname)))
     (setq sub-dir (cond ((eq (seq-length dirs) 1)
                          (plist-get (car dirs) :dir))
                         ((seq-empty-p dirs)
                          "")
                         (t (completing-read "Compile in: " dirs))))
     (setq dir (concat root sub-dir))
-    (add-to-list 'proviso-compile-dir-history dir)
+    ;; (add-to-list 'proviso-compile-dir-history dir)
     (format "cd %s && %s" dir cmd)
   ))
+
+;; (defun create-compile-command-repo()
+;;   "Initialize the compile command."
+;;   (interactive)
+;;   (let ((root (or (profile-current-get 'project-root-dir) "./"))
+;;         (command (or (profile-current-get 'compile-sub-command) "make"))
+;;         (sub-dirs (profile-current-get 'build-sub-dirs))
+;;         sub-dir)
+;;     (when current-prefix-arg
+;;       (setq root (read-directory-name "Root dir:" root nil t))
+;;       (when (file-remote-p root)
+;;         (setq root (with-parsed-tramp-file-name root file file-localname))))
+;;     (setq sub-dir
+;;           (cond ((eq (length sub-dirs) 1) (car (car sub-dirs)))
+;;                 ((null sub-dirs) "")
+;;                 (t (funcall my/choose-func
+;;                             (mapcar 'car sub-dirs)
+;;                             "Compile in: "))))
+;;     (format "source %srepo-setup.sh && cd %s && %s"
+;;             root (concat root sub-dir) command)
+;;     ))
 
 (defun proviso-compile-choose-compile-command()
   "Select the command used to create compile commands.
@@ -82,6 +109,7 @@ ARG allows customizing behavior."
   (setq proviso-compile--should-close-compile-window
         (not (get-buffer-window "*compilation*" 'visible)))
   (when (setq compile-command (funcall proviso-compile-command arg))
+    ;; (funcall-interactively 'compile (list arg))))
     (call-interactively 'compile)))
 
 (defun proviso-recompile (&optional arg)
@@ -91,6 +119,9 @@ ARG allows customizing behavior."
   (setq proviso-compile--should-close-compile-window
         (not (get-buffer-window "*compilation*" 'visible)))
   (call-interactively 'recompile))
+
+(with-eval-after-load 'cc-mode
+  (define-key c-mode-base-map (kbd "\C-c RET") #'proviso-compile))
 
 (provide 'proviso-compile)
 ;;; proviso-compile.el ends here

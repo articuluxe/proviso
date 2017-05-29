@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, May 25, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-25 17:34:57 dharms>
+;; Modified Time-stamp: <2017-05-29 09:14:39 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso test compile
 
@@ -39,18 +39,25 @@
                (lambda (_)
                  (proviso-eval-string file-contents)))
               ((symbol-function 'completing-read)
-               (lambda (_ _2)
-                 read-result))
+               (lambda (_ collection &optional _3 _4 _5 _6 _7 _8) (interactive)
+                 (car (reverse collection))))
               ((symbol-function 'read-directory-name)
-               (lambda (_ _2 _3 _4)
+               (lambda (_ &optional _2 _3 _4 _5)
                  read-result)))
+      (should (string= (proviso-compile-command-std)
+                       "cd ./ && make"))
+      (should (string= (proviso-compile-command-std '(4))
+                       "cd ./ && make"))
       ;; open file
       (setq file-contents "
  (defun do-init (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"d/e/\")
                   (:name \"two\" :dir \"d/e/f\")
-                  )))
+                  ))
+   (proviso-put proj :build-subdirs
+                '( (:name \"bld\" :dir \"d2/\")))
+  )
  (proviso-define \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
