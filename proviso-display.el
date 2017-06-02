@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-19 17:31:24 dharms>
+;; Modified Time-stamp: <2017-06-02 08:03:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project display
 
@@ -26,14 +26,36 @@
 
 ;;; Code:
 (require 'proviso-core)
+(require 'ivy)
 
 (defface proviso-face-heading '((((background dark)) (:foreground "Yellow"))
                                 (t (:foreground "Blue")))
   "Face used to highlight headings.")
 
-(defun proviso-display-print-project (proj)
+;;;###autoload
+(defun proviso-display-choose-project ()
+  "Allow the user to choose a project among those currently defined."
+  (interactive)
+  (let (lst)
+    (mapatoms (lambda (atom)
+                (push (symbol-name atom) lst)) proviso-obarray)
+    (ivy-read "Project: " lst
+              :caller 'proviso-display-choose-project
+              )))
+
+;;;###autoload
+(defun proviso-display-print-project ()
+  "Print properties of a selected project."
+  (interactive)
+  (let ((proj (proviso-display-choose-project)))
+    (when proj
+      (with-output-to-temp-buffer
+          (format "*Proviso-project: %s*" proj)
+        (proviso-display--print-project proj)))))
+
+(defun proviso-display--print-project (proj)
   "Return a string containing a textual representation of PROJ."
-  (with-output-to-string (pp (proviso-get-plist proviso-curr-proj))))
+  (pp (proviso-get-plist proj)))
 
 (defun proviso-display--get-project-names ()
   "Return a list containing the current project names in `proviso-obarray'."
