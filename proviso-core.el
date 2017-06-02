@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-30 08:08:36 dharms>
+;; Modified Time-stamp: <2017-06-02 07:43:10 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -60,7 +60,7 @@ of no matches, the default project is instead used.")
 ;; :remote-prefix :remote-host :root-stem
 ;; :registers
 ;; :tags-alist :tags-dir
-;; :compile-cmd
+;; :compile-cmd :compile-defun
 
 ;; hooks
 (defvar proviso-hook-on-project-pre-init '()

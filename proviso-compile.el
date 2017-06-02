@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-01 17:32:21 dharms>
+;; Modified Time-stamp: <2017-06-02 07:44:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project compile
 
@@ -109,9 +109,10 @@ ARG allows customizing behavior."
   (interactive "P")
   (setq proviso-compile--should-close-compile-window
         (not (get-buffer-window "*compilation*" 'visible)))
-  (let ((cmd (or (proviso-get proviso-curr-proj :compile-cmd)
+  (let ((cmd (or (proviso-get proviso-curr-proj :compile-defun)
+                 proviso-compile-command
                  'proviso-compile-command-std)))
-    (when (setq compile-command (funcall proviso-compile-command arg))
+    (when (setq compile-command (funcall cmd arg))
       ;; (funcall-interactively 'compile (list arg))))
       (call-interactively 'compile))))
 

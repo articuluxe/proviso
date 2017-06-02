@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, May 25, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-01 17:35:31 dharms>
+;; Modified Time-stamp: <2017-06-02 07:43:57 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso test compile
 
@@ -210,6 +210,127 @@
       (setq read-result (concat base "a/b/c2/"))
       (should (string= (proviso-compile-command-repo '(4))
                        (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c2/ && make")))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-compile-test-real-compile-with-repo ()
+  (proviso-test-reset-all)
+  (let* ((base (file-name-directory load-file-name))
+         (default-directory base)
+         (compilation-read-command nil)
+         (compilation-always-kill t)
+         file-contents read-result read-index)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents)))
+              ((symbol-function 'completing-read)
+               (lambda (_ collection &optional _3 _4 _5 _6 _7 _8) (interactive)
+                 (seq-elt collection read-index)))
+              ((symbol-function 'read-directory-name)
+               (lambda (_ &optional _2 _3 _4 _5)
+                 read-result))
+              ;; ((symbol-function 'compile)
+              ;;  (lambda (_ &optional _2) (interactive)))
+              )
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"d/e/\")
+                ))
+   (proviso-put proj :build-subdirs
+                '( (:name \"bld\" :dir \"d2/\")
+                   (:name \"two\" :dir \"d/e/f\")
+                 ))
+  )
+ (proviso-define \"c\" :initfun 'do-init)
+")
+      (setq proviso-compile-command 'proviso-compile-command-repo)
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (setq read-index 0)               ;picks empty choice, which is root dir
+      (proviso-compile)
+      (should (string= compile-command
+                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/ && make")))
+      (setq read-index 1)               ;picks 1st choice
+      (proviso-compile)
+      (should (string= compile-command
+                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d2/ && make")))
+      (setq read-index 2)               ;picks 2nd choice
+      (proviso-compile)
+      (should (string= compile-command
+                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d/e/f/ && make")))
+      (setq read-result (concat base "a/b/c2/"))
+      (proviso-compile '(4))
+      (should (string= compile-command
+                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c2/ && make")))
+
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-compile-test-real-compile-with-repo-project-definition ()
+  (proviso-test-reset-all)
+  (let* ((base (file-name-directory load-file-name))
+         (default-directory base)
+         (compilation-read-command nil)
+         (compilation-always-kill t)
+         file-contents read-result read-index)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents)))
+              ((symbol-function 'completing-read)
+               (lambda (_ collection &optional _3 _4 _5 _6 _7 _8) (interactive)
+                 (seq-elt collection read-index)))
+              ((symbol-function 'read-directory-name)
+               (lambda (_ &optional _2 _3 _4 _5)
+                 read-result))
+              ;; ((symbol-function 'compile)
+              ;;  (lambda (_ &optional _2) (interactive)))
+              )
+      ;; open file
+      (setq file-contents "
+ (defun do-init (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \"d/e/\")
+                ))
+   (proviso-put proj :build-subdirs
+                '( (:name \"bld\" :dir \"d2/\")
+                   (:name \"two\" :dir \"d/e/f\")
+                 ))
+  )
+ (proviso-define \"c\" :initfun 'do-init :compile-defun 'proviso-compile-command-repo)
+")
+      ;; will be overridden by the project setting for :compile-defun
+      (setq proviso-compile-command 'proviso-compile-command-std)
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (setq read-index 0)               ;picks empty choice, which is root dir
+      (proviso-compile)
+      (should (string= compile-command
+                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/ && make")))
+      (setq read-index 1)               ;picks 1st choice
+      (proviso-compile)
+      (should (string= compile-command
+                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d2/ && make")))
+      (setq read-index 2)               ;picks 2nd choice
+      (proviso-compile)
+      (should (string= compile-command
+                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d/e/f/ && make")))
+      (setq read-result (concat base "a/b/c2/"))
+      (proviso-compile '(4))
+      (should (string= compile-command
+                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c2/ && make")))
+
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
