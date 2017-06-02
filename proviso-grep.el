@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-25 08:50:17 dharms>
+;; Modified Time-stamp: <2017-06-02 07:48:43 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep
 
@@ -27,6 +27,7 @@
 ;;; Code:
 (require 'proviso-core)
 (require 'grep)
+(require 'subr-x)
 (require 's)
 
 (defun proviso--set-grep-dirs (proj)
