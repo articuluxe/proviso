@@ -46,9 +46,9 @@ of no matches, the default project is instead used.")
 
 (defun proviso-current-project-root ()
   "Return the root directory of the current or last-known project."
-  (cond (proviso-local-proj (proviso-get proviso-local-proj :root-dir)
-         proviso-curr-proj (proviso-get proviso-curr-proj :root-dir)
-         (t default-directory))))
+  (cond (proviso-local-proj (proviso-get proviso-local-proj :root-dir))
+        (proviso-curr-proj (proviso-get proviso-curr-proj :root-dir))
+        (t default-directory)))
 
 ;; Project Properties:
 ;;   - External:
