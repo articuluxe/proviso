@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-09 08:44:24 dharms>
+;; Modified Time-stamp: <2017-06-09 17:12:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -31,14 +31,13 @@
 
 (defvar proviso-obarray
   (let ((intern-obarray (make-vector 7 0)))
-    (intern "default" intern-obarray)
     intern-obarray)
   "Array of project objects.")
 (defvar proviso-path-alist '()
   "Alist of pairs of strings (REGEXP . PROJECT-NAME).
 A project is used for a file if the filename matches REGEXP.  In the case
 of no matches, the default project is instead used.")
-(defvar-local proviso-local-proj (intern-soft "default" proviso-obarray))
+(defvar-local proviso-local-proj nil)
 (defvar proviso-curr-proj nil)
 
 (defun proviso-current-project ()
