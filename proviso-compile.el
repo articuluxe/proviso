@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-02 07:44:32 dharms>
+;; Modified Time-stamp: <2017-06-14 18:36:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project compile
 
@@ -57,10 +57,10 @@ ARG allows customizing behavior."
                           (car subdirs))
                          ((seq-empty-p subdirs)
                           "")
-                         (t (completing-read "Compile in: " (cons "" subdirs) nil t)))))
+                         (t (completing-read "Compile in: " (cons "./" subdirs) nil t)))))
     (and root (file-remote-p root)
          (setq root (with-parsed-tramp-file-name root file file-localname)))
-    (setq dir (concat root subdir))
+    (setq dir (concat root (unless (string= subdir "./") subdir)))
     (add-to-list 'proviso-compile-dir-history dir)
     (format "cd %s && %s" dir cmd)
   ))
@@ -83,10 +83,10 @@ ARG allows customizing behavior."
                           (car subdirs))
                          ((seq-empty-p subdirs)
                           "")
-                         (t (completing-read "Compile in: " (cons "" subdirs) nil t)))))
+                         (t (completing-read "Compile in: " (cons "./" subdirs) nil t)))))
     (and root (file-remote-p root)
          (setq root (with-parsed-tramp-file-name root file file-localname)))
-    (setq dir (concat root subdir))
+    (setq dir (concat root (unless (string= subdir "./") subdir)))
     (add-to-list 'proviso-compile-dir-history dir)
     (format (concat preface "cd %s && %s") origroot dir cmd)
   ))
