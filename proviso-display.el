@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-02 08:03:04 dharms>
+;; Modified Time-stamp: <2017-06-14 18:03:19 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project display
 
@@ -39,9 +39,11 @@
   (let (lst)
     (mapatoms (lambda (atom)
                 (push (symbol-name atom) lst)) proviso-obarray)
-    (ivy-read "Project: " lst
-              :caller 'proviso-display-choose-project
-              )))
+    (if (seq-empty-p lst)
+        (error "No projects defined")
+      (ivy-read "Project: " lst
+                :caller 'proviso-display-choose-project
+                ))))
 
 ;;;###autoload
 (defun proviso-display-print-project ()
