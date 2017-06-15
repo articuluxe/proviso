@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-09 17:12:56 dharms>
+;; Modified Time-stamp: <2017-06-15 08:28:38 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -28,6 +28,7 @@
 (require 'f)
 (require 'seq)
 (require 'tramp)
+(require 'load-environment-vars nil t)
 
 (defvar proviso-obarray
   (let ((intern-obarray (make-vector 7 0)))
@@ -316,6 +317,18 @@ represents the user's home directory."
       (setq curr (read-from-string str i))
       (eval (car curr))
       (setq i (cdr curr)))))
+
+(defun proviso-load-environment-variables-from-file (proj name)
+  "Load environment variables in root dir of PROJ from file NAME.
+Nothing is done if no such file exists in the root director of PROJ."
+  (interactive "fLoad environment variables from file: ")
+  (let* ((remote (proviso-get proj :remote-prefix))
+        (root (proviso-get proj :root-dir))
+        (file (concat remote root name)))
+    (setenv "REPO_ROOT" (directory-file-name root))
+    (and (fboundp 'load-environment-variables-from-file)
+         (f-exists? file)
+         (load-environment-variables-from-file file))))
 
 (provide 'proviso-core)
 ;;; proviso-core.el ends here
