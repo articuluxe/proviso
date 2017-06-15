@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-29 09:30:58 dharms>
+;; Modified Time-stamp: <2017-06-15 17:22:06 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 
@@ -128,7 +128,7 @@
             (set (make-local-variable 'flycheck-clang-standard-library)
                  "libc++")
             (set (make-local-variable 'flycheck-clang-include-path)
-                 (proviso-get :proj :include-files))
+                 (proviso-get proj :include-files))
             (add-to-list 'flycheck-disabled-checkers 'c/c++-gcc)
             )
         ;; gcc

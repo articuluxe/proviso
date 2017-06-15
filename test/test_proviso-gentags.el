@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-11 07:34:48 dharms>
+;; Modified Time-stamp: <2017-06-15 17:30:49 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project tags gentags
 
@@ -67,10 +67,10 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.tags/fourth-tags")
-                           (concat base "a/b/c/.tags/third-tags")
-                           (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/first-tags")
+                           (concat base "a/b/c/.tags/second-tags")
+                           (concat base "a/b/c/.tags/third-tags")
+                           (concat base "a/b/c/.tags/fourth-tags")
                            )))
       (setq arg-contents (list
                           (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
@@ -170,10 +170,10 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.tags/fourth-tags")
-                           (concat base "a/b/c/.tags/third-tags")
-                           (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/first-tags")
+                           (concat base "a/b/c/.tags/second-tags")
+                           (concat base "a/b/c/.tags/third-tags")
+                           (concat base "a/b/c/.tags/fourth-tags")
                            )))
       (setq arg-contents (list
                           (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
@@ -232,10 +232,10 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.mytags/fourth-tags")
-                           (concat base "a/b/c/.mytags/third-tags")
-                           (concat base "a/b/c/.mytags/second-tags")
                            (concat base "a/b/c/.mytags/first-tags")
+                           (concat base "a/b/c/.mytags/second-tags")
+                           (concat base "a/b/c/.mytags/third-tags")
+                           (concat base "a/b/c/.mytags/fourth-tags")
                            )))
       (setq arg-contents (list
                           (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
@@ -294,10 +294,10 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.mytags/fourth-tags")
-                           (concat base "a/b/c/.mytags/third-tags")
-                           (concat base "a/b/c/.mytags/second-tags")
                            (concat base "a/b/c/.mytags/first-tags")
+                           (concat base "a/b/c/.mytags/second-tags")
+                           (concat base "a/b/c/.mytags/third-tags")
+                           (concat base "a/b/c/.mytags/fourth-tags")
                            )))
       (setq arg-contents (list
                           (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
@@ -356,10 +356,10 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.tags/fourth-tags")
-                           (concat base "a/b/c/.tags/third-tags")
-                           (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/first-tags")
+                           (concat base "a/b/c/.tags/second-tags")
+                           (concat base "a/b/c/.tags/third-tags")
+                           (concat base "a/b/c/.tags/fourth-tags")
                            )))
       (setq arg-contents (list
                           (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no --exclude=boost -f "
@@ -419,10 +419,10 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.mytags/fourth-tags")
-                           (concat base "a/b/c/.mytags/third-tags")
-                           (concat base "a/b/c/.mytags/second-tags")
                            (concat base "a/b/c/.mytags/first-tags")
+                           (concat base "a/b/c/.mytags/second-tags")
+                           (concat base "a/b/c/.mytags/third-tags")
+                           (concat base "a/b/c/.mytags/fourth-tags")
                            )))
       (setq arg-contents (list
                           (concat "-c exctags -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
@@ -482,10 +482,10 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.tags/fourth-tags")
-                           (concat base "a/b/c/.tags/third-tags")
-                           (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/first-tags")
+                           (concat base "a/b/c/.tags/second-tags")
+                           (concat base "a/b/c/.tags/third-tags")
+                           (concat base "a/b/c/.tags/fourth-tags")
                            )))
       (setq arg-contents (list
                           (concat "-c myctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
@@ -547,10 +547,10 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.tags/fourth-tags")
-                           (concat base "a/b/c/.tags/third-tags")
-                           (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/first-tags")
+                           (concat base "a/b/c/.tags/second-tags")
+                           (concat base "a/b/c/.tags/third-tags")
+                           (concat base "a/b/c/.tags/fourth-tags")
                            )))
       (setq arg-contents (list
                           (concat "-c totally new options -f "

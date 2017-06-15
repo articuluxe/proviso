@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-12 07:09:03 dharms>
+;; Modified Time-stamp: <2017-06-15 17:26:48 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso tags
 
@@ -85,7 +85,7 @@ into :tags-alist."
                  (append (list (concat
                                 (proviso-get proj :root-stem)
                                 "\\(.*\\)$"))
-                         names))))
+                         (nreverse names)))))
 
 (add-hook 'proviso-hook-on-project-init 'proviso-tags-on-init)
 (add-hook 'proviso-hook-on-project-active 'proviso-activate-tags-table)

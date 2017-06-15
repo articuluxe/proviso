@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, April 13, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-17 17:35:14 dharms>
+;; Modified Time-stamp: <2017-06-15 17:36:34 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project tags etags
 
@@ -56,10 +56,10 @@
                        "c"))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.tags/fourth-tags")
-                           (concat base "a/b/c/.tags/third-tags")
-                           (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/first-tags")
+                           (concat base "a/b/c/.tags/second-tags")
+                           (concat base "a/b/c/.tags/third-tags")
+                           (concat base "a/b/c/.tags/fourth-tags")
                                    )))
 
       ;; clean up buffers
@@ -154,10 +154,10 @@
                        "c"))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.mytags_subdir/fourth-tags")
-                           (concat base "a/b/c/.mytags_subdir/third-tags")
-                           (concat base "a/b/c/.mytags_subdir/second-tags")
                            (concat base "a/b/c/.mytags_subdir/first-tags")
+                           (concat base "a/b/c/.mytags_subdir/second-tags")
+                           (concat base "a/b/c/.mytags_subdir/third-tags")
+                           (concat base "a/b/c/.mytags_subdir/fourth-tags")
                                    )))
       ;; clean up buffers
       (kill-buffer "dfile1")
@@ -189,10 +189,10 @@
                        "c"))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.mytags_subdir/fourth-tags")
-                           (concat base "a/b/c/.mytags_subdir/third-tags")
-                           (concat base "a/b/c/.mytags_subdir/second-tags")
                            (concat base "a/b/c/.mytags_subdir/first-tags")
+                           (concat base "a/b/c/.mytags_subdir/second-tags")
+                           (concat base "a/b/c/.mytags_subdir/third-tags")
+                           (concat base "a/b/c/.mytags_subdir/fourth-tags")
                                    )))
       ;; clean up buffers
       (kill-buffer "dfile1")
@@ -224,10 +224,10 @@
                        "c"))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.tags/fourth-tags")
-                           (concat base "a/b/c/.tags/third-tags")
-                           (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/first-tags")
+                           (concat base "a/b/c/.tags/second-tags")
+                           (concat base "a/b/c/.tags/third-tags")
+                           (concat base "a/b/c/.tags/fourth-tags")
                                    )))
       ;; open 2nd file, same project
       (find-file (concat base "a/b/c/d/dfile2"))
@@ -238,10 +238,10 @@
                        "c"))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.tags/fourth-tags")
-                           (concat base "a/b/c/.tags/third-tags")
-                           (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/first-tags")
+                           (concat base "a/b/c/.tags/second-tags")
+                           (concat base "a/b/c/.tags/third-tags")
+                           (concat base "a/b/c/.tags/fourth-tags")
                                    )))
       ;; open 3rd file, new project
       (setq file-contents "
@@ -261,8 +261,8 @@
                        "c2"))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c2/" "\\(.*\\)$")
-                           (concat base "a/b/c2/.tags/subdir-tags")
                            (concat base "a/b/c2/.tags/base-tags")
+                           (concat base "a/b/c2/.tags/subdir-tags")
                                    )))
       ;; switch back to initial buffer
       (switch-to-buffer "dfile1")
@@ -275,10 +275,10 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (concat base "a/b/c/" "\\(.*\\)$")
-                           (concat base "a/b/c/.tags/fourth-tags")
-                           (concat base "a/b/c/.tags/third-tags")
-                           (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/first-tags")
+                           (concat base "a/b/c/.tags/second-tags")
+                           (concat base "a/b/c/.tags/third-tags")
+                           (concat base "a/b/c/.tags/fourth-tags")
                                    )))
 
       ;; clean up buffers

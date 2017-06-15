@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-15 08:28:38 dharms>
+;; Modified Time-stamp: <2017-06-15 17:22:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -264,11 +264,9 @@ will be absolute.  Project files can look like any of the following:
                dir
                (lambda (parent)
                  (setq file
-                                        ;                       (car (directory-files parent t "\\sw+\\.e?prof$")))))
                        (car (directory-files parent t
                                              (concat "\\sw*\\."
                                                      proviso--ext "$"))))))
-                                        ;            (proviso-find-file-upwards dir "\\sw+\\.e?prof$")))
             (proviso-find-file-upwards dir
                                        (concat "\\sw*\\."
                                                proviso--ext "$"))))
