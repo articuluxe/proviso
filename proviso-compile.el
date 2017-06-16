@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-15 20:55:45 dharms>
+;; Modified Time-stamp: <2017-06-16 17:12:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project compile
 
@@ -52,7 +52,7 @@ ARG allows customizing behavior."
     (setq subdirs (mapcar (lambda (elt)
                             (file-name-as-directory (plist-get elt :dir))) blddirs))
     (if arg
-        (setq root (read-directory-name "Compile in: " root nil t))
+        (setq root (read-directory-name "Compile in: " default-directory nil t))
       (setq subdir (cond ((eq (seq-length subdirs) 1)
                           (car subdirs))
                          ((seq-empty-p subdirs)
@@ -78,7 +78,7 @@ ARG allows customizing behavior."
     (setq subdirs (mapcar (lambda (elt)
                             (file-name-as-directory (plist-get elt :dir))) blddirs))
     (if arg
-        (setq root (read-directory-name "Compile in: " root nil t))
+        (setq root (read-directory-name "Compile in: " default-directory nil t))
       (setq subdir (cond ((eq (seq-length subdirs) 1)
                           (car subdirs))
                          ((seq-empty-p subdirs)
