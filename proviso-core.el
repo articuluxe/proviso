@@ -198,9 +198,11 @@ searching in any bases."
   "Call a function from project PROJ stored in its PROPERTY tag.
 The function is called with arguments REM, if the function exists
 and is bound."
-  (let ((func (intern-soft
-               (proviso-get proj property))))
-    (and func (fboundp func) (funcall func (car rem)))))
+  (let ((func (proviso-get proj property)))
+    (and func (or (and (symbolp func)
+                       (fboundp func))
+                  (functionp func))
+         (funcall func (car rem)))))
 
 (defun proviso-soft-reset ()
   "Reset the current project.
