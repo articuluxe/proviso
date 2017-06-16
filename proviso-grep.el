@@ -109,6 +109,11 @@ ARG allows customizing the selection of the root search directory."
   "Grep for a search string in a directory or project.
 ARG allows customizing the root search directory, see `proviso-grep--create-command'."
   (interactive "P")
+  ;; HACK around a bug in 'grep-compute-defaults when accessing
+  ;; grep-host-defaults-alist for a different host
+  (unless (assq (intern (or (file-remote-p default-directory) "localhost"))
+                grep-host-defaults-alist)
+    (grep-compute-defaults))
   (grep-apply-setting 'grep-command (proviso-grep--create-command arg))
   (command-execute 'grep))
 
