@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-15 17:43:08 dharms>
+;; Modified Time-stamp: <2017-06-16 17:17:54 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project display
 
@@ -70,7 +70,7 @@
 (defun proviso-display-echo-project-names ()
   "Echo the project names contained in `proviso-obarray'."
   (interactive)
-  (let (projs (proviso-display--get-project-names))
+  (let ((projs (proviso-display--get-project-names)))
     (if projs
         (message "%s" projs)
       (error "No projects"))))
