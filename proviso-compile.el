@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-16 17:12:32 dharms>
+;; Modified Time-stamp: <2017-06-16 20:34:12 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project compile
 
@@ -26,11 +26,11 @@
 
 ;;; Code:
 (require 'proviso-core)
+(require 'dash)
 (require 'seq)
 
 (defvar proviso-compile--should-close-compile-window nil
   "Internal setting controls closing of the window post-compile.")
-
 (defvar proviso-compile-command-list
   (list #'proviso-compile-command-std #'proviso-compile-command-repo)
   "List of functions to create compile commands.")
@@ -128,6 +128,64 @@ ARG allows customizing behavior."
   (define-key c-mode-base-map (kbd "\C-c RET") #'proviso-compile)
   (define-key c-mode-base-map "\C-cm" #'proviso-recompile)
   (define-key c-mode-base-map "\C-ck" #'kill-compilation))
+
+;; compile errors
+(defvar proviso-ignore-compile-error-functions
+  '(
+    proviso-check-compile-buffer-cmake-werror
+    proviso-check-compile-buffer-boost-test-output
+    )
+  "List of functions to filter compile errors.
+If any return true, the current compile error is ignored by
+`proviso-compile-check-buffer-errors'.")
+
+(defun proviso-check-compile-buffer-cmake-werror ()
+  "Check the current compile buffer error, cmake style.
+Returns non-nil to signify the error can be ignored."
+  (save-match-data
+    (looking-back "-W" (- (point) 2))))
+
+(defun proviso-check-compile-buffer-boost-test-output ()
+  "Check the current compile buffer error, boost style.
+Returns non-nil to signify the error can be ignored."
+  (and
+   (save-match-data
+     (looking-back "[Nn]o " (- (point) 3)))
+   (save-match-data
+     (looking-at "errors detected"))))
+
+(defun proviso-compile-check-buffer-errors (buffer)
+  "Check compile buffer BUFFER for compile warnings or errors."
+  (with-current-buffer buffer
+    (catch 'found
+      (goto-char 1)
+      (while (search-forward-regexp "\\([Ww]arning\\|[Ee]rror\\)" nil t)
+        (goto-char (match-beginning 1))
+        (unless
+            (-any 'funcall proviso-ignore-compile-error-functions)
+          (throw 'found t))
+        (goto-char (match-end 1)))
+      nil)))
+
+(defun proviso-compile-bury-buffer-if-successful (buffer string)
+  "Bury compilation buffer BUFFER if appropriate.
+STRING describes how the process finished.
+Currently, it is closed if compilation succeeded without warnings
+or errors."
+  (if (and
+       (string-match "compilation" (buffer-name buffer))
+       (string-match "finished" string)
+       (not (proviso-compile-check-buffer-errors buffer)))
+      (run-with-timer 2 nil
+                      (lambda (buf)
+                        (let ((win (get-buffer-window buf t)))
+                          (bury-buffer buf)
+                          (if proviso-compile--should-close-compile-window
+                              (delete-window win)
+                            (switch-to-prev-buffer win 'kill))))
+                      buffer)))
+
+(add-hook 'compilation-finish-functions 'proviso-compile-bury-buffer-if-successful)
 
 (provide 'proviso-compile)
 ;;; proviso-compile.el ends here
