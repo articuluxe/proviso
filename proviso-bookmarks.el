@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-21 08:20:01 dharms>
+;; Modified Time-stamp: <2017-06-19 10:57:45 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project bookmarks
 
@@ -41,8 +41,9 @@
   "Activate the bookmark file as defined by PROJ's settings.
 PROJ is now the active project, replacing OLD.
 The bookmark file should have been stored in :bookmark-file."
-  (bmkp-switch-bookmark-file-create
-   (proviso-get proj :bookmark-file) t))
+  (let ((file (proviso-get proj :bookmark-file)))
+    (when file
+      (bmkp-switch-bookmark-file-create file t))))
 
 (add-hook 'proviso-hook-on-project-init 'proviso--init-bookmarks)
 (add-hook 'proviso-hook-on-project-active 'proviso--activate-bookmarks)
