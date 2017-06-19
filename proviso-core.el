@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-16 08:48:43 dharms>
+;; Modified Time-stamp: <2017-06-19 08:30:26 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -26,6 +26,7 @@
 
 ;;; Code:
 (require 'f)
+(require 'ivy)
 (require 'seq)
 (require 'tramp)
 (require 'load-environment-vars nil t)
@@ -325,6 +326,19 @@ represents the user's home directory."
       (setq curr (read-from-string str i))
       (eval (car curr))
       (setq i (cdr curr)))))
+
+;;;###autoload
+(defun proviso-choose-project ()
+  "Allow the user to choose a project among those currently defined."
+  (interactive)
+  (let (lst)
+    (mapatoms (lambda (atom)
+                (push (symbol-name atom) lst)) proviso-obarray)
+    (if (seq-empty-p lst)
+        (error "No projects defined")
+      (ivy-read "Project: " lst
+                :caller 'proviso-choose-project
+                ))))
 
 (defun proviso-load-environment-variables-from-file (proj name)
   "Load environment variables in root dir of PROJ from file NAME.
