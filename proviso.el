@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-24 08:53:57 dharms>
+;; Modified Time-stamp: <2017-06-19 11:05:00 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -61,11 +61,10 @@
 (defun proviso--log-project-inited (proj)
   "Log a project PROJ upon initialization."
   (let ((name (symbol-name proj)))
-    (unless (string-equal name "default")
-      (message "Loaded project %s (%s) at %s"
-               (proviso-get proj :project-name)
-               name
-               (proviso-get proj :root-dir)))))
+    (message "Loaded project %s (%s) at %s"
+             (proviso-get proj :project-name)
+             name
+             (proviso-get proj :root-dir))))
 
 (defun proviso--loaded (proj)
   "A project PROJ has been loaded.

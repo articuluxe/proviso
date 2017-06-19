@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, March 31, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-25 17:29:35 dharms>
+;; Modified Time-stamp: <2017-06-19 11:04:36 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso test
 
@@ -53,7 +53,6 @@
 (defun proviso-test-reset-all ()
   "Reset all profile-related data structures to nil."
   (setq proviso-obarray (make-vector 7 0))
-  (intern "default" proviso-obarray)
   (setq proviso-path-alist '())
   (setq proviso-curr-proj nil)
   (setq proviso-local-proj (default-value 'proviso-local-proj))
