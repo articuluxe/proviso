@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-16 17:17:54 dharms>
+;; Modified Time-stamp: <2017-06-19 20:20:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project display
 
@@ -33,23 +33,10 @@
   "Face used to highlight headings.")
 
 ;;;###autoload
-(defun proviso-display-choose-project ()
-  "Allow the user to choose a project among those currently defined."
-  (interactive)
-  (let (lst)
-    (mapatoms (lambda (atom)
-                (push (symbol-name atom) lst)) proviso-obarray)
-    (if (seq-empty-p lst)
-        (error "No projects defined")
-      (ivy-read "Project: " lst
-                :caller 'proviso-display-choose-project
-                ))))
-
-;;;###autoload
 (defun proviso-display-print-project ()
   "Print properties of a selected project."
   (interactive)
-  (let ((proj (proviso-display-choose-project)))
+  (let ((proj (proviso-choose-project)))
     (when proj
       (with-output-to-temp-buffer
           (format "*Proviso-project: %s*" proj)
@@ -99,6 +86,36 @@
       )
     (proviso-display-mode)
     ))
+
+(defun proviso-gather-dired-dirs (proj)
+  "Gather all dired targets for project PROJ."
+  (let ((remote (proviso-get proj :remote-prefix))
+        (root (proviso-get proj :root-dir))
+        (blddirs (proviso-get proj :build-subdirs))
+        (srcdirs (proviso-get proj :include-files))
+        lst entry dir)
+    (dolist (element blddirs)
+      (setq entry (plist-get element :dir))
+      (setq dir (if (and entry (file-name-absolute-p entry))
+                    entry (concat root entry)))
+      (add-to-list 'lst (cons dir (concat remote dir))))
+    (dolist (element srcdirs)
+      (add-to-list 'lst (cons element (concat remote element))))
+    (add-to-list 'lst (cons root (concat remote root)))
+    lst))
+
+;;;###autoload
+(defun proviso-open-dired ()
+  "Open a dired buffer in some directory according to the current project."
+  (interactive)
+  (let ((cands (proviso-gather-dired-dirs (proviso-current-project)))
+        result)
+    (ivy-read "Open dired: " cands
+              :caller 'proviso-open-dired
+              :action (lambda (x)
+                        (if (file-readable-p (cdr x))
+                            (dired (cdr x))
+                          (error "%s does not exist!" (cdr x)))))))
 
 (defcustom proviso-prefix-key
   "\C-cp"
