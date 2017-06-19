@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-19 11:05:00 dan.harms>
+;; Modified Time-stamp: <2017-06-19 11:27:37 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -98,7 +98,7 @@ This may or may not be for the first time."
 (defun proviso-refresh-current-project ()
   "Make sure the current buffer's project is up-to-date."
   (interactive)
-  (proviso--on-proj-loaded 'proviso-local-proj))
+  (proviso--on-proj-loaded proviso-local-proj))
 
 (defun proviso-switch-buffer-defun (prev curr)
   "Called on buffer change events, with PREV and CURR the buffers that changed."
