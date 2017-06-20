@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-31 08:32:50 dharms>
+;; Modified Time-stamp: <2017-06-20 17:53:47 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -53,15 +53,15 @@
     ))
 
 (ert-deftest proviso-core-compute-basename-test ()
-  (should (string= (proviso--compute-basename-from-file "example.proviso")
+  (should (string= (proviso-compute-basename-from-file "example.proviso")
                         "example"))
-  (should (string= (proviso--compute-basename-from-file ".this.proviso")
+  (should (string= (proviso-compute-basename-from-file ".this.proviso")
                         "this"))
-  (should (string= (proviso--compute-basename-from-file
+  (should (string= (proviso-compute-basename-from-file
                     "~/first/second/sample.proviso") "sample"))
-  (should (string= (proviso--compute-basename-from-file
+  (should (string= (proviso-compute-basename-from-file
                     "/home/user/third/.sample.proviso") "sample"))
-  (should (string= (proviso--compute-basename-from-file
+  (should (string= (proviso-compute-basename-from-file
                     "~/sample/.proviso") "sample"))
   ;; (should (not (string-equal (proviso--compute-basename
   ;;                             "unknown") "")))

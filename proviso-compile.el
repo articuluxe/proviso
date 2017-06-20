@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-16 20:34:12 dharms>
+;; Modified Time-stamp: <2017-06-20 17:52:14 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project compile
 
@@ -26,6 +26,7 @@
 
 ;;; Code:
 (require 'proviso-core)
+(require 'compile)
 (require 'dash)
 (require 'seq)
 

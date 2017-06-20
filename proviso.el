@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-20 17:33:21 dharms>
+;; Modified Time-stamp: <2017-06-20 17:53:47 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -150,7 +150,7 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
         ;; project name defaults to filename, unless overridden
         (setq basename (proviso-get proviso--last-proj-defined :project-name))
         (unless basename
-          (setq basename (proviso--compute-basename-from-file root-file)))
+          (setq basename (proviso-compute-basename-from-file root-file)))
         ;; todo: check for uniqueness; alter if necessary
         ;; (while (proviso-name-p basename)
         (unless proviso--last-proj-defined
