@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-19 20:20:41 dharms>
+;; Modified Time-stamp: <2017-06-20 09:22:48 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project display
 
@@ -102,7 +102,7 @@
     (dolist (element srcdirs)
       (add-to-list 'lst (cons element (concat remote element))))
     (add-to-list 'lst (cons root (concat remote root)))
-    lst))
+    (mapcar 'directory-file-name lst)))
 
 ;;;###autoload
 (defun proviso-open-dired ()
