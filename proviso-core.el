@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-19 08:30:26 dharms>
+;; Modified Time-stamp: <2017-06-20 17:42:39 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -47,11 +47,11 @@ of no matches, the default project is instead used.")
   (if proviso-local-proj proviso-local-proj proviso-curr-proj))
 
 (defun proviso-current-project-root ()
-  "Return the root directory of the current or last-known project."
+  "Return the root directory of the current or last-known project.
+If there is no active project, nil is returned."
   (interactive)
   (cond (proviso-local-proj (proviso-get proviso-local-proj :root-dir))
-        (proviso-curr-proj (proviso-get proviso-curr-proj :root-dir))
-        (t default-directory)))
+        (proviso-curr-proj (proviso-get proviso-curr-proj :root-dir))))
 
 (defun proviso-current-project-name ()
   "Return the name of the current project, if any."

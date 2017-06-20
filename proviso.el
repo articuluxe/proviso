@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-19 11:27:37 dan.harms>
+;; Modified Time-stamp: <2017-06-20 17:33:21 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 
@@ -162,22 +162,23 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
               (intern-soft (proviso-find-path-alist
                             (expand-file-name filename))
                            proviso-obarray))
-        (unless (proviso-get proviso-local-proj :root-dir)
-          (proviso-put proviso-local-proj :root-dir root-dir))
-        ;; change to absolute if necessary: in case the project listed
-        ;; root-dir as relative
-        (when (f-relative? (proviso-get proviso-local-proj :root-dir))
-          (proviso-put proviso-local-proj :project-name
-                       (f-long (proviso-get proviso-local-proj :root-dir))))
-        (unless (proviso-get proviso-local-proj :project-name)
-          (proviso-put proviso-local-proj :project-name basename))
-        (unless (proviso-get proviso-local-proj :remote-host)
-          (proviso-put proviso-local-proj :remote-host remote-host))
-        (unless (proviso-get proviso-local-proj :remote-prefix)
-          (proviso-put proviso-local-proj :remote-prefix remote-prefix))
-        (unless (proviso-get proviso-local-proj :root-stem)
-          (proviso-put proviso-local-proj :root-stem
-                       (proviso--compute-stem proviso-local-proj)))
+        (when proviso-local-proj
+          (unless (proviso-get proviso-local-proj :root-dir)
+            (proviso-put proviso-local-proj :root-dir root-dir))
+          ;; change to absolute if necessary: in case the project listed
+          ;; root-dir as relative
+          (when (f-relative? (proviso-get proviso-local-proj :root-dir))
+            (proviso-put proviso-local-proj :project-name
+                         (f-long (proviso-get proviso-local-proj :root-dir))))
+          (unless (proviso-get proviso-local-proj :project-name)
+            (proviso-put proviso-local-proj :project-name basename))
+          (unless (proviso-get proviso-local-proj :remote-host)
+            (proviso-put proviso-local-proj :remote-host remote-host))
+          (unless (proviso-get proviso-local-proj :remote-prefix)
+            (proviso-put proviso-local-proj :remote-prefix remote-prefix))
+          (unless (proviso-get proviso-local-proj :root-stem)
+            (proviso-put proviso-local-proj :root-stem
+                         (proviso--compute-stem proviso-local-proj))))
         )
       (proviso--loaded proviso-local-proj)
       )))

@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-09 17:13:45 dharms>
+;; Modified Time-stamp: <2017-06-20 17:42:12 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep command
 
@@ -56,8 +56,7 @@
                (lambda (_ _2 _3 _4)
                  read-result)))
       ;; test grep without a current project
-      (should (string= (proviso-current-project-root)
-                       default-directory))
+      (should (eq (proviso-current-project-root) nil))
       ;; empty settings; no arg uses default-directory
       (should (equal (proviso-grep--create-command)
                      (concat "find -P " (directory-file-name base)

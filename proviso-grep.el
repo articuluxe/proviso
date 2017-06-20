@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-16 17:15:19 dharms>
+;; Modified Time-stamp: <2017-06-20 17:38:21 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep
 
@@ -82,7 +82,7 @@ ARG allows customizing the selection of the root search directory."
                     ((and arg (= (prefix-numeric-value arg) 4) dirs)
                      (completing-read prompt dirs))
                     ((or (null dirs) (null first) (string-empty-p first))
-                     (proviso-current-project-root))
+                     (or (proviso-current-project-root) default-directory))
                     (t first)))
     (setq dir
           (if remote
