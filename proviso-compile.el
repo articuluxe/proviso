@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-20 17:52:14 dharms>
+;; Modified Time-stamp: <2017-06-21 06:24:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project compile
 
@@ -67,7 +67,7 @@ ARG allows customizing behavior."
   ))
 
 (defun proviso-compile-command-repo (&optional arg)
-  "Create a compile command for standard projects.
+  "Create a compile command for projects using a repo layout.
 ARG allows customizing behavior."
   (let ((root (or (proviso-get proviso-curr-proj :root-dir) "./"))
         (cmd (or (proviso-get proviso-curr-proj :compile-cmd) "make"))

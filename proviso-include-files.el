@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-15 17:22:06 dharms>
+;; Modified Time-stamp: <2017-06-21 06:23:42 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 
@@ -31,6 +31,7 @@
 (require 'flycheck)
 (require 'auto-complete-clang)
 (require 'cl)
+(require 'f)
 
 (defun proviso--validate-include-files (proj)
   "Validate the set of include files of project PROJ."
