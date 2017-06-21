@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, May 25, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-02 07:43:57 dharms>
+;; Modified Time-stamp: <2017-06-21 06:39:08 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso test compile
 
@@ -43,7 +43,10 @@
                  (seq-elt collection read-index)))
               ((symbol-function 'read-directory-name)
                (lambda (_ &optional _2 _3 _4 _5)
-                 read-result)))
+                 read-result))
+              ((symbol-function 'proviso--query-error)
+               (lambda (_ err)
+                 (message "proviso-query-error: %s" err))))
       (should (string= (proviso-compile-command-std)
                        "cd ./ && make"))
       (setq read-result (concat base "a/"))
@@ -88,7 +91,10 @@
                  (seq-elt collection read-index)))
               ((symbol-function 'read-directory-name)
                (lambda (_ &optional _2 _3 _4 _5)
-                 read-result)))
+                 read-result))
+              ((symbol-function 'proviso--query-error)
+               (lambda (_ err)
+                 (message "proviso-query-error: %s" err))))
       ;; open file
       (setq file-contents "
  (defun do-init (proj)
@@ -128,7 +134,10 @@
                  (seq-elt collection read-index)))
               ((symbol-function 'read-directory-name)
                (lambda (_ &optional _2 _3 _4 _5)
-                 read-result)))
+                 read-result))
+              ((symbol-function 'proviso--query-error)
+               (lambda (_ err)
+                 (message "proviso-query-error: %s" err))))
       ;; open file
       (setq file-contents "
  (defun do-init (proj)
@@ -177,7 +186,10 @@
                  (seq-elt collection read-index)))
               ((symbol-function 'read-directory-name)
                (lambda (_ &optional _2 _3 _4 _5)
-                 read-result)))
+                 read-result))
+              ((symbol-function 'proviso--query-error)
+               (lambda (_ err)
+                 (message "proviso-query-error: %s" err))))
       ;; open file
       (setq file-contents "
  (defun do-init (proj)
@@ -230,9 +242,9 @@
               ((symbol-function 'read-directory-name)
                (lambda (_ &optional _2 _3 _4 _5)
                  read-result))
-              ;; ((symbol-function 'compile)
-              ;;  (lambda (_ &optional _2) (interactive)))
-              )
+              ((symbol-function 'proviso--query-error)
+               (lambda (_ err)
+                 (message "proviso-query-error: %s" err))))
       ;; open file
       (setq file-contents "
  (defun do-init (proj)
@@ -290,9 +302,9 @@
               ((symbol-function 'read-directory-name)
                (lambda (_ &optional _2 _3 _4 _5)
                  read-result))
-              ;; ((symbol-function 'compile)
-              ;;  (lambda (_ &optional _2) (interactive)))
-              )
+              ((symbol-function 'proviso--query-error)
+               (lambda (_ err)
+                 (message "proviso-query-error: %s" err))))
       ;; open file
       (setq file-contents "
  (defun do-init (proj)
