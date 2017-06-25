@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-15 17:26:48 dharms>
+;; Modified Time-stamp: <2017-06-25 08:51:46 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso tags
 
@@ -27,7 +27,7 @@
 ;;; Code:
 (require 'proviso-core)
 (require 'tramp)
-(require 'etags-table)
+(require 'proviso-etags-table)
 (require 'proviso-etags-select)
 
 (defun proviso-tags-compute-remote-subdir-stem (proj)
