@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-25 08:51:46 dharms>
+;; Modified Time-stamp: <2017-06-26 08:49:29 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso tags
 
@@ -83,6 +83,9 @@ into :tags-alist."
     (proviso-put proj :tags-dir tag-root)
     (proviso-put proj :tags-alist
                  (append (list (concat
+                                ;; this first capture group is needed to match
+                                ;; the remote prefix
+                                "^\\(.*\\)"
                                 (proviso-get proj :root-stem)
                                 "\\(.*\\)$"))
                          (nreverse names)))))

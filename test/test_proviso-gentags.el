@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-15 17:30:49 dharms>
+;; Modified Time-stamp: <2017-06-26 08:46:28 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project tags gentags
 
@@ -66,7 +66,7 @@
                        "c"))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
-                     (list (concat base "a/b/c/" "\\(.*\\)$")
+                     (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
                            (concat base "a/b/c/.tags/first-tags")
                            (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/third-tags")
@@ -119,7 +119,7 @@
                        "c"))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
-                     (list (concat base "a/b/c/" "\\(.*\\)$")
+                     (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
                            (concat base "a/b/c/.tags/c-tags")
                            )))
       (setq arg-contents (list
@@ -169,7 +169,7 @@
                        "c"))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
-                     (list (concat base "a/b/c/" "\\(.*\\)$")
+                     (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
                            (concat base "a/b/c/.tags/first-tags")
                            (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/third-tags")
@@ -231,7 +231,7 @@
                        "c"))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
-                     (list (concat base "a/b/c/" "\\(.*\\)$")
+                     (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
                            (concat base "a/b/c/.mytags/first-tags")
                            (concat base "a/b/c/.mytags/second-tags")
                            (concat base "a/b/c/.mytags/third-tags")
@@ -293,7 +293,7 @@
                        "c"))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
-                     (list (concat base "a/b/c/" "\\(.*\\)$")
+                     (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
                            (concat base "a/b/c/.mytags/first-tags")
                            (concat base "a/b/c/.mytags/second-tags")
                            (concat base "a/b/c/.mytags/third-tags")
@@ -355,7 +355,7 @@
                        "c"))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
-                     (list (concat base "a/b/c/" "\\(.*\\)$")
+                     (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
                            (concat base "a/b/c/.tags/first-tags")
                            (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/third-tags")
@@ -418,7 +418,7 @@
                        "c"))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
-                     (list (concat base "a/b/c/" "\\(.*\\)$")
+                     (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
                            (concat base "a/b/c/.mytags/first-tags")
                            (concat base "a/b/c/.mytags/second-tags")
                            (concat base "a/b/c/.mytags/third-tags")
@@ -481,7 +481,7 @@
                        "c"))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
-                     (list (concat base "a/b/c/" "\\(.*\\)$")
+                     (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
                            (concat base "a/b/c/.tags/first-tags")
                            (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/third-tags")
@@ -546,7 +546,7 @@
                        "c"))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
-                     (list (concat base "a/b/c/" "\\(.*\\)$")
+                     (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
                            (concat base "a/b/c/.tags/first-tags")
                            (concat base "a/b/c/.tags/second-tags")
                            (concat base "a/b/c/.tags/third-tags")
