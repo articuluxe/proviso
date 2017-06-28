@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-20 17:38:21 dharms>
+;; Modified Time-stamp: <2017-06-28 17:46:44 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep
 
@@ -68,8 +68,8 @@
 (defun proviso-grep--create-command (&optional arg)
   "Create a command suitable for grep to search for a string.
 ARG allows customizing the selection of the root search directory."
-  (let ((root (proviso-get proviso-curr-proj :root-dir))
-        (dirs (proviso-get proviso-curr-proj :grep-dirs))
+  (let ((root (proviso-get (proviso-current-project) :root-dir))
+        (dirs (proviso-get (proviso-current-project) :grep-dirs))
         (prompt "Grep root: ")
         (search-string (if (region-active-p)
                            (buffer-substring (region-beginning) (region-end))
