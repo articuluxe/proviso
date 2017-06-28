@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-20 09:22:48 dan.harms>
+;; Modified Time-stamp: <2017-06-27 21:51:06 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project display
 
@@ -102,7 +102,7 @@
     (dolist (element srcdirs)
       (add-to-list 'lst (cons element (concat remote element))))
     (add-to-list 'lst (cons root (concat remote root)))
-    (mapcar 'directory-file-name lst)))
+    lst))
 
 ;;;###autoload
 (defun proviso-open-dired ()
@@ -113,9 +113,10 @@
     (ivy-read "Open dired: " cands
               :caller 'proviso-open-dired
               :action (lambda (x)
-                        (if (file-readable-p (cdr x))
-                            (dired (cdr x))
-                          (error "%s does not exist!" (cdr x)))))))
+                        (let ((file (directory-file-name (cdr x))))
+                          (if (file-readable-p file)
+                              (dired file)
+                            (error "%s does not exist!" file)))))))
 
 (defcustom proviso-prefix-key
   "\C-cp"
