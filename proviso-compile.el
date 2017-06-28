@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-21 06:24:04 dharms>
+;; Modified Time-stamp: <2017-06-28 17:50:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project compile
 
@@ -46,9 +46,9 @@
 (defun proviso-compile-command-std (&optional arg)
   "Create a compile command for standard projects.
 ARG allows customizing behavior."
-  (let ((root (or (proviso-get proviso-curr-proj :root-dir) "./"))
-        (cmd (or (proviso-get proviso-curr-proj :compile-cmd) "make"))
-        (blddirs (proviso-get proviso-curr-proj :build-subdirs))
+  (let ((root (or (proviso-get (proviso-current-project) :root-dir) "./"))
+        (cmd (or (proviso-get (proviso-current-project) :compile-cmd) "make"))
+        (blddirs (proviso-get (proviso-current-project) :build-subdirs))
         subdirs subdir dir)
     (setq subdirs (mapcar (lambda (elt)
                             (file-name-as-directory (plist-get elt :dir))) blddirs))
@@ -69,10 +69,10 @@ ARG allows customizing behavior."
 (defun proviso-compile-command-repo (&optional arg)
   "Create a compile command for projects using a repo layout.
 ARG allows customizing behavior."
-  (let ((root (or (proviso-get proviso-curr-proj :root-dir) "./"))
-        (cmd (or (proviso-get proviso-curr-proj :compile-cmd) "make"))
-        (blddirs (proviso-get proviso-curr-proj :build-subdirs))
-        (preface (or (proviso-get proviso-curr-proj :compile-cmd-preface)
+  (let ((root (or (proviso-get (proviso-current-project) :root-dir) "./"))
+        (cmd (or (proviso-get (proviso-current-project) :compile-cmd) "make"))
+        (blddirs (proviso-get (proviso-current-project) :build-subdirs))
+        (preface (or (proviso-get (proviso-current-project) :compile-cmd-preface)
                      "source %srepo-setup.sh && "))
         origroot subdirs subdir dir)
     (setq origroot root)
@@ -110,7 +110,7 @@ ARG allows customizing behavior."
   (interactive "P")
   (setq proviso-compile--should-close-compile-window
         (not (get-buffer-window "*compilation*" 'visible)))
-  (let ((cmd (or (proviso-get proviso-curr-proj :compile-defun)
+  (let ((cmd (or (proviso-get (proviso-current-project) :compile-defun)
                  proviso-compile-command
                  'proviso-compile-command-std)))
     (when (setq compile-command (funcall cmd arg))
