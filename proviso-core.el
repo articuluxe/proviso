@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-20 17:53:47 dharms>
+;; Modified Time-stamp: <2017-06-29 08:35:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -88,6 +88,10 @@ and the old one: `lambda(new old)()'.")
 (defvar proviso-hook-on-file-opened '()
   "Hooks run whenever a file is opened that belongs to a project.
 Hook functions are called with one parameter: the file's major mode.")
+
+(defcustom proviso-prefix-key
+  "\C-cp"
+  "Prefix key for `proviso'.")
 
 (defun proviso-proj-p (proj)
   "Return non-nil if PROJ is a project."
