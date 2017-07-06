@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, March 31, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-19 11:04:36 dan.harms>
+;; Modified Time-stamp: <2017-07-05 21:52:16 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso test
 
@@ -45,6 +45,7 @@
 
 (require 'ert)
 (setq debug-on-error t)
+(setq bmkp-last-as-first-bookmark-file nil)
 
 ;; test-specific code begins here
 (require 'proviso-core)
