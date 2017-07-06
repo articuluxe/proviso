@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, June 28, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-28 08:36:35 dharms>
+;; Modified Time-stamp: <2017-07-06 08:56:45 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project dired
 
@@ -46,13 +46,31 @@
     lst))
 
 ;;;###autoload
-(defun proviso-open-dired ()
+(defun proviso-open-dired-this-project ()
   "Open a dired buffer in some directory according to the current project."
   (interactive)
   (let ((cands (proviso-gather-dired-dirs (proviso-current-project)))
         result)
     (ivy-read "Open dired: " cands
-              :caller 'proviso-open-dired
+              :caller 'proviso-open-dired-this-project
+              :action (lambda (x)
+                        (let ((file (directory-file-name (cdr x))))
+                          (if (file-readable-p file)
+                              (dired file)
+                            (error "%s does not exist!" file)))))))
+
+;;;###autoload
+(defun proviso-open-dired-all-projects ()
+  "Open a dired buffer in some directory according to all projects."
+  (interactive)
+  (let (lst cands)
+    (mapatoms (lambda (atom)
+                (push atom lst)) proviso-obarray)
+    (dolist (elt lst)
+      (setq cands (append cands
+                          (proviso-gather-dired-dirs elt))))
+    (ivy-read "Open dired: " cands
+              :caller 'proviso-open-dired-all-projects
               :action (lambda (x)
                         (let ((file (directory-file-name (cdr x))))
                           (if (file-readable-p file)
