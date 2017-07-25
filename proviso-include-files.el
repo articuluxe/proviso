@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-21 06:23:42 dharms>
+;; Modified Time-stamp: <2017-07-25 13:54:28 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 
@@ -122,23 +122,21 @@
             )))
     ;; set flycheck for c++
     (when (eq major-mode 'c++-mode)
-      (if (executable-find "clang")
-          (progn                        ;clang
-            (set (make-local-variable 'flycheck-clang-language-standard)
-                 proviso-clang-standard-version)
-            (set (make-local-variable 'flycheck-clang-standard-library)
-                 "libc++")
-            (set (make-local-variable 'flycheck-clang-include-path)
-                 (proviso-get proj :include-files))
-            (add-to-list 'flycheck-disabled-checkers 'c/c++-gcc)
-            )
-        ;; gcc
-        (set (make-local-variable 'flycheck-gcc-language-standard)
-             proviso-gcc-standard-version)
-        (set (make-local-variable 'flycheck-gcc-include-path)
-             (proviso-get proj :include-files))
-        (add-to-list 'flycheck-disabled-checkers 'c/c++-clang)
-        ))))
+      ;; clang
+      (set (make-local-variable 'flycheck-clang-language-standard)
+           proviso-clang-standard-version)
+      (set (make-local-variable 'flycheck-clang-standard-library)
+           "libc++")
+      (set (make-local-variable 'flycheck-clang-include-path)
+           (proviso-get proj :include-files))
+      ;; gcc
+      (set (make-local-variable 'flycheck-gcc-language-standard)
+           proviso-gcc-standard-version)
+      (set (make-local-variable 'flycheck-gcc-include-path)
+           (proviso-get proj :include-files))
+      ;; favor gcc over clang for now
+      (add-to-list 'flycheck-disabled-checkers 'c/c++-clang)
+      )))
 
 (add-hook 'proviso-hook-on-project-init 'proviso--set-include-files)
 ;; add the validation last so it runs first
