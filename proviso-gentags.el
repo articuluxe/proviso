@@ -3,9 +3,11 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-08 17:42:26 dharms>
+;; Modified Time-stamp: <2017-08-15 17:51:25 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project etags ctags
+;; URL: https://github.com/articuluxe/proviso.git
+;; Package-Requires: ((emacs "24.4"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

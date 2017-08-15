@@ -3,9 +3,11 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-07-25 13:54:28 dan.harms>
+;; Modified Time-stamp: <2017-08-15 17:48:08 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
+;; URL: https://github.com/articuluxe/proviso.git
+;; Package-Requires: ((emacs "24.4"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -21,7 +23,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;; Set settings having to do with include files.
 ;;
 
 ;;; Code:

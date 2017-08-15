@@ -3,9 +3,11 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-28 08:36:55 dharms>
+;; Modified Time-stamp: <2017-08-15 17:51:29 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
+;; URL: https://github.com/articuluxe/proviso.git
+;; Package-Requires: ((emacs "24.4"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
