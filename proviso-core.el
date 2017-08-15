@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-29 08:35:03 dharms>
+;; Modified Time-stamp: <2017-08-15 17:26:02 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -64,12 +64,13 @@ If there is no active project, nil is returned."
 ;;   - External:
 ;;  :include-files :include-ff-files
 ;;  :build-subdirs
+;;  :compile-cmd :compile-defun
+;;  :gcc-standard :clang-standard
 ;;   - Intenal:
 ;; :root-dir :project-name :inited :initfun
 ;; :remote-prefix :remote-host :root-stem
 ;; :registers
 ;; :tags-alist :tags-dir
-;; :compile-cmd :compile-defun
 
 ;; hooks
 (defvar proviso-hook-on-project-pre-init '()

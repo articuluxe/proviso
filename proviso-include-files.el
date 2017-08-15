@@ -91,8 +91,6 @@
   (let ((cmd (concat "echo | " compiler " -v -x c++ -E - 2>&1 | "
                      "grep -A 20 starts | grep include | grep -v search")))
     (split-string (shell-command-to-string cmd))))
-(defvar proviso-clang-standard-version "c++14")
-(defvar proviso-gcc-standard-version "c++14")
 
 (defun proviso--include-on-file-opened (proj mode)
   "A file has been opened for project PROJ in mode MODE."
@@ -109,7 +107,7 @@
                                 (or (getenv "CXX") "g++")))))
       (set (make-local-variable 'ac-clang-flags)
            (append
-            `(,(concat "-std=" proviso-clang-standard-version)
+            `(,(concat "-std=" flycheck-clang-standard-library)
               "-code-completion-macros" "-code-completion-patterns")
             (mapcar (lambda(x) (concat "-I" (expand-file-name x)))
                     (proviso-get proj :include-files))
@@ -123,15 +121,15 @@
     ;; set flycheck for c++
     (when (eq major-mode 'c++-mode)
       ;; clang
-      (set (make-local-variable 'flycheck-clang-language-standard)
-           proviso-clang-standard-version)
+      (when (proviso-get proj :clang-standard)
+        (setq-local flycheck-clang-language-standard (proviso-get proj :clang-standard)))
       (set (make-local-variable 'flycheck-clang-standard-library)
            "libc++")
       (set (make-local-variable 'flycheck-clang-include-path)
            (proviso-get proj :include-files))
       ;; gcc
-      (set (make-local-variable 'flycheck-gcc-language-standard)
-           proviso-gcc-standard-version)
+      (when (proviso-get proj :gcc-standard)
+        (setq-local flycheck-gcc-language-standard (proviso-get proj :gcc-standard)))
       (set (make-local-variable 'flycheck-gcc-include-path)
            (proviso-get proj :include-files))
       ;; favor gcc over clang for now
