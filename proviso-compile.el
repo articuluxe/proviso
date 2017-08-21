@@ -3,9 +3,9 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-08-15 17:51:28 dharms>
+;; Modified Time-stamp: <2017-08-21 08:31:35 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: proviso project compile
+;; Keywords: c languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "24.4"))
 
@@ -116,8 +116,8 @@ ARG allows customizing behavior."
                  proviso-compile-command
                  'proviso-compile-command-std)))
     (when (setq compile-command (funcall cmd arg))
-      ;; (funcall-interactively 'compile (list arg))))
-      (call-interactively 'compile))))
+      (let ((current-prefix-arg nil))
+        (call-interactively 'compile)))))
 
 (defun proviso-recompile (&optional arg)
   "Start the process of re-compilation, according to some settings.
