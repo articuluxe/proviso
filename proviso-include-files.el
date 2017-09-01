@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-08-15 17:48:08 dharms>
+;; Modified Time-stamp: <2017-09-01 17:49:38 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -32,7 +32,7 @@
 (require 'find-file)
 (require 'flycheck)
 (require 'auto-complete-clang)
-(require 'cl)
+(require 'cl-lib)
 (require 'f)
 
 (defun proviso--validate-include-files (proj)
@@ -80,7 +80,7 @@
     (proviso-put proj :include-files includes)
     ;; for ff-search-directories, prepend current dir and append root
     (proviso-put proj :include-ff-files
-                 (remove-duplicates
+                 (cl-remove-duplicates
                   ;; ff-search-directories doesn't want a trailing slash
                   (mapcar 'directory-file-name
                           (append '(".")
