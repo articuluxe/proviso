@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-08-21 08:31:35 dharms>
+;; Modified Time-stamp: <2017-09-01 17:23:33 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -23,7 +23,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;; Provide compile utilities.
 ;;
 
 ;;; Code:
@@ -32,8 +32,11 @@
 (require 'dash)
 (require 'seq)
 
-(defvar proviso-compile--should-close-compile-window nil
-  "Internal setting controls closing of the window post-compile.")
+(defvar proviso-compile--window-visible nil
+  "Internal variable tracks whether the compile window was visible originally.")
+(defvar proviso-compile--window-count nil
+  "Internal variable tracks how many windows existed pre-compile.")
+
 (defvar proviso-compile-command-list
   (list #'proviso-compile-command-std #'proviso-compile-command-repo)
   "List of functions to create compile commands.")
@@ -110,8 +113,7 @@ This will be used for projects that don't specify their own value."
   "Start the process of compilation, according to some settings.
 ARG allows customizing behavior."
   (interactive "P")
-  (setq proviso-compile--should-close-compile-window
-        (not (get-buffer-window "*compilation*" 'visible)))
+  (proviso-compile--pre-compile)
   (let ((cmd (or (proviso-get (proviso-current-project) :compile-defun)
                  proviso-compile-command
                  'proviso-compile-command-std)))
@@ -123,8 +125,7 @@ ARG allows customizing behavior."
   "Start the process of re-compilation, according to some settings.
 ARG allows customizing behavior."
   (interactive "P")
-  (setq proviso-compile--should-close-compile-window
-        (not (get-buffer-window "*compilation*" 'visible)))
+  (proviso-compile--pre-compile)
   (call-interactively 'recompile))
 
 (with-eval-after-load 'cc-mode
@@ -170,11 +171,24 @@ Returns non-nil to signify the error can be ignored."
         (goto-char (match-end 1)))
       nil)))
 
-(defun proviso-compile-bury-buffer-if-successful (buffer string)
+(defun proviso-compile--pre-compile ()
+  "Store state pre-compile to be used post-compile."
+  (setq proviso-compile--window-visible
+        (get-buffer-window "*compilation*" 'visible))
+  (setq proviso-compile--window-count (count-windows)))
+
+(defun proviso-compile-should-delete-compile-window ()
+  "Return non-nil if the compilation window should be deleted."
+  (or (not (eq proviso-compile--window-count (count-windows)))
+      (not proviso-compile--window-visible)))
+
+(defun proviso-compile-dispose-buffer (buffer string)
   "Bury compilation buffer BUFFER if appropriate.
-STRING describes how the process finished.
-Currently, it is closed if compilation succeeded without warnings
-or errors."
+STRING describes how the process finished.  A precondition to
+burying the buffer is whether or not compilation succeeded
+without warnings or errors.  In addition,
+\\[proviso-compile-should-delete-compile-window] must return
+non-nil."
   (if (and
        (string-match "compilation" (buffer-name buffer))
        (string-match "finished" string)
@@ -183,12 +197,12 @@ or errors."
                       (lambda (buf)
                         (let ((win (get-buffer-window buf t)))
                           (bury-buffer buf)
-                          (if proviso-compile--should-close-compile-window
+                          (if (proviso-compile-should-delete-compile-window)
                               (delete-window win)
                             (switch-to-prev-buffer win 'kill))))
                       buffer)))
 
-(add-hook 'compilation-finish-functions 'proviso-compile-bury-buffer-if-successful)
+(add-hook 'compilation-finish-functions 'proviso-compile-dispose-buffer)
 
 (provide 'proviso-compile)
 ;;; proviso-compile.el ends here
