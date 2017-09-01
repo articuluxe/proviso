@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-08-15 17:51:26 dharms>
+;; Modified Time-stamp: <2017-09-01 17:44:21 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -23,7 +23,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;; A collection of utilities pertaining to displaying status of proviso.
 ;;
 
 ;;; Code:
@@ -32,7 +32,8 @@
 
 (defface proviso-face-heading '((((background dark)) (:foreground "Yellow"))
                                 (t (:foreground "Blue")))
-  "Face used to highlight headings.")
+  "Face used to highlight headings."
+  :group 'proviso-custom-group)
 
 ;;;###autoload
 (defun proviso-display-print-project ()

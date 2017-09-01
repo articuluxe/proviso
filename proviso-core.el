@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-08-15 17:51:27 dharms>
+;; Modified Time-stamp: <2017-09-01 17:44:33 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -23,7 +23,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;; Core utilities used by proviso.
 ;;
 
 ;;; Code:
@@ -92,9 +92,14 @@ and the old one: `lambda(new old)()'.")
   "Hooks run whenever a file is opened that belongs to a project.
 Hook functions are called with one parameter: the file's major mode.")
 
+(defgroup proviso-custom-group nil
+  "Proviso is a collection of coding utilities."
+  :group 'coding)
+
 (defcustom proviso-prefix-key
   "\C-cp"
-  "Prefix key for `proviso'.")
+  "Prefix key for `proviso'."
+  :group 'proviso-custom-group)
 
 (defun proviso-proj-p (proj)
   "Return non-nil if PROJ is a project."
