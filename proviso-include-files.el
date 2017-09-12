@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-01 17:49:38 dharms>
+;; Modified Time-stamp: <2017-09-12 17:43:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -100,26 +100,6 @@
   (when (bound-and-true-p c-buffer-is-cc-mode)
     (set (make-local-variable 'achead:include-directories)
          (proviso-get proj :include-files))
-    ;; set 'compiler-include-dirs for ac-clang
-    (when (executable-find "clang")
-      (or (proviso-get proj :compiler-include-dirs)
-          (proviso-put proj :compiler-include-dirs
-                       (mapcar (lambda(x) (concat "-I" x))
-                               (proviso--gather-compiler-includes
-                                (or (getenv "CXX") "g++")))))
-      (set (make-local-variable 'ac-clang-flags)
-           (append
-            `(,(concat "-std=" flycheck-clang-standard-library)
-              "-code-completion-macros" "-code-completion-patterns")
-            (mapcar (lambda(x) (concat "-I" (expand-file-name x)))
-                    (proviso-get proj :include-files))
-            (list `,(concat "-I"
-                            (proviso-get proj :remote-prefix)
-                            (directory-file-name
-                             (expand-file-name
-                              (proviso-get proj :root-dir)))))
-            (proviso-get proj :compiler-include-dirs)
-            )))
     ;; set flycheck for c++
     (when (eq major-mode 'c++-mode)
       ;; clang
@@ -136,7 +116,28 @@
            (proviso-get proj :include-files))
       ;; favor gcc over clang for now
       (add-to-list 'flycheck-disabled-checkers 'c/c++-clang)
-      )))
+      )
+    ;; set 'compiler-include-dirs for ac-clang
+    (when (executable-find "clang")
+      (or (proviso-get proj :compiler-include-dirs)
+          (proviso-put proj :compiler-include-dirs
+                       (mapcar (lambda(x) (concat "-I" x))
+                               (proviso--gather-compiler-includes
+                                (or (getenv "CXX") "g++")))))
+      (set (make-local-variable 'ac-clang-flags)
+           (append
+            `(,(concat "-stdlib=" flycheck-clang-standard-library)
+              "-code-completion-macros" "-code-completion-patterns")
+            (mapcar (lambda(x) (concat "-I" (expand-file-name x)))
+                    (proviso-get proj :include-files))
+            (list `,(concat "-I"
+                            (proviso-get proj :remote-prefix)
+                            (directory-file-name
+                             (expand-file-name
+                              (proviso-get proj :root-dir)))))
+            (proviso-get proj :compiler-include-dirs)
+            )))
+    ))
 
 (add-hook 'proviso-hook-on-project-init 'proviso--set-include-files)
 ;; add the validation last so it runs first
