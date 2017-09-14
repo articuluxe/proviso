@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-01 17:44:33 dharms>
+;; Modified Time-stamp: <2017-09-14 17:47:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -68,6 +68,8 @@ If there is no active project, nil is returned."
 ;;  :build-subdirs
 ;;  :compile-cmd :compile-defun
 ;;  :gcc-standard :clang-standard
+;;  :grep-include-files :grep-exclude-files
+;;  :grep-exclude-dirs
 ;;   - Intenal:
 ;; :root-dir :project-name :inited :initfun
 ;; :remote-prefix :remote-host :root-stem

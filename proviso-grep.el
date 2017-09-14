@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-14 08:51:50 dharms>
+;; Modified Time-stamp: <2017-09-14 18:01:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -64,46 +64,54 @@
 (defvar proviso-grep-dir-blacklist '("*.git")
   "List of uninteresting directory patterns.")
 
-(defvar proviso-grep--extension-str "" "Sub-list cache of interesting extensions.")
+(defvar proviso-grep--cached-cmd ""
+  "A cached value of the grep sub-command.")
 
-(defun proviso-grep--create-file-exclusion-str ()
-  "Create a grep subcommand to exclude files."
-  (mapconcat 'identity proviso-grep-file-blacklist "\" -o -name \""))
+(defun proviso-grep--create-file-exclusion-str (lst)
+  "Create a grep subcommand to exclude files from LST."
+  (mapconcat 'identity lst "\" -o -name \""))
 
-(defun proviso-grep--create-dir-exclusion-str ()
-  "Create a grep subcommand to exclude dirs."
-  (mapconcat 'identity proviso-grep-dir-blacklist "\" -o -path \""))
+(defun proviso-grep--create-dir-exclusion-str (lst)
+  "Create a grep subcommand to exclude dirs from LST."
+  (mapconcat 'identity lst "\" -o -path \""))
 
-(defun proviso-grep--create-inclusion-str ()
-  "Create a grep subcommand to match files."
-  (mapconcat 'identity proviso-grep-file-whitelist "\" -o -name \""))
+(defun proviso-grep--create-inclusion-str (lst)
+  "Create a grep subcommand to match files from LST."
+  (mapconcat 'identity lst "\" -o -name \""))
 
-(defun proviso-grep--create-grep-str ()
-  "Create a grep command string."
-  (let ((has-excludefiles-p (not (seq-empty-p proviso-grep-file-blacklist)))
-        (has-excludedirs-p (not (seq-empty-p proviso-grep-dir-blacklist)))
-        (has-includefiles-p (not (seq-empty-p proviso-grep-file-whitelist))))
+(defun proviso-grep--create-grep-str (proj)
+  "Create a grep command string according to the settings of PROJ."
+  (let ((exclude-files (or (proviso-get proj :grep-exclude-files)
+                           proviso-grep-file-blacklist))
+        (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
+                          proviso-grep-dir-blacklist))
+        (include-files (or (proviso-get proj :grep-include-files)
+                           proviso-grep-file-whitelist))
+        has-exclude-dirs-p has-exclude-files-p has-include-files-p)
+    (setq has-exclude-files-p (not (seq-empty-p exclude-files)))
+    (setq has-exclude-dirs-p (not (seq-empty-p exclude-dirs)))
+    (setq has-include-files-p (not (seq-empty-p include-files)))
     (concat
      ;; add files to exclude
-     (if (or has-excludefiles-p has-excludedirs-p)
+     (if (or has-exclude-files-p has-exclude-dirs-p)
          (concat " \"(\" "
-                 (when has-excludefiles-p
+                 (when has-exclude-files-p
                    (concat "-name \""
-                           (proviso-grep--create-file-exclusion-str)
+                           (proviso-grep--create-file-exclusion-str exclude-files)
                            "\" "))
-                 (when has-excludedirs-p
+                 (when has-exclude-dirs-p
                    (concat
-                    (when has-excludefiles-p "-o ")
+                    (when has-exclude-files-p "-o ")
                     "-path \""
-                    (proviso-grep--create-dir-exclusion-str)
+                    (proviso-grep--create-dir-exclusion-str exclude-dirs)
                     "\" "))
                  "\")\" -prune -o ")
        " ")
      "-type f "
      ;; add files to include
-     (when has-includefiles-p
+     (when has-include-files-p
        (concat "\"(\" -name \""
-               (proviso-grep--create-inclusion-str)
+               (proviso-grep--create-inclusion-str include-files)
                "\" \")\" "))
      "-print0 | xargs -0 grep -Isn ")))
 
@@ -133,12 +141,13 @@ ARG allows customizing the selection of the root search directory."
             ;; some variants of grep don't handle relative paths
             ;; (but expand-file-name doesn't work remotely)
             (expand-file-name dir)))
-    (when (string-empty-p proviso-grep--extension-str)
-      (setq proviso-grep--extension-str (proviso-grep--create-grep-str)))
+    (when (string-empty-p proviso-grep--cached-cmd)
+      (setq proviso-grep--cached-cmd (proviso-grep--create-grep-str
+                                      (proviso-current-project))))
     (concat "find -P "
             ;; some grep variants barf on trailing slashes
             (directory-file-name dir)
-            proviso-grep--extension-str
+            proviso-grep--cached-cmd
             (when search-string
               (s-replace
                "\\*" "\\\\*"

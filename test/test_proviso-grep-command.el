@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-14 08:53:03 dharms>
+;; Modified Time-stamp: <2017-09-14 17:44:48 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep command
 
@@ -36,7 +36,7 @@
         (proviso-grep-file-blacklist '("*moc_*" "*qrc_*"))
         (proviso-grep-dir-blacklist '("*.git"))
         )
-    (should (string= (proviso-grep--create-grep-str)
+    (should (string= (proviso-grep--create-grep-str nil)
                      (concat
                       " \"(\" -name \"*moc_*\" -o -name \"*qrc_*\" -o -path \"*.git\" \")\" "
                       "-prune -o -type f \"(\" -name \"*.cpp\" -o -name \"*.hpp"
@@ -49,7 +49,7 @@
         (proviso-grep-file-blacklist '())
         (proviso-grep-dir-blacklist '("*.git"))
         )
-    (should (string= (proviso-grep--create-grep-str)
+    (should (string= (proviso-grep--create-grep-str nil)
                      (concat
                       " \"(\" -path \"*.git\" \")\" "
                       "-prune -o -type f \"(\" -name \"*.cpp\" -o -name \"*.hpp"
@@ -62,7 +62,7 @@
         (proviso-grep-file-blacklist '("*moc_*" "*qrc_*"))
         (proviso-grep-dir-blacklist '())
         )
-    (should (string= (proviso-grep--create-grep-str)
+    (should (string= (proviso-grep--create-grep-str nil)
                      (concat
                       " \"(\" -name \"*moc_*\" -o -name \"*qrc_*\" \")\" "
                       "-prune -o -type f \"(\" -name \"*.cpp\" -o -name \"*.hpp"
@@ -75,7 +75,7 @@
         (proviso-grep-file-blacklist '())
         (proviso-grep-dir-blacklist '())
         )
-    (should (string= (proviso-grep--create-grep-str)
+    (should (string= (proviso-grep--create-grep-str nil)
                      (concat
                       " -type f \"(\" -name \"*.cpp\" -o -name \"*.hpp"
                       "\" \")\" -print0 | xargs -0 grep -Isn ")))
@@ -87,7 +87,7 @@
         (proviso-grep-file-blacklist '("*moc_*" "*qrc_*"))
         (proviso-grep-dir-blacklist '("*.git" "*.svn"))
         )
-    (should (string= (proviso-grep--create-grep-str)
+    (should (string= (proviso-grep--create-grep-str nil)
                      (concat
                       " \"(\" -name \"*moc_*\" -o -name \"*qrc_*\" -o -path \"*.git\" -o -path \"*.svn\" \")\" "
                       "-prune -o -type f -print0 | xargs -0 grep -Isn ")))
@@ -99,7 +99,7 @@
         (proviso-grep-file-blacklist '())
         (proviso-grep-dir-blacklist '())
         )
-    (should (string= (proviso-grep--create-grep-str)
+    (should (string= (proviso-grep--create-grep-str nil)
                      (concat
                       " -type f -print0 | xargs -0 grep -Isn ")))
     ))
@@ -126,19 +126,19 @@
       ;; empty settings; no arg uses default-directory
       (should (equal (proviso-grep--create-command)
                      (concat "find -P " (directory-file-name base)
-                             (proviso-grep--create-grep-str)
+                             (proviso-grep--create-grep-str nil)
                      )))
       ;; empty settings; arg 4 uses default-directory
       (should (equal (proviso-grep--create-command 4)
                      (concat "find -P " (directory-file-name base)
-                             (proviso-grep--create-grep-str)
+                             (proviso-grep--create-grep-str nil)
                              )))
       ;; empty settings: arg 16 reads dir from user
       (setq read-result (concat (directory-file-name base) "/a/b/c/d/e/"))
       (should (equal (proviso-grep--create-command 16)
                      (concat "find -P "
                              (concat (directory-file-name base) "/a/b/c/d/e")
-                             (proviso-grep--create-grep-str)
+                             (proviso-grep--create-grep-str nil)
                      )))
       ;; open file
       (setq file-contents "
@@ -165,19 +165,19 @@
       ;; no arg takes from the first element of dirs
       (should (equal (proviso-grep--create-command)
                      (concat "find -P " base "a/b/c/d/e"
-                             (proviso-grep--create-grep-str)
+                             (proviso-grep--create-grep-str proviso-local-proj)
                              )))
       ;; arg 4 lets user select dir
       (setq read-result (concat base "/a/b/c/d/e/f/"))
       (should (equal (proviso-grep--create-command 4)
                      (concat "find -P " base "a/b/c/d/e/f"
-                             (proviso-grep--create-grep-str)
+                             (proviso-grep--create-grep-str proviso-local-proj)
                      )))
       ;; arg 16 asks user for dir
       (setq read-result (concat base "/a/b/c/d/e/f/"))
       (should (equal (proviso-grep--create-command 16)
                      (concat "find -P " base "a/b/c/d/e/f"
-                             (proviso-grep--create-grep-str)
+                             (proviso-grep--create-grep-str proviso-local-proj)
                      )))
 
       ;; clean up buffers
