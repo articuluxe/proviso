@@ -3,9 +3,9 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-08-15 17:51:25 dharms>
+;; Modified Time-stamp: <2017-09-14 08:51:50 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: proviso project grep
+;; Keywords: unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "24.4"))
 
@@ -21,9 +21,8 @@
 
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 ;;; Commentary:
-
+;; Provides utilities enabling a grep command.
 ;;
 
 ;;; Code:
@@ -49,23 +48,64 @@
 
 (add-hook 'proviso-hook-on-project-init 'proviso--set-grep-dirs)
 
-(defvar proviso-extensions '(".cpp" ".cc" ".cxx" ".c" ".C"
-                             ".hpp" ".hh" ".hxx" ".h" ".H"
-                             ".in" ".ac" ".cmake"
-                             ".xml" ".json" ".sql"
-                             ".el" ".py" ".sh" ".cs" ".java"
-                             ".proto" ".dart"
-                             )
-  "List of interesting file extensions.")
+(defvar proviso-grep-file-whitelist '(
+                                      "*.cpp" "*.cc" "*.cxx" "*.c" "*.C"
+                                      "*.hpp" "*.hh" "*.hxx" "*.h" "*.H"
+                                      "*.in" "*.ac" "*.cmake"
+                                      "*.xml" "*.json" "*.sql"
+                                      "*.el" "*.py" "*.sh" "*.cs" "*.java"
+                                      "*.proto" "*.dart"
+                                      )
+  "List of interesting file patterns.")
+
+(defvar proviso-grep-file-blacklist '("*moc_*" "*qrc_*")
+  "List of uninteresting file patterns.")
+
+(defvar proviso-grep-dir-blacklist '("*.git")
+  "List of uninteresting directory patterns.")
 
 (defvar proviso-grep--extension-str "" "Sub-list cache of interesting extensions.")
 
-(defun proviso-grep--create-extensions-str ()
+(defun proviso-grep--create-file-exclusion-str ()
+  "Create a grep subcommand to exclude files."
+  (mapconcat 'identity proviso-grep-file-blacklist "\" -o -name \""))
+
+(defun proviso-grep--create-dir-exclusion-str ()
+  "Create a grep subcommand to exclude dirs."
+  (mapconcat 'identity proviso-grep-dir-blacklist "\" -o -path \""))
+
+(defun proviso-grep--create-inclusion-str ()
+  "Create a grep subcommand to match files."
+  (mapconcat 'identity proviso-grep-file-whitelist "\" -o -name \""))
+
+(defun proviso-grep--create-grep-str ()
   "Create a grep command string."
-  (concat " \"(\" -name \"*moc_*\" -o -name \"*qrc_*\" \")\" "
-          "-prune -o -type f \"(\" -name \"*"
-          (mapconcat 'identity proviso-extensions "\" -o -name \"*")
-          "\" \")\" -print0 | xargs -0 grep -Isn "))
+  (let ((has-excludefiles-p (not (seq-empty-p proviso-grep-file-blacklist)))
+        (has-excludedirs-p (not (seq-empty-p proviso-grep-dir-blacklist)))
+        (has-includefiles-p (not (seq-empty-p proviso-grep-file-whitelist))))
+    (concat
+     ;; add files to exclude
+     (if (or has-excludefiles-p has-excludedirs-p)
+         (concat " \"(\" "
+                 (when has-excludefiles-p
+                   (concat "-name \""
+                           (proviso-grep--create-file-exclusion-str)
+                           "\" "))
+                 (when has-excludedirs-p
+                   (concat
+                    (when has-excludefiles-p "-o ")
+                    "-path \""
+                    (proviso-grep--create-dir-exclusion-str)
+                    "\" "))
+                 "\")\" -prune -o ")
+       " ")
+     "-type f "
+     ;; add files to include
+     (when has-includefiles-p
+       (concat "\"(\" -name \""
+               (proviso-grep--create-inclusion-str)
+               "\" \")\" "))
+     "-print0 | xargs -0 grep -Isn ")))
 
 (defun proviso-grep--create-command (&optional arg)
   "Create a command suitable for grep to search for a string.
@@ -94,7 +134,7 @@ ARG allows customizing the selection of the root search directory."
             ;; (but expand-file-name doesn't work remotely)
             (expand-file-name dir)))
     (when (string-empty-p proviso-grep--extension-str)
-      (setq proviso-grep--extension-str (proviso-grep--create-extensions-str)))
+      (setq proviso-grep--extension-str (proviso-grep--create-grep-str)))
     (concat "find -P "
             ;; some grep variants barf on trailing slashes
             (directory-file-name dir)
