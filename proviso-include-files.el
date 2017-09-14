@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-12 17:43:15 dharms>
+;; Modified Time-stamp: <2017-09-13 21:09:27 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -127,6 +127,7 @@
       (set (make-local-variable 'ac-clang-flags)
            (append
             `(,(concat "-stdlib=" flycheck-clang-standard-library)
+              ,(concat "-std=" flycheck-clang-language-standard)
               "-code-completion-macros" "-code-completion-patterns")
             (mapcar (lambda(x) (concat "-I" (expand-file-name x)))
                     (proviso-get proj :include-files))
