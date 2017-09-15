@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-14 18:01:15 dharms>
+;; Modified Time-stamp: <2017-09-15 08:31:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -64,9 +64,6 @@
 (defvar proviso-grep-dir-blacklist '("*.git")
   "List of uninteresting directory patterns.")
 
-(defvar proviso-grep--cached-cmd ""
-  "A cached value of the grep sub-command.")
-
 (defun proviso-grep--create-file-exclusion-str (lst)
   "Create a grep subcommand to exclude files from LST."
   (mapconcat 'identity lst "\" -o -name \""))
@@ -118,14 +115,16 @@
 (defun proviso-grep--create-command (&optional arg)
   "Create a command suitable for grep to search for a string.
 ARG allows customizing the selection of the root search directory."
-  (let ((root (proviso-get (proviso-current-project) :root-dir))
-        (dirs (proviso-get (proviso-current-project) :grep-dirs))
-        (prompt "Grep root: ")
-        (search-string (if (region-active-p)
-                           (buffer-substring (region-beginning) (region-end))
-                         (thing-at-point 'symbol)))
-        (remote (file-remote-p default-directory))
-        first dir)
+  (let* ((proj (proviso-current-project))
+         (root (proviso-get proj :root-dir))
+         (dirs (proviso-get proj :grep-dirs))
+         (cmd (or (proviso-get proj :grep-cmd) ""))
+         (prompt "Grep root: ")
+         (search-string (if (region-active-p)
+                            (buffer-substring (region-beginning) (region-end))
+                          (thing-at-point 'symbol)))
+         (remote (file-remote-p default-directory))
+         first dir)
     (setq first (if (consp (car dirs)) (cdr (car dirs)) (car dirs)))
     (setq dir (cond ((and arg (= (prefix-numeric-value arg) 16))
                      (read-directory-name prompt default-directory nil t))
@@ -141,19 +140,26 @@ ARG allows customizing the selection of the root search directory."
             ;; some variants of grep don't handle relative paths
             ;; (but expand-file-name doesn't work remotely)
             (expand-file-name dir)))
-    (when (string-empty-p proviso-grep--cached-cmd)
-      (setq proviso-grep--cached-cmd (proviso-grep--create-grep-str
-                                      (proviso-current-project))))
+    (when (string-empty-p cmd)
+      (setq cmd (proviso-grep--create-grep-str proj)))
+    (when (and proj (not (proviso-get proj :grep-cmd)))
+      (proviso-put proj :grep-cmd cmd))
     (concat "find -P "
             ;; some grep variants barf on trailing slashes
             (directory-file-name dir)
-            proviso-grep--cached-cmd
+            cmd
             (when search-string
               (s-replace
                "\\*" "\\\\*"
                ;; shell-quote the search-string.  `shell-quote-argument'
                ;; escapes embedded `*' but grep needs them double-escaped.
                (shell-quote-argument search-string))))))
+
+(defun proviso-grep-clear-command ()
+  "Clear out the cached grep command (if any exists) in the current project."
+  (interactive)
+  (let (proj (proviso-current-project))
+    (when proj (proviso-put proj :grep-cmd ""))))
 
 ;;;###autoload
 (defun proviso-grep (&optional arg)
