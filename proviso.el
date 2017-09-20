@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-08-15 17:51:29 dharms>
+;; Modified Time-stamp: <2017-09-20 08:47:18 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -31,6 +31,7 @@
 ;;; Code:
 
 (require 'proviso-core)
+(require 'proviso-fulledit)
 (require 'proviso-compile)
 (require 'proviso-dired)
 (require 'proviso-display)
