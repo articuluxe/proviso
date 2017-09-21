@@ -3,9 +3,9 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-20 17:04:47 dharms>
+;; Modified Time-stamp: <2017-09-21 17:33:52 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: project proviso
+;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "24.4"))
 
@@ -28,20 +28,8 @@
 
 ;;; Code:
 (require 'seq)
-
-(defvar proviso-fulledit-accept-patterns
-  '( "\\.cpp$" "\\.cc$" "\\.cxx$" "\\.c$" "\\.C$"
-     "\\.h$" "\\.hh$" "\\.hpp$" "\\.hxx$" "\\.H$"
-     "\\.sh$" "\\.py$" "\\.sql$" "\\.java$" "\\.in$"
-     "\\.proto$" "\\.el$" "\\.cs$"
-     "^CMakeLists.txt$" "\\.cmake$"
-     "^Makefile$" "^makefile$"
-     )
-  "List of regexps which `proviso-fulledit' will open.")
-(defvar proviso-fulledit-reject-patterns
-  '( "\\.exe$" "\\.pdb$" "\\.obj$"
-     )
-  "List of regexps which `proviso-fulledit' will ignore.")
+(require 'em-glob)
+(require 'proviso-defines)
 
 (defun proviso-fulledit-test-list-for-string (lst input)
   "Return non-nil if there exists in LST a match for string INPUT.
@@ -49,16 +37,22 @@ LST is a list of regexes."
   (catch 'found
     (dolist (curr lst)
       (if (string-match curr input)
-          (throw 'found t)))
-    nil))
+          (throw 'found t)))))
 
 (defun proviso-fulledit-gather-all-files (dir reporter &optional symbolic)
   "Gather a list of filenames recursively below directory DIR.
 REPORTER is a progress reporter.  SYMBOLIC should be non-nil to
 allow the presence of symlinks in the results.  Results are
-filtered via `proviso-fulledit-accept-patterns' and
-`proviso-fulledit-reject-patterns'."
-  (let* ((all-results
+filtered via `proviso-interesting-files',
+`proviso-uninteresting-files' and `proviso-uninteresting-dirs'."
+  (let* ((proj (proviso-current-project))
+         (exclude-files (or (proviso-get proj :grep-exclude-files)
+                            proviso-uninteresting-files))
+         (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
+                           proviso-uninteresting-dirs))
+         (include-files (or (proviso-get proj :grep-include-files)
+                            proviso-interesting-files))
+         (all-results
           (directory-files
            dir t directory-files-no-dot-files-regexp t))
          (files (seq-remove 'file-directory-p all-results))
@@ -70,20 +64,24 @@ filtered via `proviso-fulledit-accept-patterns' and
     (dolist (file files)
       (and
        (proviso-fulledit-test-list-for-string
-        proviso-fulledit-accept-patterns
+        (mapcar 'eshell-glob-regexp include-files)
         (file-name-nondirectory file))
        (not (proviso-fulledit-test-list-for-string
-             proviso-fulledit-reject-patterns
+             (mapcar 'eshell-glob-regexp exclude-files)
              (file-name-nondirectory file)))
        (setq result (cons file result))
        (progress-reporter-update reporter)
        ))
     (dolist (dir dirs)
-      (setq
-       result
-       (nconc
-        result
-        (proviso-fulledit-gather-all-files dir reporter symbolic))))
+      (unless
+          (proviso-fulledit-test-list-for-string
+           (mapcar 'eshell-glob-regexp exclude-dirs)
+           dir)
+        (setq
+         result
+         (nconc
+          result
+          (proviso-fulledit-gather-all-files dir reporter symbolic)))))
     result
     ))
 

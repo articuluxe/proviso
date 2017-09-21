@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-15 08:31:09 dharms>
+;; Modified Time-stamp: <2017-09-20 17:34:30 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -27,6 +27,7 @@
 
 ;;; Code:
 (require 'proviso-core)
+(require 'proviso-defines)
 (require 'grep)
 (require 'subr-x)
 (require 's)
@@ -48,22 +49,6 @@
 
 (add-hook 'proviso-hook-on-project-init 'proviso--set-grep-dirs)
 
-(defvar proviso-grep-file-whitelist '(
-                                      "*.cpp" "*.cc" "*.cxx" "*.c" "*.C"
-                                      "*.hpp" "*.hh" "*.hxx" "*.h" "*.H"
-                                      "*.in" "*.ac" "*.cmake"
-                                      "*.xml" "*.json" "*.sql"
-                                      "*.el" "*.py" "*.sh" "*.cs" "*.java"
-                                      "*.proto" "*.dart"
-                                      )
-  "List of interesting file patterns.")
-
-(defvar proviso-grep-file-blacklist '("*moc_*" "*qrc_*")
-  "List of uninteresting file patterns.")
-
-(defvar proviso-grep-dir-blacklist '("*.git")
-  "List of uninteresting directory patterns.")
-
 (defun proviso-grep--create-file-exclusion-str (lst)
   "Create a grep subcommand to exclude files from LST."
   (mapconcat 'identity lst "\" -o -name \""))
@@ -79,11 +64,11 @@
 (defun proviso-grep--create-grep-str (proj)
   "Create a grep command string according to the settings of PROJ."
   (let ((exclude-files (or (proviso-get proj :grep-exclude-files)
-                           proviso-grep-file-blacklist))
+                           proviso-uninteresting-files))
         (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
-                          proviso-grep-dir-blacklist))
+                          proviso-uninteresting-dirs))
         (include-files (or (proviso-get proj :grep-include-files)
-                           proviso-grep-file-whitelist))
+                           proviso-interesting-files))
         has-exclude-dirs-p has-exclude-files-p has-include-files-p)
     (setq has-exclude-files-p (not (seq-empty-p exclude-files)))
     (setq has-exclude-dirs-p (not (seq-empty-p exclude-dirs)))

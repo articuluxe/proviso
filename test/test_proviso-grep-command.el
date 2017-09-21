@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-15 08:22:17 dharms>
+;; Modified Time-stamp: <2017-09-20 17:32:35 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project grep command
 
@@ -32,9 +32,9 @@
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude ()
   (let ((base (file-name-directory load-file-name))
-        (proviso-grep-file-whitelist '("*.cpp" "*.hpp"))
-        (proviso-grep-file-blacklist '("*moc_*" "*qrc_*"))
-        (proviso-grep-dir-blacklist '("*.git"))
+        (proviso-interesting-files '("*.cpp" "*.hpp"))
+        (proviso-uninteresting-files '("*moc_*" "*qrc_*"))
+        (proviso-uninteresting-dirs '("*.git"))
         )
     (should (string= (proviso-grep--create-grep-str nil)
                      (concat
@@ -45,9 +45,9 @@
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude-empty-file-blacklist ()
   (let ((base (file-name-directory load-file-name))
-        (proviso-grep-file-whitelist '("*.cpp" "*.hpp"))
-        (proviso-grep-file-blacklist '())
-        (proviso-grep-dir-blacklist '("*.git"))
+        (proviso-interesting-files '("*.cpp" "*.hpp"))
+        (proviso-uninteresting-files '())
+        (proviso-uninteresting-dirs '("*.git"))
         )
     (should (string= (proviso-grep--create-grep-str nil)
                      (concat
@@ -58,9 +58,9 @@
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude-empty-dir-blacklist ()
   (let ((base (file-name-directory load-file-name))
-        (proviso-grep-file-whitelist '("*.cpp" "*.hpp"))
-        (proviso-grep-file-blacklist '("*moc_*" "*qrc_*"))
-        (proviso-grep-dir-blacklist '())
+        (proviso-interesting-files '("*.cpp" "*.hpp"))
+        (proviso-uninteresting-files '("*moc_*" "*qrc_*"))
+        (proviso-uninteresting-dirs '())
         )
     (should (string= (proviso-grep--create-grep-str nil)
                      (concat
@@ -71,9 +71,9 @@
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude-empty-dir-and-file-blacklist ()
   (let ((base (file-name-directory load-file-name))
-        (proviso-grep-file-whitelist '("*.cpp" "*.hpp"))
-        (proviso-grep-file-blacklist '())
-        (proviso-grep-dir-blacklist '())
+        (proviso-interesting-files '("*.cpp" "*.hpp"))
+        (proviso-uninteresting-files '())
+        (proviso-uninteresting-dirs '())
         )
     (should (string= (proviso-grep--create-grep-str nil)
                      (concat
@@ -83,9 +83,9 @@
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-no-include ()
   (let ((base (file-name-directory load-file-name))
-        (proviso-grep-file-whitelist '())
-        (proviso-grep-file-blacklist '("*moc_*" "*qrc_*"))
-        (proviso-grep-dir-blacklist '("*.git" "*.svn"))
+        (proviso-interesting-files '())
+        (proviso-uninteresting-files '("*moc_*" "*qrc_*"))
+        (proviso-uninteresting-dirs '("*.git" "*.svn"))
         )
     (should (string= (proviso-grep--create-grep-str nil)
                      (concat
@@ -95,9 +95,9 @@
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-no-exclude-or-include ()
   (let ((base (file-name-directory load-file-name))
-        (proviso-grep-file-whitelist '())
-        (proviso-grep-file-blacklist '())
-        (proviso-grep-dir-blacklist '())
+        (proviso-interesting-files '())
+        (proviso-uninteresting-files '())
+        (proviso-uninteresting-dirs '())
         )
     (should (string= (proviso-grep--create-grep-str nil)
                      (concat

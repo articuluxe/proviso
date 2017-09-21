@@ -5,9 +5,9 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-20 08:54:21 dharms>
+;; Modified Time-stamp: <2017-09-21 17:35:04 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: proviso project
+;; Keywords: tools proviso project
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -34,6 +34,9 @@
   (should (proviso-fulledit-test-list-for-string
            '(".ne" "two")
            "one"))
+  (should (not (proviso-fulledit-test-list-for-string
+                '(".ne" "two")
+                "onq")))
   )
 
 (ert-run-tests-batch-and-exit (car argv))
