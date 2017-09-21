@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-20 17:58:52 dharms>
+;; Modified Time-stamp: <2017-09-21 17:46:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project sml test
 
@@ -43,7 +43,7 @@
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"\")
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -84,7 +84,7 @@
    (proviso-put proj :proj-alist
                '( (:name \"rel\" :dir \"d/\")
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -125,7 +125,7 @@
    (proviso-put proj :proj-alist
                '( (:name \"absolute\" :dir \"/home/\")
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -204,7 +204,7 @@
                   (:name \"two\" :dir \"/home\")
                   (:name \"three\" :dir \"d\")
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       ;; so parent directories should go first in this list, so that they're
       ;; later in the sml list, so that subdirs have a chance to go first
@@ -250,7 +250,7 @@
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"\")
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       ;; open 1st file
       (find-file (concat base "a/b/c/d/dfile1"))
@@ -302,7 +302,7 @@
    (proviso-put proj :proj-alist
                '( (:name \"second\" :dir \"d2/\")
                   )))
- (proviso-define \"c2\" :initfun 'do-init)
+ (proviso-define-project \"c2\" :initfun 'do-init)
 ")
       (should (not (proviso-name-p "c2")))
       (find-file (concat base "a/b/c2/d2/dfile3"))
@@ -371,7 +371,7 @@
    (proviso-put proj :build-subdirs
                '( (:name \"subdir\" :dir \"d2\")
                 )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       ;; so parent directories should go first in this list, so that they're
       ;; later in the sml list, so that subdirs have a chance to go first

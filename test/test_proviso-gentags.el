@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-26 08:46:28 dharms>
+;; Modified Time-stamp: <2017-09-21 17:46:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project tags gentags
 
@@ -56,7 +56,7 @@
                   (:name \"third\" :dir \"d2/\")
                   (:name \"fourth\" :dir \"/home/\")
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -159,7 +159,7 @@
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -221,7 +221,7 @@
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
- (proviso-define \"c\" :initfun 'do-init :tags-subdir \".mytags/\")
+ (proviso-define-project \"c\" :initfun 'do-init :tags-subdir \".mytags/\")
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -283,7 +283,7 @@
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
- (proviso-define \"c\" :initfun 'do-init :tags-subdir \".mytags\")
+ (proviso-define-project \"c\" :initfun 'do-init :tags-subdir \".mytags\")
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -345,7 +345,7 @@
                   (:name \"third\" :dir \"d2/\")
                   (:name \"fourth\" :dir \"/home/\")
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -408,7 +408,7 @@
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
- (proviso-define \"c\" :initfun 'do-init :tags-subdir \".mytags\")
+ (proviso-define-project \"c\" :initfun 'do-init :tags-subdir \".mytags\")
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -471,7 +471,7 @@
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -536,7 +536,7 @@
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))

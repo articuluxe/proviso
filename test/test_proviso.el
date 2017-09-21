@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-03-31 08:37:14 dharms>
+;; Modified Time-stamp: <2017-09-21 17:46:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: projects test
 
@@ -44,7 +44,7 @@
                (lambda (_)
                  (proviso-eval-string file-contents))))
       ;; open first file, init new project
-      (setq file-contents "(proviso-define \"c\" :name \"c\")")
+      (setq file-contents "(proviso-define-project \"c\" :name \"c\")")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (equal proviso-path-alist
@@ -67,7 +67,7 @@
                        "c"))
       (should (eq (proviso-get proviso-local-proj :inited) t))
       ;; open 3rd file, new project
-      (setq file-contents "(proviso-define \"c2\" :name \"c2\")")
+      (setq file-contents "(proviso-define-project \"c2\" :name \"c2\")")
       (should (not (proviso-name-p "c2")))
       (find-file (concat base "a/b/c2/d2/dfile3"))
       (should (proviso-name-p "c2"))

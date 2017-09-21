@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-14 18:11:52 dharms>
+;; Modified Time-stamp: <2017-09-21 17:47:11 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -114,14 +114,14 @@ Hook functions are called with one parameter: the file's major mode.")
 (defvar proviso--ext "proviso"
   "The extension for project files.")
 
-(defun proviso-define (project &rest plist)
+(defun proviso-define-project (project &rest plist)
   "Create or replace a project named PROJECT.
 Add to it the property list PLIST."
   (let ((p (intern project proviso-obarray)))
     (setplist p plist)
     (setq proviso--last-proj-defined p)))
 
-(defun proviso-define-derived (project parent &rest plist)
+(defun proviso-define-derived-project (project parent &rest plist)
   "Create or replace a project named PROJECT.
 Its parent is PARENT.  Add to it the property list PLIST."
   (let ((p (intern project proviso-obarray)))

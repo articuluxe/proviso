@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, May 25, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-21 06:39:08 dharms>
+;; Modified Time-stamp: <2017-09-21 17:46:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso test compile
 
@@ -61,7 +61,7 @@
    (proviso-put proj :build-subdirs
                 '( (:name \"bld\" :dir \"d2/\")))
   )
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -104,7 +104,7 @@
    (proviso-put proj :build-subdirs
                 '( (:name \"bld\" :dir \"d2/\")))
   )
- (proviso-define \"c\" :initfun 'do-init :compile-cmd \"nmake -n \")
+ (proviso-define-project \"c\" :initfun 'do-init :compile-cmd \"nmake -n \")
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -149,7 +149,7 @@
                    (:name \"two\" :dir \"d/e/f\")
                  ))
   )
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -201,7 +201,7 @@
                    (:name \"two\" :dir \"d/e/f\")
                  ))
   )
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (setq proviso-compile-command 'proviso-compile-command-repo)
       (find-file (concat base "a/b/c/d/dfile1"))
@@ -256,7 +256,7 @@
                    (:name \"two\" :dir \"d/e/f\")
                  ))
   )
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (setq proviso-compile-command 'proviso-compile-command-repo)
       (find-file (concat base "a/b/c/d/dfile1"))
@@ -316,7 +316,7 @@
                    (:name \"two\" :dir \"d/e/f\")
                  ))
   )
- (proviso-define \"c\" :initfun 'do-init :compile-defun 'proviso-compile-command-repo)
+ (proviso-define-project \"c\" :initfun 'do-init :compile-defun 'proviso-compile-command-repo)
 ")
       ;; will be overridden by the project setting for :compile-defun
       (setq proviso-compile-command 'proviso-compile-command-std)

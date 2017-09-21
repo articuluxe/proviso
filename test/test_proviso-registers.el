@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April  4, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-05-01 08:32:25 dharms>
+;; Modified Time-stamp: <2017-09-21 17:46:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project registers test
 
@@ -51,7 +51,7 @@
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"\")
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -80,7 +80,7 @@
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"\" :register ?1)
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -109,7 +109,7 @@
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"d/\" :register ?1)
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -138,7 +138,7 @@
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"/home/\" :register ?1)
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -170,7 +170,7 @@
    (proviso-put proj :build-subdirs
                '( (:name \"subdir\" :dir \"d2/\" :register ?2)
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -203,7 +203,7 @@
    (proviso-put proj :build-subdirs
                '( (:name \"subdir\" :dir \"/home/\" :register ?2)
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -236,7 +236,7 @@
    (proviso-put proj :build-subdirs
                '( (:name \"subdir\" :dir \"\" :register ?2)
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -310,7 +310,7 @@
 ;;    (proviso-put proj :proj-alist
 ;;                '( (:name \"base\" :dir \"d/\" :register ?1)
 ;;                   )))
-;;  (proviso-define \"c\" :initfun 'do-init)
+;;  (proviso-define-project \"c\" :initfun 'do-init)
 ;; ")
 ;;       (find-file (concat base "a/b/c/d/dfile1"))
 ;;       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -342,7 +342,7 @@
    (proviso-put proj :build-subdirs
                '( (:name \"subdir\" :dir \"d2/\" :register ?2)
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
@@ -377,7 +377,7 @@
    (proviso-put proj :build-subdirs
                '( (:name \"subdir\" :dir \"d2/\" :register ?2)
                   )))
- (proviso-define \"c2\" :initfun 'do-init)
+ (proviso-define-project \"c2\" :initfun 'do-init)
 ")
       (should (not (proviso-name-p "c2")))
       (find-file (concat base "a/b/c2/d2/dfile3"))

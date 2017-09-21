@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-04-19 08:49:41 dharms>
+;; Modified Time-stamp: <2017-09-21 17:46:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso bookmark test
 
@@ -43,7 +43,7 @@
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"\")
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (ignore-errors
         (f-delete (concat base "a/b/c/c.bmk") t))
@@ -101,7 +101,7 @@
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"d/\")
                   )))
- (proviso-define \"c\" :initfun 'do-init)
+ (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (ignore-errors
         (f-delete (concat base "a/b/c/c.bmk") t))
@@ -134,7 +134,7 @@
    (proviso-put proj :build-subdirs
                '( (:name \"subdir\" :dir \"d2/\" :register ?2)
                   )))
- (proviso-define \"c2\" :initfun 'do-init)
+ (proviso-define-project \"c2\" :initfun 'do-init)
 ")
       (should (not (proviso-name-p "c2")))
       (find-file (concat base "a/b/c2/d2/dfile3"))

@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-06-20 17:53:47 dharms>
+;; Modified Time-stamp: <2017-09-21 17:47:12 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso projects
 
@@ -32,7 +32,7 @@
 ;; tests
 (ert-deftest proviso-core-manipulate-properties-test ()
   (proviso-test-reset-all)
-  (proviso-define "test")
+  (proviso-define-project "test")
   (let ((p (intern-soft "test" proviso-obarray)))
     (should (proviso-proj-p p))
     (should-not (proviso-get p :a))
@@ -44,8 +44,8 @@
 
 (ert-deftest proviso-core-manipulate-properties-derived-test ()
   (proviso-test-reset-all)
-  (proviso-define "parent" :p 'value)
-  (proviso-define-derived "child" "parent")
+  (proviso-define-project "parent" :p 'value)
+  (proviso-define-derived-project "child" "parent")
   (let ((p (intern "child" proviso-obarray)))
     (should (proviso-proj-p p))
     (should (eq (proviso-get p :p) 'value))
