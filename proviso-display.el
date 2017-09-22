@@ -3,9 +3,9 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-01 17:44:21 dharms>
+;; Modified Time-stamp: <2017-09-22 08:05:48 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: proviso project display
+;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "24.4"))
 

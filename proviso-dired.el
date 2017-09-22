@@ -3,9 +3,9 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, June 28, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-08-15 17:51:27 dharms>
+;; Modified Time-stamp: <2017-09-22 08:07:04 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: proviso project dired
+;; Keywords: tools proviso project dired
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "24.4"))
 
@@ -23,7 +23,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;; Helper utilities relating to dired and proviso.
 ;;
 
 ;;; Code:

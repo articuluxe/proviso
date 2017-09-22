@@ -3,9 +3,9 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-13 21:09:27 dharms>
+;; Modified Time-stamp: <2017-09-22 08:05:36 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: proviso project include files
+;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "24.4"))
 

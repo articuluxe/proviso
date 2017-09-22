@@ -3,9 +3,9 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-08-15 17:51:25 dharms>
+;; Modified Time-stamp: <2017-09-22 08:08:21 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: proviso project etags ctags
+;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "24.4"))
 
@@ -23,7 +23,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;; Functionality to generate TAGS tables using proviso.
 ;;
 
 ;;; Code:

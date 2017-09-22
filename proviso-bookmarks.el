@@ -3,9 +3,9 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-08-15 17:51:28 dharms>
+;; Modified Time-stamp: <2017-09-22 08:06:40 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: proviso project bookmarks
+;; Keywords: tools proviso project bookmarks
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "24.4"))
 
@@ -23,7 +23,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;; Functionality relating to using bookmarks in proviso.
 ;;
 
 ;;; Code:

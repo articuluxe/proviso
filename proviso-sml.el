@@ -3,9 +3,9 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January  6, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-08-15 17:51:23 dharms>
+;; Modified Time-stamp: <2017-09-22 08:09:36 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: proviso smart-mode-line
+;; Keywords: tools proviso smart-mode-line
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "24.4"))
 
@@ -23,7 +23,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;; Utility functions melding proviso and smart-mode-line.
 ;;
 
 ;;; Code:

@@ -5,9 +5,9 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-21 17:47:12 dharms>
+;; Modified Time-stamp: <2017-09-22 08:15:02 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: proviso projects
+;; Keywords: tools proviso projects
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;; Proviso tests of core functionality.
 ;;
 
 ;;; Code:

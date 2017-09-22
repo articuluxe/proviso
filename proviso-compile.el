@@ -3,9 +3,9 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-01 17:23:33 dharms>
+;; Modified Time-stamp: <2017-09-22 08:06:05 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: c languages proviso project compile
+;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "24.4"))
 

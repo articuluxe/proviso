@@ -3,9 +3,9 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, July  7, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-08-15 17:51:26 dharms>
+;; Modified Time-stamp: <2017-09-22 08:07:46 dharms>
 ;; Modified by: Dan Harms
-;; Keywords: project proviso frame title
+;; Keywords: tools project proviso frame title
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "24.4"))
 
@@ -23,7 +23,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;; Utility to set the frame title in concert with proviso.
 ;;
 
 ;;; Code:
