@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-21 17:55:07 dharms>
+;; Modified Time-stamp: <2017-10-09 09:00:10 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -114,7 +114,11 @@ This may or may not be for the first time."
 
 (defun proviso--load-file (filename)
   "Load the settings contained within FILENAME."
-  (load-file filename))
+  (let ((expr (concat (format "Proviso: Error while loading %S" filename) " %S")))
+    ;; with-demoted-errors is a macro that hard-codes the error string if
+    ;; (stringp expr) doesn't evaluate true; so eval expr first.
+  (eval `(with-demoted-errors ,expr
+    (load-file filename)))))
 
 (advice-add 'find-file-noselect-1 :before 'proviso--file-opened-advice)
 
