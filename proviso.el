@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-10-09 09:00:10 dharms>
+;; Modified Time-stamp: <2017-10-11 17:49:49 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -61,6 +61,16 @@
        (proviso-put proj :inited nil))
      (error (cdr err)))))
 
+(defvar proviso--load-file-errors '()
+  "List of errors encountered while loading a project file.")
+
+(defun proviso--validate-init-errors (proj)
+  "Validate and handle any errors that occurred during loading of project PROJ."
+  (setq proviso--ignore-load-errors nil)
+  (dolist (err proviso--load-file-errors)
+    (proviso--query-error proj err)))
+
+(add-hook 'proviso-hook-on-project-init 'proviso--validate-init-errors)
 
 (defun proviso--log-project-inited (proj)
   "Log a project PROJ upon initialization."
@@ -115,10 +125,10 @@ This may or may not be for the first time."
 (defun proviso--load-file (filename)
   "Load the settings contained within FILENAME."
   (let ((expr (concat (format "Proviso: Error while loading %S" filename) " %S")))
-    ;; with-demoted-errors is a macro that hard-codes the error string if
-    ;; (stringp expr) doesn't evaluate true; so eval expr first.
-  (eval `(with-demoted-errors ,expr
-    (load-file filename)))))
+    (setq proviso--load-file-errors nil)
+    (condition-case err
+        (load-file filename)
+      ('error (push err proviso--load-file-errors)))))
 
 (advice-add 'find-file-noselect-1 :before 'proviso--file-opened-advice)
 

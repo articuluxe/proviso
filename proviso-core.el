@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-21 17:54:48 dharms>
+;; Modified Time-stamp: <2017-10-11 17:49:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -72,6 +72,7 @@ If there is no active project, nil is returned."
 ;;  :grep-exclude-dirs
 ;;   - Intenal:
 ;; :root-dir :project-name :inited :initfun
+;; :init-errors
 ;; :remote-prefix :remote-host :root-stem
 ;; :registers
 ;; :tags-alist :tags-dir
@@ -172,6 +173,7 @@ searching in any bases."
 (defun proviso--query-error (project err)
   "While loading PROJECT, error ERR has occurred; ask the user what to do."
   (interactive)
+  (unless (stringp err) (setq err (prin1-to-string err)))
   (let ((buf (get-buffer-create "*Proviso Error*")))
     (with-current-buffer buf
       (erase-buffer)
