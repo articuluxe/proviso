@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-22 08:06:05 dharms>
+;; Modified Time-stamp: <2017-10-30 17:37:25 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -63,7 +63,11 @@ ARG allows customizing behavior."
                           (car subdirs))
                          ((seq-empty-p subdirs)
                           "")
-                         (t (completing-read "Compile in: " (cons "./" subdirs) nil t)))))
+                         (t
+                          (completing-read "Compile in: "
+                                           (cons "./" subdirs)
+                                           nil t nil nil
+                                           (car subdirs))))))
     (and root (file-remote-p root)
          (setq root (with-parsed-tramp-file-name root file file-localname)))
     (setq dir (concat root (unless (string= subdir "./") subdir)))
@@ -89,7 +93,11 @@ ARG allows customizing behavior."
                           (car subdirs))
                          ((seq-empty-p subdirs)
                           "")
-                         (t (completing-read "Compile in: " (cons "./" subdirs) nil t)))))
+                         (t
+                          (completing-read "Compile in: "
+                                           (cons "./" subdirs)
+                                           nil t nil nil
+                                           (car subdirs))))))
     (and root (file-remote-p root)
          (setq root (with-parsed-tramp-file-name root file file-localname)))
     (setq dir (concat root (unless (string= subdir "./") subdir)))
