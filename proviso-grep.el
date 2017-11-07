@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-22 08:05:26 dharms>
+;; Modified Time-stamp: <2017-11-07 17:30:10 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -31,6 +31,9 @@
 (require 'grep)
 (require 'subr-x)
 (require 's)
+
+(defcustom proviso-grep-args "-Isni"
+  "Standard arguments to give to grep.")
 
 (defun proviso--set-grep-dirs (proj)
   "Set grep directories according to PROJ's project definition."
@@ -95,7 +98,7 @@
        (concat "\"(\" -name \""
                (proviso-grep--create-inclusion-str include-files)
                "\" \")\" "))
-     "-print0 | xargs -0 grep -Isn ")))
+     "-print0 | xargs -0 grep " proviso-grep-args " ")))
 
 (defun proviso-grep--create-command (&optional arg)
   "Create a command suitable for grep to search for a string.

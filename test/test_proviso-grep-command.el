@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-22 08:15:02 dharms>
+;; Modified Time-stamp: <2017-11-07 17:32:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project grep command
 
@@ -40,7 +40,7 @@
                      (concat
                       " \"(\" -name \"*moc_*\" -o -name \"*qrc_*\" -o -path \"*.git\" \")\" "
                       "-prune -o -type f \"(\" -name \"*.cpp\" -o -name \"*.hpp"
-                      "\" \")\" -print0 | xargs -0 grep -Isn ")))
+                      "\" \")\" -print0 | xargs -0 grep -Isni ")))
     ))
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude-empty-file-blacklist ()
@@ -53,7 +53,7 @@
                      (concat
                       " \"(\" -path \"*.git\" \")\" "
                       "-prune -o -type f \"(\" -name \"*.cpp\" -o -name \"*.hpp"
-                      "\" \")\" -print0 | xargs -0 grep -Isn ")))
+                      "\" \")\" -print0 | xargs -0 grep -Isni ")))
     ))
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude-empty-dir-blacklist ()
@@ -66,7 +66,7 @@
                      (concat
                       " \"(\" -name \"*moc_*\" -o -name \"*qrc_*\" \")\" "
                       "-prune -o -type f \"(\" -name \"*.cpp\" -o -name \"*.hpp"
-                      "\" \")\" -print0 | xargs -0 grep -Isn ")))
+                      "\" \")\" -print0 | xargs -0 grep -Isni ")))
     ))
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude-empty-dir-and-file-blacklist ()
@@ -74,6 +74,7 @@
         (proviso-interesting-files '("*.cpp" "*.hpp"))
         (proviso-uninteresting-files '())
         (proviso-uninteresting-dirs '())
+        (proviso-grep-args "-Isn")
         )
     (should (string= (proviso-grep--create-grep-str nil)
                      (concat
@@ -86,6 +87,7 @@
         (proviso-interesting-files '())
         (proviso-uninteresting-files '("*moc_*" "*qrc_*"))
         (proviso-uninteresting-dirs '("*.git" "*.svn"))
+        (proviso-grep-args "-Isn")
         )
     (should (string= (proviso-grep--create-grep-str nil)
                      (concat
@@ -98,6 +100,7 @@
         (proviso-interesting-files '())
         (proviso-uninteresting-files '())
         (proviso-uninteresting-dirs '())
+        (proviso-grep-args "-Isn")
         )
     (should (string= (proviso-grep--create-grep-str nil)
                      (concat
