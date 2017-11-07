@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-21 17:42:14 dharms>
+;; Modified Time-stamp: <2017-11-03 08:18:05 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -62,7 +62,7 @@ limited to those patterns which still apply as an additional
 filter to those files already selected by
 `proviso-interesting-files'.")
 
-(defvar proviso-uninteresting-dirs '("*.git")
+(defvar proviso-uninteresting-dirs '("*.git" "*.tags")
   "List of uninteresting directory patterns.
 These are in shell glob format.")
 
