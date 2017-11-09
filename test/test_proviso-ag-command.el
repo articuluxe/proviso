@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, November  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-07 17:51:54 dharms>
+;; Modified Time-stamp: <2017-11-09 08:21:54 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project ag command
 
@@ -38,7 +38,7 @@
         )
     (should (string= (proviso-ag--create-ag-str nil)
                      (concat
-                      " --ignore *moc_* --ignore *qrc_* --ignore *.git --ignore *.tags")))))
+                      " --ignore *moc_* --ignore *qrc_* --ignore *.git --ignore *.tags -G '(.*\\.cpp|.*\\.hpp)'")))))
 
 (ert-deftest proviso-ag-cmd-test-create-cmd-exclude-empty-file-blacklist ()
   (let ((base (file-name-directory load-file-name))
@@ -48,7 +48,7 @@
         )
     (should (string= (proviso-ag--create-ag-str nil)
                      (concat
-                      " --ignore *.git --ignore *.tags")))))
+                      " --ignore *.git --ignore *.tags -G '(.*\\.cpp|.*\\.hpp)'")))))
 
 (ert-deftest proviso-ag-cmd-test-create-cmd-exclude-empty-dir-blacklist ()
   (let ((base (file-name-directory load-file-name))
@@ -58,7 +58,7 @@
         )
     (should (string= (proviso-ag--create-ag-str nil)
                      (concat
-                      " --ignore *moc_* --ignore *qrc_*")))))
+                      " --ignore *moc_* --ignore *qrc_* -G '(.*\\.cpp|.*\\.hpp)'")))))
 
 (ert-deftest proviso-ag-cmd-test-create-cmd-exclude-empty-dir-and-file-blacklist ()
   (let ((base (file-name-directory load-file-name))
@@ -68,7 +68,7 @@
         )
     (should (string= (proviso-ag--create-ag-str nil)
                      (concat
-                      "")))))
+                      " -G '(.*\\.cpp|.*\\.hpp)'")))))
 
 (ert-deftest proviso-ag-cmd-test-create-cmd-exclude-no-include ()
   (let ((base (file-name-directory load-file-name))
