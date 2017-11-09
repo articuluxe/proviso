@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-21 17:33:52 dharms>
+;; Modified Time-stamp: <2017-11-09 08:25:19 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -64,10 +64,10 @@ filtered via `proviso-interesting-files',
     (dolist (file files)
       (and
        (proviso-fulledit-test-list-for-string
-        (mapcar 'eshell-glob-regexp include-files)
+        (mapcar 'proviso-regexp-glob-to-regex include-files)
         (file-name-nondirectory file))
        (not (proviso-fulledit-test-list-for-string
-             (mapcar 'eshell-glob-regexp exclude-files)
+             (mapcar 'proviso-regexp-glob-to-regex exclude-files)
              (file-name-nondirectory file)))
        (setq result (cons file result))
        (progress-reporter-update reporter)
@@ -75,7 +75,7 @@ filtered via `proviso-interesting-files',
     (dolist (dir dirs)
       (unless
           (proviso-fulledit-test-list-for-string
-           (mapcar 'eshell-glob-regexp exclude-dirs)
+           (mapcar 'proviso-regexp-glob-to-regex exclude-dirs)
            dir)
         (setq
          result
