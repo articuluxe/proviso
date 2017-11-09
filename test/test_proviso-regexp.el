@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, November  8, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-09 08:08:37 dharms>
+;; Modified Time-stamp: <2017-11-09 17:36:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects regexp
 
@@ -34,17 +34,19 @@
   (should (string= (proviso-regexp-glob-to-regex "")
                    ""))
   (should (string= (proviso-regexp-glob-to-regex "Arbitrary")
-                   "Arbitrary"))
+                   "^Arbitrary$"))
   (should (string= (proviso-regexp-glob-to-regex "*.git")
-                   ".*\\.git"))
+                   ".*\\.git$"))
+  (should (string= (proviso-regexp-glob-to-regex "bld*")
+                   "^bld.*"))
   (should (string= (proviso-regexp-glob-to-regex "repos/")
-                   "repos/"))
+                   "^repos/$"))
   (should (string= (proviso-regexp-glob-to-regex "[Mm]akefile")
-                   "[Mm]akefile"))
+                   "^[Mm]akefile$"))
   (should (string= (proviso-regexp-glob-to-regex "test.html?")
-                   "test\\.html?"))
+                   "^test\\.html?$"))
   (should (string= (proviso-regexp-glob-to-regex "t*e*t.c*v")
-                   "t.*e.*t\\.c.*v"))
+                   "^t.*e.*t\\.c.*v$"))
   )
 
 (ert-run-tests-batch-and-exit (car argv))

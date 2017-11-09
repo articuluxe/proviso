@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, November  8, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-08 17:50:44 dharms>
+;; Modified Time-stamp: <2017-11-09 17:43:18 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -30,7 +30,11 @@
 
 (defun proviso-regexp-glob-to-regex (glob)
   "Convert a shell glob pattern GLOB to a regular expression."
-  (let ((result ""))
+  (let ((result "")
+        (anchor-begin (not (or (string-empty-p glob)
+                               (string-match "^\\*" glob))))
+        (anchor-end (not (or (string-empty-p glob)
+                             (string-match "\\*$" glob)))))
     (dolist (ch (append glob nil) result)
       (setq
        result
@@ -41,7 +45,11 @@
               ((eq ch ?.)
                "\\.")
               (t
-               (char-to-string ch))))))))
+               (char-to-string ch))))))
+    (concat
+     (when anchor-begin "^")
+     result
+     (when anchor-end "$"))))
 
 (provide 'proviso-regexp)
 ;;; proviso-regexp.el ends here
