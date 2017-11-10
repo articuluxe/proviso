@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  2, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-09 08:11:16 dharms>
+;; Modified Time-stamp: <2017-11-10 08:01:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project ag silver searcher
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -49,7 +49,13 @@
 (defun proviso-ag--create-inclusion-str (lst)
   "Create an ag subcommand to match files from LST."
   (format " -G '(%s)'"
-          (mapconcat 'proviso-regexp-glob-to-regex lst "|")))
+          (mapconcat (lambda (elt)
+                       ;; convert shell glob patterns to regex;
+                       ;; we constrain the regexes from having an
+                       ;; opening anchor "^" because ag will
+                       ;; try to match the entire path name.
+                       (proviso-regexp-glob-to-regex elt t))
+                     lst "|")))
 
 (defun proviso-ag--create-ag-str (proj)
   "Create an ag command string according to the settings of PROJ."
