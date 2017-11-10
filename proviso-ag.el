@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  2, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-10 08:01:32 dharms>
+;; Modified Time-stamp: <2017-11-10 08:08:34 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project ag silver searcher
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -129,6 +129,7 @@ Uses ag, the silver searcher.  ARG allows customizing the
 root search directory."
   (interactive "P")
   (grep-apply-setting 'grep-command (proviso-ag--create-command arg))
+  (grep-apply-setting 'grep-use-null-device nil)
   (command-execute 'grep))
 
 (provide 'proviso-ag)
