@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, November  8, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-09 17:43:18 dharms>
+;; Modified Time-stamp: <2017-11-10 08:01:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -23,13 +23,25 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; Provides utilities to manage regular expressions in proviso.
-;;
+;; Provides utilities to manage regular expressions in proviso.  The principle
+;; use case is to convert from shell glob patterns into regular expressions.
+;; We do not use `eshell-glob-regex' because its results use constructs
+;; specific to Emacs, whereas we would prefer PCRE for maximum compatibility.
 
 ;;; Code:
 
-(defun proviso-regexp-glob-to-regex (glob)
-  "Convert a shell glob pattern GLOB to a regular expression."
+(defun proviso-regexp-glob-to-regex (glob &optional no-anchor-begin
+                                          no-anchor-end)
+  "Convert a shell glob pattern GLOB to a regular expression.
+NO-ANCHOR-BEGIN, if non-nil, means that no regex anchor character
+`^' should be placed at the beginning of the result, even if
+there were no wildcard at the beginning of the input.
+NO-ANCHOR-END, if non-nil, means that no regex anchor character
+`$' should be placed at the end of the result, even if there were
+no wildcard at the end of the input.  Without these constraints,
+the algorithm attempts to anchor the regex at its bounds in order
+to match the absence of wildcards in the shell glob pattern that
+is being replicated."
   (let ((result "")
         (anchor-begin (not (or (string-empty-p glob)
                                (string-match "^\\*" glob))))
@@ -47,9 +59,9 @@
               (t
                (char-to-string ch))))))
     (concat
-     (when anchor-begin "^")
+     (and (not no-anchor-begin) anchor-begin "^")
      result
-     (when anchor-end "$"))))
+     (and (not no-anchor-end) anchor-end "$"))))
 
 (provide 'proviso-regexp)
 ;;; proviso-regexp.el ends here
