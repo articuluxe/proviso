@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-10-30 17:37:25 dharms>
+;; Modified Time-stamp: <2017-11-15 08:42:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -112,10 +112,12 @@ This will be used for projects that don't specify their own value."
   (let ((lst (mapcar (lambda (elt)
                        (cons (symbol-name elt) elt))
                      proviso-compile-command-list))
-        result)
+        result cell)
     (setq result (completing-read "Compile command: " lst))
     (when result
-      (setq proviso-compile-command (cdr result)))))
+      (setq cell (assoc result lst))
+      (setq proviso-compile-command (cdr cell))
+      (message "Set compile command to %s" (car cell)))))
 
 (defun proviso-compile (&optional arg)
   "Start the process of compilation, according to some settings.
