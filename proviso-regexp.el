@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, November  8, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-10 08:01:15 dharms>
+;; Modified Time-stamp: <2017-11-16 08:14:24 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -29,6 +29,7 @@
 ;; specific to Emacs, whereas we would prefer PCRE for maximum compatibility.
 
 ;;; Code:
+(require 'subr-x)
 
 (defun proviso-regexp-glob-to-regex (glob &optional no-anchor-begin
                                           no-anchor-end)
