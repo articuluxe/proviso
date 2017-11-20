@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, November 10, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-15 17:53:56 dharms>
+;; Modified Time-stamp: <2017-11-20 17:36:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -46,20 +46,29 @@ See `proviso-clang-format-active-p'."
   (message "proviso-clang is now %sactive"
            (if proviso-clang-format-active-p "" "in")))
 
+;;;###autoload
 (defun proviso-clang-format-buffer ()
-  "Set up a buffer's clang-format settings."
+  "Format a buffer using clang-format according to the current project."
+  (interactive)
+  (let* ((proj (proviso-current-project))
+         (file (proviso-get proj :clang-format)))
+    (and file
+         (f-exists? file)
+         (clang-format-buffer))))
+
+(defun proviso-clang-format-maybe-buffer ()
+  "Possibly format a buffer, contingent on certain conditions.
+`proviso-clang-format-active-p' must be true.
+Settings file `.clang-format' must be specified, and exist."
   (when proviso-clang-format-active-p
-    (let* ((proj (proviso-current-project))
-           (file (proviso-get proj :clang-format)))
-      (when (f-exists? file)
-        (clang-format-buffer)))))
+    (proviso-clang-format-buffer)))
 
 (defun proviso-clang-format--setup-buffer (proj mode)
   "Setup a buffer's clang-format according to the settings in PROJ.
 MODE is the `major-mode'."
   (when (or (eq mode 'c-mode)
             (eq mode 'c++-mode))
-    (add-hook 'before-save-hook 'proviso-clang-format-buffer nil t)))
+    (add-hook 'before-save-hook 'proviso-clang-format-maybe-buffer nil t)))
 
 (defun proviso-clang-format--init (proj)
   "Set up clang-format according to PROJ's project definition."
