@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, November 10, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-20 17:36:50 dharms>
+;; Modified Time-stamp: <2017-11-30 17:39:47 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -47,21 +47,24 @@ See `proviso-clang-format-active-p'."
            (if proviso-clang-format-active-p "" "in")))
 
 ;;;###autoload
-(defun proviso-clang-format-buffer ()
-  "Format a buffer using clang-format according to the current project."
-  (interactive)
+(defun proviso-clang-format-buffer-or-region (&optional arg)
+  "Clang-format a buffer according to the current project.
+ARG is used to operate on the current region."
+  (interactive "P")
   (let* ((proj (proviso-current-project))
          (file (proviso-get proj :clang-format)))
     (and file
          (f-exists? file)
-         (clang-format-buffer))))
+         (if (region-active-p)
+             (clang-format-region (region-beginning) (region-end))
+           (clang-format-buffer)))))
 
 (defun proviso-clang-format-maybe-buffer ()
   "Possibly format a buffer, contingent on certain conditions.
 `proviso-clang-format-active-p' must be true.
 Settings file `.clang-format' must be specified, and exist."
   (when proviso-clang-format-active-p
-    (proviso-clang-format-buffer)))
+    (proviso-clang-format-buffer-or-region)))
 
 (defun proviso-clang-format--setup-buffer (proj mode)
   "Setup a buffer's clang-format according to the settings in PROJ.
