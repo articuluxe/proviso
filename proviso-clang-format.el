@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, November 10, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-30 17:39:47 dharms>
+;; Modified Time-stamp: <2017-12-01 08:12:49 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -83,6 +83,16 @@ MODE is the `major-mode'."
     (setq path (if (f-relative? name)
                    (concat remote root name)
                  (concat remote name)))
+    ;; if .clang-format doesn't exist in the root, also check the first
+    ;; (privileged) src dir
+    (unless (or (f-exists? path) (f-absolute? name))
+      (let ((lst (proviso-get proj :proj-alist))
+            dir)
+        (when (car lst)
+          (when (setq dir (plist-get (car lst) :dir))
+            (setq path (concat remote root
+                               (file-name-as-directory dir)
+                               name))))))
     (proviso-put proj :clang-format path)))
 
 (add-hook 'proviso-hook-on-project-init #'proviso-clang-format--init)
