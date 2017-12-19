@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-10 17:05:30 dharms>
+;; Modified Time-stamp: <2017-12-19 14:23:36 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -31,7 +31,7 @@
 (require 'ivy)
 (require 'seq)
 (require 'tramp)
-(require 'load-environment-vars nil t)
+(require 'parsenv nil t)
 
 (defvar proviso-obarray
   (let ((intern-obarray (make-vector 7 0)))
@@ -366,9 +366,8 @@ Nothing is done if no such file exists in the root director of PROJ."
         (root (proviso-get proj :root-dir))
         (file (concat remote root name)))
     (setenv "REPO_ROOT" (directory-file-name root))
-    (and (fboundp 'load-environment-variables-from-file)
-         (f-exists? file)
-         (load-environment-variables-from-file file))))
+    (and (featurep 'parsenv)
+         (parsenv-load-env file))))
 
 (provide 'proviso-core)
 ;;; proviso-core.el ends here
