@@ -1,11 +1,11 @@
 #!/bin/sh
-":"; exec "$EMACSX" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
+":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-ag-command.el --- test proviso ag command
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, November  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-09 17:32:37 dharms>
+;; Modified Time-stamp: <2018-01-03 22:57:53 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project ag command
 

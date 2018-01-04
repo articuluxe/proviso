@@ -1,11 +1,11 @@
 #!/bin/sh
-":"; exec "$EMACSX" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
+":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-grep-command.el --- test proviso grep-command
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-07 17:32:51 dharms>
+;; Modified Time-stamp: <2018-01-03 22:57:52 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project grep command
 
