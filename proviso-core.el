@@ -1,9 +1,9 @@
 ;;; proviso-core.el --- proviso core functionality
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-12-19 14:23:36 dharms>
+;; Modified Time-stamp: <2018-01-23 17:28:52 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -77,7 +77,7 @@ If there is no active project, nil is returned."
 ;; :remote-prefix :remote-host :root-stem
 ;; :registers
 ;; :tags-alist :tags-dir
-;; :grep-cmd :ag-cmd
+;; :grep-cmd :ag-cmd :rg-cmd
 
 ;; hooks
 (defvar proviso-hook-on-project-pre-init '()

@@ -1,9 +1,9 @@
 ;;; proviso.el --- manage projects
-;; Copyright (C) 2016-2017  Dan Harms (dharms)
+;; Copyright (C) 2016-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-14 08:43:59 dharms>
+;; Modified Time-stamp: <2018-01-23 17:52:26 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -33,6 +33,7 @@
 (require 'proviso-core)
 (require 'proviso-regexp)
 (require 'proviso-ag)
+(require 'proviso-rg)
 (require 'proviso-clang-format)
 (require 'proviso-fulledit)
 (require 'proviso-compile)
