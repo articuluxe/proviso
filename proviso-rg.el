@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-25 08:07:44 dharms>
+;; Modified Time-stamp: <2018-01-25 17:43:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project rg ripgrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -103,7 +103,7 @@ ARG allows customizing the selection of the root search directory."
         (setq cmd (proviso-rg--create-rg-str proj)))
       (when (and proj (not (proviso-get proj :rg-cmd)))
         (proviso-put proj :rg-cmd cmd))
-      (setq substr (concat "rg " cmd "--no-heading -Suu "))
+      (setq substr (concat "rg " cmd "--no-heading -Snuu "))
       (setq idx (string-width substr))
       (cons
        (concat
