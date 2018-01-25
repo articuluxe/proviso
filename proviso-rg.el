@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-24 17:32:28 dharms>
+;; Modified Time-stamp: <2018-01-25 08:07:44 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project rg ripgrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -38,7 +38,7 @@
   "Create an rg subcommand to exclude files from LST."
   (let (str)
     (dolist (elt lst str)
-      (setq str (concat str "-g '" elt "' ")))))
+      (setq str (concat str "-g '!" elt "' ")))))
 
 (defun proviso-rg--create-dir-exclusion-str (lst)
   "Create an rg subcommand to exclude dirs from LST."
