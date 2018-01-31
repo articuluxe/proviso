@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-31 17:29:18 dharms>
+;; Modified Time-stamp: <2018-01-31 17:46:21 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools gdb proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -82,6 +82,16 @@ ARG allows customizing the directory to look in for executables."
   (let ((exe (proviso-gud-get-debug-exe arg)))
     (if exe
         (gdb (concat "gdb -i=mi " exe))
+      (message "No executable found."))))
+
+;;;###autoload
+(defun proviso-gud-open-realgud (&optional arg)
+  "Open realgud according to the current project.
+ARG allows customizing the directory to look in for executables."
+  (interactive "P")
+  (let ((exe (proviso-gud-get-debug-exe arg)))
+    (if exe
+        (realgud:gdb (concat "gdb " exe))
       (message "No executable found."))))
 
 (provide 'proviso-gud)
