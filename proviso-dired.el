@@ -1,9 +1,9 @@
 ;;; proviso-dired.el --- proviso dired utilities
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, June 28, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-22 08:07:04 dharms>
+;; Modified Time-stamp: <2018-01-26 17:21:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project dired
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -51,8 +51,7 @@
 (defun proviso-open-dired-this-project ()
   "Open a dired buffer in some directory according to the current project."
   (interactive)
-  (let ((cands (proviso-gather-dired-dirs (proviso-current-project)))
-        result)
+  (let ((cands (proviso-gather-dired-dirs (proviso-current-project))))
     (ivy-read "Open dired: " cands
               :caller 'proviso-open-dired-this-project
               :action (lambda (x)
