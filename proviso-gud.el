@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-31 08:53:46 dharms>
+;; Modified Time-stamp: <2018-01-31 17:29:18 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools gdb proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -30,6 +30,11 @@
 (require 'proviso-core)
 (require 'ivy)
 (require 'realgud)
+
+(defun proviso-gud--exe-suitable-p (exe)
+  "Return non-nil if EXE is an executable that can be debugged."
+  (and exe (file-executable-p exe)
+       (not (file-directory-p exe))))
 
 (defun proviso-gud-gather-debug-dirs (proj)
   "Gather all debug dirs for project PROJ."
@@ -64,7 +69,8 @@ ARG allows customizing the location to search in."
                      default-directory)
                     (t (or (proviso-current-project-root) default-directory))))
     (setq exe (read-file-name exe-prompt dir nil t))
-    (and exe (file-executable-p exe) exe)))
+    (and (proviso-gud--exe-suitable-p exe)
+         exe)))
 
 ;;;###autoload
 (defun proviso-gud-open-gdb (&optional arg)
