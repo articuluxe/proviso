@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-31 08:48:23 dharms>
+;; Modified Time-stamp: <2018-01-31 08:53:46 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools gdb proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -51,11 +51,9 @@
         (add-to-list 'lst (cons dir (concat remote dir)))))
     lst))
 
-;;;###autoload
-(defun proviso-gud-open-gdb (&optional arg)
-  "Open gdb according to the current project.
-ARG allows customizing the directory to look in for executables."
-  (interactive "P")
+(defun proviso-gud-get-debug-exe (&optional arg)
+  "Fetch an executable to be debugged according to the current project.
+ARG allows customizing the location to search in."
   (let ((cands (proviso-gud-gather-debug-dirs (proviso-current-project)))
         (dir-prompt "Find executable in: ")
         (exe-prompt "Debug executable: ")
@@ -66,7 +64,15 @@ ARG allows customizing the directory to look in for executables."
                      default-directory)
                     (t (or (proviso-current-project-root) default-directory))))
     (setq exe (read-file-name exe-prompt dir nil t))
-    (if (and exe (file-executable-p exe))
+    (and exe (file-executable-p exe) exe)))
+
+;;;###autoload
+(defun proviso-gud-open-gdb (&optional arg)
+  "Open gdb according to the current project.
+ARG allows customizing the directory to look in for executables."
+  (interactive "P")
+  (let ((exe (proviso-gud-get-debug-exe arg)))
+    (if exe
         (gdb (concat "gdb -i=mi " exe))
       (message "No executable found."))))
 
