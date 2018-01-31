@@ -47,13 +47,15 @@
       (setq entry (plist-get elt :dir))
       (setq dir (if (and entry (file-name-absolute-p entry))
                     entry (concat root entry)))
-      (add-to-list 'lst (cons dir (concat remote dir))))
+      (when (file-directory-p (concat remote dir))
+        (add-to-list 'lst (cons dir (concat remote dir)))))
     (unless lst
       (dolist (elt blddirs)
         (setq entry (plist-get elt :dir))
         (setq dir (if (and entry (file-name-absolute-p entry))
                       entry (concat root entry)))
-        (add-to-list 'lst (cons dir (concat remote dir)))))
+        (when (file-directory-p (concat remote dir))
+          (add-to-list 'lst (cons dir (concat remote dir))))))
     lst))
 
 (defun proviso-gud-get-debug-exe (&optional arg)
