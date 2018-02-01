@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-03 22:57:51 dharms>
+;; Modified Time-stamp: <2018-02-01 08:35:00 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project sml test
 
@@ -56,7 +56,7 @@
                      (list (concat base-abbrev "a/b/c/") "BASE:")))
       ;; check all elements also; must update if sml updates
       (should (equal sml/replacer-regexp-list
-                     (list (list "^~/org/" ":Org:")
+                     (list (list "^~/org" ":Org:")
                            (list "^~/\\.emacs\\.d/" ":ED:")
                            (list "^/sudo:.*:" ":SU:")
                            (list "^~/Documents/" ":Doc:")
@@ -97,7 +97,7 @@
                      (list (concat base-abbrev "a/b/c/d/") "REL:")))
       ;; check all elements also; must update if sml updates
       (should (equal sml/replacer-regexp-list
-                     (list (list "^~/org/" ":Org:")
+                     (list (list "^~/org" ":Org:")
                            (list "^~/\\.emacs\\.d/" ":ED:")
                            (list "^/sudo:.*:" ":SU:")
                            (list "^~/Documents/" ":Doc:")
@@ -138,7 +138,7 @@
                      (list "/home/" "ABSOLUTE:")))
       ;; check all elements also; must update if sml updates
       (should (equal sml/replacer-regexp-list
-                     (list (list "^~/org/" ":Org:")
+                     (list (list "^~/org" ":Org:")
                            (list "^~/\\.emacs\\.d/" ":ED:")
                            (list "^/sudo:.*:" ":SU:")
                            (list "^~/Documents/" ":Doc:")
@@ -173,7 +173,7 @@
                      (list (concat base-abbrev "a/b/c/") "C:")))
       ;; check all elements also; must update if sml updates
       (should (equal sml/replacer-regexp-list
-                     (list (list "^~/org/" ":Org:")
+                     (list (list "^~/org" ":Org:")
                            (list "^~/\\.emacs\\.d/" ":ED:")
                            (list "^/sudo:.*:" ":SU:")
                            (list "^~/Documents/" ":Doc:")
@@ -219,7 +219,7 @@
                      (list (concat base-abbrev "a/b/c/") "ONE:")))
       ;; check all elements also; must update if sml updates
       (should (equal sml/replacer-regexp-list
-                     (list (list "^~/org/" ":Org:")
+                     (list (list "^~/org" ":Org:")
                            (list "^~/\\.emacs\\.d/" ":ED:")
                            (list "^/sudo:.*:" ":SU:")
                            (list "^~/Documents/" ":Doc:")
@@ -264,7 +264,7 @@
                      (list (concat base-abbrev "a/b/c/") "BASE:")))
       ;; check all elements also; must update if sml updates
       (should (equal sml/replacer-regexp-list
-                     (list (list "^~/org/" ":Org:")
+                     (list (list "^~/org" ":Org:")
                            (list "^~/\\.emacs\\.d/" ":ED:")
                            (list "^/sudo:.*:" ":SU:")
                            (list "^~/Documents/" ":Doc:")
@@ -286,7 +286,7 @@
                      (list (concat base-abbrev "a/b/c/") "BASE:")))
       ;; check all elements also; must update if sml updates
       (should (equal sml/replacer-regexp-list
-                     (list (list "^~/org/" ":Org:")
+                     (list (list "^~/org" ":Org:")
                            (list "^~/\\.emacs\\.d/" ":ED:")
                            (list "^/sudo:.*:" ":SU:")
                            (list "^~/Documents/" ":Doc:")
@@ -316,7 +316,7 @@
                      (list (concat base-abbrev "a/b/c2/d2/") "SECOND:")))
       ;; check all elements also; must update if sml updates
       (should (equal sml/replacer-regexp-list
-                     (list (list "^~/org/" ":Org:")
+                     (list (list "^~/org" ":Org:")
                            (list "^~/\\.emacs\\.d/" ":ED:")
                            (list "^/sudo:.*:" ":SU:")
                            (list "^~/Documents/" ":Doc:")
@@ -335,7 +335,7 @@
                      (list (concat base-abbrev "a/b/c/") "BASE:")))
       ;; check all elements also; must update if sml updates
       (should (equal sml/replacer-regexp-list
-                     (list (list "^~/org/" ":Org:")
+                     (list (list "^~/org" ":Org:")
                            (list "^~/\\.emacs\\.d/" ":ED:")
                            (list "^/sudo:.*:" ":SU:")
                            (list "^~/Documents/" ":Doc:")
@@ -386,7 +386,7 @@
                      (list (concat base-abbrev "a/b/c/d2/") "SUBDIR:")))
       ;; check all elements also; must update if sml updates
       (should (equal sml/replacer-regexp-list
-                     (list (list "^~/org/" ":Org:")
+                     (list (list "^~/org" ":Org:")
                            (list "^~/\\.emacs\\.d/" ":ED:")
                            (list "^/sudo:.*:" ":SU:")
                            (list "^~/Documents/" ":Doc:")
