@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, February  1, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-02-01 08:49:33 dharms>
+;; Modified Time-stamp: <2018-02-01 17:49:33 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso gud debugger test
 
@@ -72,6 +72,10 @@
                   ))
    (proviso-put proj :debug-subdirs
                '( (:name \"DBG\" :dir \"d2\")
+                  (:name \"D2\" :dir \"d\")
+                ))
+   (proviso-put proj :build-subdirs
+               '( (:name \"DBG\" :dir \"d3\")
                 ))
    )
  (proviso-define-project \"c\" :initfun 'do-init)
@@ -84,7 +88,9 @@
                        "c"))
       (should (equal (proviso-gud-gather-debug-dirs proviso-local-proj)
                      (list (cons (concat base "a/b/c/d2")
-                                 (concat base "a/b/c/d2")))))
+                                 (concat base "a/b/c/d2"))
+                           (cons (concat base "a/b/c/d")
+                                 (concat base "a/b/c/d")))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
