@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-31 17:46:21 dharms>
+;; Modified Time-stamp: <2018-02-01 17:39:39 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools gdb proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -56,7 +56,7 @@
                       entry (concat root entry)))
         (when (file-directory-p (concat remote dir))
           (add-to-list 'lst (cons dir (concat remote dir))))))
-    lst))
+    (nreverse lst)))
 
 (defun proviso-gud-get-debug-exe (&optional arg)
   "Fetch an executable to be debugged according to the current project.
@@ -65,10 +65,14 @@ ARG allows customizing the location to search in."
         (dir-prompt "Find executable in: ")
         (exe-prompt "Debug executable: ")
         dir exe)
-    (setq dir (cond ((and cands arg (eq (prefix-numeric-value arg) 4))
-                     (completing-read dir-prompt cands))
-                    ((and arg (eq (prefix-numeric-value arg) 16))
+    (setq dir (cond ((and arg (eq (prefix-numeric-value arg) 16))
                      default-directory)
+                    ((eq (length cands) 1)
+                     (cdr (car cands)))
+                    ((and cands arg (eq (prefix-numeric-value arg) 4))
+                     (completing-read dir-prompt cands))
+                    ((and cands)
+                     (cdr (car cands)))
                     (t (or (proviso-current-project-root) default-directory))))
     (setq exe (read-file-name exe-prompt dir nil t))
     (and (proviso-gud--exe-suitable-p exe)
