@@ -1,9 +1,9 @@
 ;;; proviso-compile.el --- proviso compile
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-15 08:42:15 dharms>
+;; Modified Time-stamp: <2018-02-12 18:05:25 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -31,6 +31,8 @@
 (require 'compile)
 (require 'dash)
 (require 'seq)
+
+(setq compilation-environment '("TERM=dumb"))
 
 (defvar proviso-compile--window-visible nil
   "Internal variable tracks whether the compile window was visible originally.")
