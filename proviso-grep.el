@@ -1,9 +1,9 @@
 ;;; proviso-grep.el --- setup proviso grep
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-07 17:30:10 dharms>
+;; Modified Time-stamp: <2018-03-22 17:25:19 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -137,11 +137,14 @@ ARG allows customizing the selection of the root search directory."
             (directory-file-name dir)
             cmd
             (when search-string
-              (s-replace
-               "\\*" "\\\\*"
-               ;; shell-quote the search-string.  `shell-quote-argument'
-               ;; escapes embedded `*' but grep needs them double-escaped.
-               (shell-quote-argument search-string))))))
+              (proviso-grep--sanitize-search-str search-string)))))
+
+(defun proviso-grep--sanitize-search-str (search-string)
+  "Sanitize SEARCH-STRING."
+  (s-replace "\\*" "\\\\*"
+             ;; shell-quote the search-string.  `shell-quote-argument'
+             ;; escapes embedded `*' but grep needs them double-escaped.
+             (shell-quote-argument search-string)))
 
 (defun proviso-grep-clear-command ()
   "Clear out the cached grep command (if any exists) in the current project."

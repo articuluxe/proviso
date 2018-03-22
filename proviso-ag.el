@@ -1,9 +1,9 @@
 ;;; proviso-ag.el --- ag support for proviso
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  2, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-10 08:08:34 dharms>
+;; Modified Time-stamp: <2018-03-22 17:27:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project ag silver searcher
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -115,12 +115,17 @@ ARG allows customizing the selection of the root search directory."
         substr
         (when search-string
           (progn
-            (setq search-string (shell-quote-argument search-string))
+            (setq search-string
+                  (proviso-ag--sanitize-search-string search-string))
             (setq idx (+ idx (string-width search-string)))
             search-string))
         " "
         (directory-file-name dir))
        (1+ idx))))
+
+(defun proviso-ag--sanitize-search-string (search-string)
+  "Sanitize SEARCH-STRING."
+  (shell-quote-argument search-string))
 
 ;;;###autoload
 (defun proviso-ag (&optional arg)
