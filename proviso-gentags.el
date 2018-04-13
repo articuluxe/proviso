@@ -1,9 +1,9 @@
 ;; proviso-gentags.el --- Generate TAGS files
-;; Copyright (C) 2015-2017   (dan.harms)
+;; Copyright (C) 2015-2018   (dan.harms)
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-22 08:08:21 dharms>
+;; Modified Time-stamp: <2018-04-13 17:42:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -123,6 +123,11 @@ machine, if you are running on a remote host."
     (make-directory proviso-gentags--final-dest-dir t)
     (pop-to-buffer proviso-gentags--buffer)
     (with-current-buffer proviso-gentags--buffer
+      (setq-local window-point-insertion-type t)
+      (let ((map (make-sparse-keymap)))
+        (define-key map "q" #'quit-window)
+        (set-keymap-parent map (current-local-map))
+        (use-local-map map))
       (goto-char (point-max))
       (insert (format "TAGS generation started at %s\n\n"
                       (current-time-string)))))
