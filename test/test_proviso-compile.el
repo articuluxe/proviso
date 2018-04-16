@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, May 25, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-03 22:57:53 dharms>
+;; Modified Time-stamp: <2018-04-16 11:38:40 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso test compile
 
@@ -212,16 +212,16 @@
                        "c"))
       (setq read-index 0)               ;picks empty choice, which is root dir
       (should (string= (proviso-compile-command-repo)
-                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/ && make")))
+                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/ && make")))
       (setq read-index 1)               ;picks 1st choice
       (should (string= (proviso-compile-command-repo)
-                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d2/ && make")))
+                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d2/ && make")))
       (setq read-index 2)               ;picks 2nd choice
       (should (string= (proviso-compile-command-repo)
-                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d/e/f/ && make")))
+                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d/e/f/ && make")))
       (setq read-result (concat base "a/b/c2/"))
       (should (string= (proviso-compile-command-repo '(4))
-                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c2/ && make")))
+                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c2/ && make")))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
@@ -268,19 +268,19 @@
       (setq read-index 0)               ;picks empty choice, which is root dir
       (proviso-compile)
       (should (string= compile-command
-                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/ && make")))
+                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/ && make")))
       (setq read-index 1)               ;picks 1st choice
       (proviso-compile)
       (should (string= compile-command
-                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d2/ && make")))
+                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d2/ && make")))
       (setq read-index 2)               ;picks 2nd choice
       (proviso-compile)
       (should (string= compile-command
-                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d/e/f/ && make")))
+                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d/e/f/ && make")))
       (setq read-result (concat base "a/b/c2/"))
       (proviso-compile '(4))
       (should (string= compile-command
-                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c2/ && make")))
+                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c2/ && make")))
 
       ;; clean up buffers
       (kill-buffer "dfile1")
@@ -329,19 +329,19 @@
       (setq read-index 0)               ;picks empty choice, which is root dir
       (proviso-compile)
       (should (string= compile-command
-                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/ && make")))
+                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/ && make")))
       (setq read-index 1)               ;picks 1st choice
       (proviso-compile)
       (should (string= compile-command
-                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d2/ && make")))
+                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d2/ && make")))
       (setq read-index 2)               ;picks 2nd choice
       (proviso-compile)
       (should (string= compile-command
-                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d/e/f/ && make")))
+                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d/e/f/ && make")))
       (setq read-result (concat base "a/b/c2/"))
       (proviso-compile '(4))
       (should (string= compile-command
-                       (concat "source " base "a/b/c/repo-setup.sh && cd " base "a/b/c2/ && make")))
+                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c2/ && make")))
 
       ;; clean up buffers
       (kill-buffer "dfile1")
