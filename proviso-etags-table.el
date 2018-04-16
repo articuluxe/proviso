@@ -116,7 +116,7 @@ captured with \\(\\) in the key.
     (mapc (lambda (mapping)
             (let ((key (car mapping))
                   (tag-files (cdr mapping)))
-              (when (string-match key filename)
+              (when (and key (string-match key filename))
                 (mapc (lambda (tag-file)
                         (add-to-list 'tables (file-truename (replace-match tag-file t nil filename)) t))
                       tag-files))))
