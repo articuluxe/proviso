@@ -1,9 +1,9 @@
 ;;; proviso-tags.el --- add tags functionality to profiles
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-22 08:11:44 dharms>
+;; Modified Time-stamp: <2018-04-23 17:45:25 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso tags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -65,32 +65,52 @@ BASE gives the root directory."
   "Initialize tags functionality when profile PROJ is initialized.
 This includes storing the setting for `etags-table-alist'
 into :tags-alist."
-  (let ((remote (proviso-get proj :remote-prefix))
-        (root (proviso-get proj :root-dir))
-        (lst (proviso-get proj :proj-alist))
-        tag-root names curr entry)
-    (setq tag-root
-          (proviso-tags-compute-tags-dir
-           proj (concat remote root)))
+  (let* ((remote (proviso-get proj :remote-prefix))
+         (root (proviso-get proj :root-dir))
+         (lst (proviso-get proj :proj-alist))
+         (tag-root (proviso-tags-compute-tags-dir
+                    proj (concat remote root)))
+         tags-alist ext-dirs curr entry dir)
+    ;; tag-alist is a list of lists of at least one element.  Each element is
+    ;; a list of strings: the car is the regex to match filenames, the cdr the
+    ;; various tag files that apply to files that match.  The first element of
+    ;; tags-alist represents the project root; there will be another entry for
+    ;; each src dir that is external to the project root.
+    (setq tags-alist
+          (list
+           (list (concat
+                  ;; this first capture group is needed to match
+                  ;; the remote prefix
+                  "^\\(.*\\)"
+                  (proviso-get proj :root-stem)
+                  "\\(.*\\)$"))))
     (dolist (element lst)
       (setq curr (plist-get element :name))
       (setq entry (expand-file-name
                    (concat tag-root curr "-tags")))
-      (push entry names))
-    (when (seq-empty-p names)
+      (setq dir (plist-get element :dir))
+      (when (and dir (file-name-absolute-p dir))
+        ;; save external dirs, which need a separate entry
+        (push (concat
+               ;; this first capture group is needed to match
+               ;; the remote prefix
+               "^\\(.*\\)" dir "\\(.*\\)$")
+              ext-dirs))
+      (push entry (car tags-alist)))
+    (when (seq-empty-p (cdr (car tags-alist)))
       ;; if nothing specified, add an entry for the root
       (push (expand-file-name
              (concat
-              tag-root (proviso-get proj :project-name) "-tags")) names))
+              tag-root (proviso-get proj :project-name) "-tags"))
+            (car tags-alist)))
     (proviso-put proj :tags-dir tag-root)
-    (proviso-put proj :tags-alist
-                 (append (list (concat
-                                ;; this first capture group is needed to match
-                                ;; the remote prefix
-                                "^\\(.*\\)"
-                                (proviso-get proj :root-stem)
-                                "\\(.*\\)$"))
-                         (nreverse names)))))
+    (setq tags-alist (mapcar 'nreverse tags-alist))
+    (mapc (lambda (dir)
+            (add-to-list
+             'tags-alist
+             (append (list dir) (cdr (car tags-alist))) t))
+          (nreverse ext-dirs))
+    (proviso-put proj :tags-alist tags-alist)))
 
 (add-hook 'proviso-hook-on-project-init 'proviso-tags-on-init)
 (add-hook 'proviso-hook-on-project-active 'proviso-activate-tags-table)
@@ -100,7 +120,7 @@ into :tags-alist."
 PROJ is now the active project, replacing OLD."
   ;; todo: instead of overwriting etags-table-alist, we could
   ;; maintain a global value comprised of all known projects
-  (setq etags-table-alist `( ,(proviso-get proj :tags-alist))))
+  (setq etags-table-alist (proviso-get proj :tags-alist)))
 
 (defun proviso-etags--real-file-name (filename)
   "Return the tag's correct destination file for FILENAME.
@@ -110,10 +130,11 @@ This may prepend a remote prefix."
    (if (file-name-absolute-p filename)
        filename
      (concat
-      (proviso-get proviso-curr-proj :root-dir)))))
+      (proviso-get proviso-curr-proj :root-dir)
+      filename))))
 
 ;; point etags-select to our function
-(setq etags-select-real-file-name 'proviso-etags--real-file-name)
+(setq etags-select-real-file-name #'proviso-etags--real-file-name)
 
 (defun proviso-etags--insert-file-name(filename tag-file-path)
   "Return a display name for FILENAME.
@@ -124,7 +145,7 @@ TAG-FILE-PATH is the TAGS file being looked at."
             filename)))
 
 ;; point etags-select to our function
-(setq etags-select-insert-file-name 'proviso-etags--insert-file-name)
+(setq etags-select-insert-file-name #'proviso-etags--insert-file-name)
 
 (provide 'proviso-tags)
 ;;; proviso-tags.el ends here
