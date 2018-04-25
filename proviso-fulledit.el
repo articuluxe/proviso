@@ -1,9 +1,9 @@
 ;;; proviso-fulledit.el --- full-edit for proviso
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-09 08:25:19 dharms>
+;; Modified Time-stamp: <2018-04-25 07:51:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -28,7 +28,7 @@
 
 ;;; Code:
 (require 'seq)
-(require 'em-glob)
+;(require 'em-glob)
 (require 'proviso-defines)
 
 (defun proviso-fulledit-test-list-for-string (lst input)
@@ -38,6 +38,34 @@ LST is a list of regexes."
     (dolist (curr lst)
       (if (string-match curr input)
           (throw 'found t)))))
+
+(defun proviso-fulledit-gather-all-dirs (dir reporter &optional symbolic)
+  "Gather a list of directories recursivevly below DIR.
+REPORTER is a progress reporter.  SYMBOLIC should be non-nil to
+allow the presence of symlinks in the results.  Results are
+filtered via `proviso-uninteresting-dirs'."
+  (let* ((proj (proviso-current-project))
+         (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
+                           proviso-uninteresting-dirs))
+         (all-results
+          (directory-files
+           dir t directory-files-no-dot-files-regexp t))
+         (dirs (seq-filter 'file-directory-p all-results))
+         result)
+    (unless symbolic
+      (setq dirs (seq-remove 'file-symlink-p dirs)))
+    (dolist (dir dirs)
+      (unless
+          (proviso-fulledit-test-list-for-string
+           (mapcar 'proviso-regexp-glob-to-regex exclude-dirs)
+           dir)
+        (setq result
+              (append
+               (list dir)
+               result
+               (proviso-fulledit-gather-all-dirs dir reporter symbolic)))))
+    result))
+
 
 (defun proviso-fulledit-gather-all-files (dir reporter &optional symbolic)
   "Gather a list of filenames recursively below directory DIR.
@@ -57,7 +85,7 @@ filtered via `proviso-interesting-files',
            dir t directory-files-no-dot-files-regexp t))
          (files (seq-remove 'file-directory-p all-results))
          (dirs (seq-filter 'file-directory-p all-results))
-         (result '()))
+         result)
     (unless symbolic
       (setq files (seq-remove 'file-symlink-p files))
       (setq dirs (seq-remove 'file-symlink-p dirs)))
@@ -82,8 +110,7 @@ filtered via `proviso-interesting-files',
          (nconc
           result
           (proviso-fulledit-gather-all-files dir reporter symbolic)))))
-    result
-    ))
+    result))
 
 (defun proviso-fulledit-open-file-list (files)
   "Find (open) each of a list of filenames FILES."
