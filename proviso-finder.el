@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-04-26 21:19:01 dharms>
+;; Modified Time-stamp: <2018-04-27 17:51:44 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -55,11 +55,14 @@
                           result
                           (mapcar
                            (lambda (file)
-                             (cons (if (f-relative? entry)
-                                       (file-relative-name file root)
-                                     file)
-                                   ;; todo: remove remote prefix
-                                   file))
+                             ;; return a cons cell (display . absolute)
+                             (cons
+                              (string-remove-prefix
+                               (or remote "")
+                               (if (and entry (f-relative? entry))
+                                   (file-relative-name file root)
+                                 file))
+                              file))
                            (sort files 'string-lessp))))
             (unless arg (throw 'done result))))
       (progress-reporter-done reporter))
@@ -87,11 +90,14 @@
                           result
                           (mapcar
                            (lambda (dir)
-                             (cons (if (f-relative? entry)
-                                       (file-relative-name dir root)
-                                     dir)
-                                   ;; todo: remove remote prefix
-                                   dir))
+                             ;; return a cons cell (display . absolute)
+                             (cons
+                              (string-remove-prefix
+                               (or remote "")
+                               (if (and entry (f-relative? entry))
+                                   (file-relative-name dir root)
+                                 dir))
+                              dir))
                            (sort dirs 'string-lessp))))
             (unless arg (throw 'done result))))
       (progress-reporter-done reporter))
