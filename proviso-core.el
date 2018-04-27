@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-29 08:50:43 dharms>
+;; Modified Time-stamp: <2018-04-27 17:58:53 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -113,8 +113,11 @@ Hook functions are called with one parameter: the file's major mode.")
 (defvar-local proviso--last-proj-defined nil
   "The most recent project to be defined.")
 
-(defvar proviso--ext "proviso"
-  "The extension for project files.")
+(defvar proviso-project-signifiers '(
+                                     "\\.proviso$"
+                                     "\\.git$"
+                                     )
+  "A list of patterns that signify project roots.")
 
 (defun proviso-define-project (project &rest plist)
   "Create or replace a project named PROJECT.
@@ -278,14 +281,9 @@ Return that file's directory or nil if not found."
   (let ((file (proviso-find-file-upwards nil file)))
     (when file (file-name-directory file))))
 
-(defun proviso--find-root (dir &optional absolute)
-  "Search for the project root, starting from DIR and moving up the file tree.
-Returns a cons (file, dir) containing the project file and its parent
-directory, if found, else nil.  If ABSOLUTE is non-nil, the path, if found,
-will be absolute.  Project files can look like any of the following:
-    1) .proviso
-    2) proj.proviso
-    3) .proj.proviso"
+(defun proviso--find-root-helper (dir pattern)
+  "Look for project files upward from DIR matching PATTERN.
+Returns a list (ROOT FILE)."
   (let (root file)
     (setq root
           (if (functionp 'locate-dominating-file)
@@ -293,16 +291,32 @@ will be absolute.  Project files can look like any of the following:
                dir
                (lambda (parent)
                  (setq file
-                       (car (directory-files parent t
-                                             (concat "\\sw*\\."
-                                                     proviso--ext "$"))))))
-            (proviso-find-file-upwards dir
-                                       (concat "\\sw*\\."
-                                               proviso--ext "$"))))
-    (when root
-      (if absolute
-          (cons file (expand-file-name root))
-        (cons file root)))))
+                       (car (directory-files
+                             parent t
+                             (concat "\\sw*" pattern)
+                             t)))))
+            (proviso-find-file-upwards
+             dir
+             (concat "\\sw*" pattern))))
+    (list root file)))
+
+(defun proviso--find-root (dir &optional absolute)
+  "Search for the project root, starting from DIR and moving up the file tree.
+Returns a cons (file, dir) containing the project file and its parent
+directory, if found, else nil.  If ABSOLUTE is non-nil, the path, if found,
+will be absolute.  Project files can look like any of the following:
+    1) .proviso
+    2) proj.proviso
+    3) .proj.proviso
+    4) .git
+These are tried in order until one is matched."
+  (catch 'found
+    (dolist (pattern proviso-project-signifiers)
+      (seq-let [root file] (proviso--find-root-helper dir pattern)
+        (and root file
+             (throw 'found
+                    (cons file
+                          (if absolute (expand-file-name root) root))))))))
 
 (defun proviso-compute-basename-from-file (name)
   "Compute the basename of the project located at NAME.
@@ -314,7 +328,8 @@ following examples would all yield `sample':
     3)  ~/sample/.proviso"
   (let ((base (file-name-nondirectory name)))
     (if (string-match
-         (concat "\\.?\\(.+\\)\\." proviso--ext)
+         (concat "\\.?\\(.+\\)"
+                 (car proviso-project-signifiers))
          base)
         (match-string-no-properties 1 base)
       (file-name-nondirectory
