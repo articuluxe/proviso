@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-04-25 07:50:47 dharms>
+;; Modified Time-stamp: <2018-04-26 21:19:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -30,39 +30,80 @@
 ;;; Code:
 (require 'proviso-core)
 (require 'proviso-fulledit)
+(require 'f)
 (require 'counsel)
 
-(defun proviso-finder-gather-files ()
-  "Gather files in current project."
-  (let* ((root (or (proviso-current-project-root) default-directory))
+(defun proviso-finder-gather-files (&optional arg)
+  "Gather files in current project, according to ARG."
+  (let* ((proj (proviso-current-project))
+         (remote (proviso-get proj :remote-prefix))
+         (root (or (proviso-get proj :root-dir) default-directory))
+         (lst (proviso-get proj :proj-alist))
          (reporter (make-progress-reporter "Gathering files..."))
-         (files (proviso-fulledit-gather-all-files root reporter t)))
-    (progress-reporter-done reporter)
-    (mapcar (lambda (file)
-              (cons (file-relative-name file root)
-                    file))
-            files)))
+         result entry dir files)
+    (unwind-protect
+        (catch 'done
+          (dolist (element lst)
+            (setq entry (plist-get element :dir))
+            (setq dir
+                  (concat
+                   remote
+                   (when (or (null entry) (f-relative? entry)) root)
+                   entry))
+            (setq files (proviso-fulledit-gather-all-files dir reporter t))
+            (setq result (nconc
+                          result
+                          (mapcar
+                           (lambda (file)
+                             (cons (if (f-relative? entry)
+                                       (file-relative-name file root)
+                                     file)
+                                   ;; todo: remove remote prefix
+                                   file))
+                           (sort files 'string-lessp))))
+            (unless arg (throw 'done result))))
+      (progress-reporter-done reporter))
+    result))
 
-(defun proviso-finder-gather-dirs ()
-  "Gather directories in current project."
-  (let* ((root (or (proviso-current-project-root) default-directory))
+(defun proviso-finder-gather-dirs (&optional arg)
+  "Gather directories in current project, according to ARG."
+  (let* ((proj (proviso-current-project))
+         (remote (proviso-get proj :remote-prefix))
+         (root (or (proviso-get proj :root-dir) default-directory))
+         (lst (proviso-get proj :proj-alist))
          (reporter (make-progress-reporter "Gathering directories..."))
-         (dirs (proviso-fulledit-gather-all-dirs root reporter t)))
-    (progress-reporter-done reporter)
-    (mapcar (lambda (dir)
-              (cons (file-relative-name dir root)
-                    dir))
-            dirs)))
+         result entry dir dirs)
+    (unwind-protect
+        (catch 'done
+          (dolist (element lst)
+            (setq entry (plist-get element :dir))
+            (setq dir
+                  (concat
+                   remote
+                   (when (or (null entry) (f-relative? entry)) root)
+                   entry))
+            (setq dirs (proviso-fulledit-gather-all-dirs dir reporter t))
+            (setq result (nconc
+                          result
+                          (mapcar
+                           (lambda (dir)
+                             (cons (if (f-relative? entry)
+                                       (file-relative-name dir root)
+                                     dir)
+                                   ;; todo: remove remote prefix
+                                   dir))
+                           (sort dirs 'string-lessp))))
+            (unless arg (throw 'done result))))
+      (progress-reporter-done reporter))
+    result))
 
 ;;;###autoload
-(defun proviso-finder-find-file ()
-  "Find file in current project."
-  (interactive)
-  (ivy-set-prompt 'proviso-finder-find-file counsel-prompt-function)
-  (let ((files (proviso-finder-gather-files)))
-    (ivy-read "Find file in project"
-              (sort files (lambda (x y)
-                            (string-lessp (car x) (car y))))
+(defun proviso-finder-find-file (&optional arg)
+  "Find file in current project.  ARG customizes behavior."
+  (interactive "P")
+  (let ((files (proviso-finder-gather-files arg)))
+    (ivy-set-prompt 'proviso-finder-find-file counsel-prompt-function)
+    (ivy-read "Find file in project" files
               :action #'proviso-finder-open-file-action
               :caller #'proviso-finder-find-file)))
 
@@ -74,14 +115,12 @@
       (find-file file))))
 
 ;;;###autoload
-(defun proviso-finder-open-dir ()
-  "Find directory in current project."
-  (interactive)
-  (ivy-set-prompt 'proviso-finder-open-dir counsel-prompt-function)
-  (let ((dirs (proviso-finder-gather-dirs)))
-    (ivy-read "Open directory in project"
-              (sort dirs (lambda (x y)
-                           (string-lessp (car x) (car y))))
+(defun proviso-finder-open-dir (&optional arg)
+  "Find directory in current project.  ARG customizes behavior."
+  (interactive "P")
+  (let ((dirs (proviso-finder-gather-dirs arg)))
+    (ivy-set-prompt 'proviso-finder-open-dir counsel-prompt-function)
+    (ivy-read "Open directory in project" dirs
               :action #'proviso-finder-open-dir-action
               :caller #'proviso-finder-open-dir)))
 
@@ -90,7 +129,6 @@
   (with-ivy-window
     (let* ((dir (cdr x)))
       (dired dir))))
-
 
 (provide 'proviso-finder)
 ;;; proviso-finder.el ends here
