@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-04-25 07:44:32 dharms>
+;; Modified Time-stamp: <2018-04-28 07:42:39 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -162,9 +162,6 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
         (setq remote-localname (cadr remote-props))
         (setq remote-prefix (caddr remote-props)))
       (when (and root root-file root-dir
-                 (string-match
-                  (concat "\\." proviso--ext "$")
-                  root-file)
                  (or (not proviso-local-proj)
                      (not (string-equal root-dir
                                         (proviso-get proviso-local-proj :root-dir)))))
