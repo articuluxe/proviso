@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-04-27 17:58:53 dharms>
+;; Modified Time-stamp: <2018-04-28 07:41:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -325,7 +325,9 @@ Otherwise we look at the current directory.  For example, the
 following examples would all yield `sample':
     1)  ~/first/second/sample.proviso
     2)  /home/user/third/.sample.proviso
-    3)  ~/sample/.proviso"
+    3)  ~/sample/.proviso
+    4)  ~/sample/.git
+See also `proviso-project-signifiers'."
   (let ((base (file-name-nondirectory name)))
     (if (string-match
          (concat "\\.?\\(.+\\)"
