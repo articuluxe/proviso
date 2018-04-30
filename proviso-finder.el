@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-04-27 17:51:44 dharms>
+;; Modified Time-stamp: <2018-04-30 08:39:25 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -33,14 +33,15 @@
 (require 'f)
 (require 'counsel)
 
-(defun proviso-finder-gather-files (&optional arg)
-  "Gather files in current project, according to ARG."
-  (let* ((proj (proviso-current-project))
-         (remote (proviso-get proj :remote-prefix))
-         (root (or (proviso-get proj :root-dir) default-directory))
-         (lst (proviso-get proj :proj-alist))
-         (reporter (make-progress-reporter "Gathering files..."))
-         result entry dir files)
+(defun proviso-finder-gather-files (proj &optional arg)
+  "Gather files in project PROJ, according to ARG."
+  (let ((remote (proviso-get proj :remote-prefix))
+        (root (or (proviso-get proj :root-dir) default-directory))
+        (lst (proviso-get proj :proj-alist))
+        (reporter (make-progress-reporter "Gathering files..."))
+        result entry dir files)
+    (if (seq-empty-p lst)
+        (push (list root) lst))
     (unwind-protect
         (catch 'done
           (dolist (element lst)
@@ -68,14 +69,15 @@
       (progress-reporter-done reporter))
     result))
 
-(defun proviso-finder-gather-dirs (&optional arg)
-  "Gather directories in current project, according to ARG."
-  (let* ((proj (proviso-current-project))
-         (remote (proviso-get proj :remote-prefix))
+(defun proviso-finder-gather-dirs (proj &optional arg)
+  "Gather directories in project PROJ, according to ARG."
+  (let* ((remote (proviso-get proj :remote-prefix))
          (root (or (proviso-get proj :root-dir) default-directory))
          (lst (proviso-get proj :proj-alist))
          (reporter (make-progress-reporter "Gathering directories..."))
          result entry dir dirs)
+    (if (seq-empty-p lst)
+        (push (list root) lst))
     (unwind-protect
         (catch 'done
           (dolist (element lst)
@@ -107,7 +109,8 @@
 (defun proviso-finder-find-file (&optional arg)
   "Find file in current project.  ARG customizes behavior."
   (interactive "P")
-  (let ((files (proviso-finder-gather-files arg)))
+  (let* ((proj (proviso-current-project))
+         (files (proviso-finder-gather-files proj arg)))
     (ivy-set-prompt 'proviso-finder-find-file counsel-prompt-function)
     (ivy-read "Find file in project" files
               :action #'proviso-finder-open-file-action
@@ -124,7 +127,8 @@
 (defun proviso-finder-open-dir (&optional arg)
   "Find directory in current project.  ARG customizes behavior."
   (interactive "P")
-  (let ((dirs (proviso-finder-gather-dirs arg)))
+  (let* ((proj (proviso-current-project))
+         (dirs (proviso-finder-gather-dirs proj arg)))
     (ivy-set-prompt 'proviso-finder-open-dir counsel-prompt-function)
     (ivy-read "Open directory in project" dirs
               :action #'proviso-finder-open-dir-action
