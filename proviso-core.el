@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-01 08:52:32 dharms>
+;; Modified Time-stamp: <2018-05-01 17:28:36 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -312,7 +312,8 @@ will be absolute.  Project files can look like any of the following:
     2) proj.proviso
     3) .proj.proviso
     4) .git
-These are tried in order until one is matched."
+These are tried in order until one is matched.  Note that the car, FILE, may
+be a directory."
   (catch 'found
     (dolist (pattern proviso-project-signifiers)
       (seq-let [root file] (proviso--find-root-helper dir pattern)

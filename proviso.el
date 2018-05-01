@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-04-28 07:42:39 dharms>
+;; Modified Time-stamp: <2018-05-01 17:28:36 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -133,7 +133,11 @@ This may or may not be for the first time."
   (let ((expr (concat (format "Proviso: Error while loading %S" filename) " %S")))
     (setq proviso--load-file-errors nil)
     (condition-case err
-        (load-file filename)
+        ;; only load *.proviso files
+        (and filename
+             (not (file-directory-p filename))
+             (string-match-p (car proviso-project-signifiers) filename)
+             (load-file filename))
       ('error (push err proviso--load-file-errors)))))
 
 (advice-add 'find-file-noselect-1 :before 'proviso--file-opened-advice)
