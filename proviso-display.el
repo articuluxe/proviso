@@ -1,9 +1,9 @@
 ;;; proviso-display.el --- display information about proviso
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-22 08:05:48 dharms>
+;; Modified Time-stamp: <2018-05-01 17:48:46 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -48,18 +48,26 @@
   "Return a string containing a textual representation of PROJ."
   (pp (proviso-get-plist proj)))
 
-(defun proviso-display--get-project-names ()
-  "Return a list containing the current project names in `proviso-obarray'."
-  (let (lst)
+(defun proviso-display--get-project-names (&optional proj)
+  "Return a list containing the current project names in `proviso-obarray'.
+PROJ, if non-nil, will be highlighted in the results."
+  (let ((currname (proviso-get proj :project-name))
+        name lst)
     (mapatoms (lambda (atom)
-                (push (symbol-name atom) lst)) proviso-obarray)
+                (setq name (symbol-name atom))
+                (push (if (string= name currname)
+                          (concat "*" name "*")
+                        name)
+                      lst))
+              proviso-obarray)
     lst))
 
 ;;;###autoload
 (defun proviso-display-echo-project-names ()
   "Echo the project names contained in `proviso-obarray'."
   (interactive)
-  (let ((projs (proviso-display--get-project-names)))
+  (let ((projs
+         (proviso-display--get-project-names (proviso-current-project))))
     (if projs
         (message "%s" projs)
       (error "No projects"))))
