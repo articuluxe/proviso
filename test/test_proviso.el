@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-03 22:57:53 dharms>
+;; Modified Time-stamp: <2018-05-01 08:38:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 
@@ -84,6 +84,33 @@
       (kill-buffer "dfile1")
       (kill-buffer "dfile2")
       (kill-buffer "dfile3")
+      )))
+
+(ert-deftest proviso-open-project-test-git-should-be-ignored-due-to-proviso-file ()
+  (proviso-test-reset-all)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; problematic to check-in a .git subdir, so we'll just create it here
+      (require 'dired-aux)
+      (dired-create-directory (concat base "a/b/c/d/gitsubdir/.git"))
+      ;; open file, init new project
+      ;; The file would be inside a .git project, except that there exists an
+      ;; over-arching .proviso file, which will be favored.
+      (setq file-contents "(proviso-define-project \"c\" :name \"c\")")
+      (find-file (concat base "a/b/c/d/gitsubdir/g/gfile"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (equal proviso-path-alist
+                     (cons (cons (concat base "a/b/c/") "c") nil)))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (string= (concat base "a/b/c/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (kill-buffer "gfile")
       )))
 
 

@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-03 22:57:53 dharms>
+;; Modified Time-stamp: <2018-04-30 08:42:35 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 
@@ -63,6 +63,8 @@
                     "/home/user/third/.sample.proviso") "sample"))
   (should (string= (proviso-compute-basename-from-file
                     "~/sample/.proviso") "sample"))
+  (should (string= (proviso-compute-basename-from-file
+                    "~/sample/.git") "sample"))
   ;; (should (not (string-equal (proviso--compute-basename
   ;;                             "unknown") "")))
   )
