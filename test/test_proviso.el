@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-01 08:38:56 dharms>
+;; Modified Time-stamp: <2018-05-01 08:48:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 
@@ -111,9 +111,33 @@
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (kill-buffer "gfile")
+      (dired-delete-file (concat base "a/b/c/d/gitsubdir/.git") 'always)
       )))
 
-
+(ert-deftest proviso-open-project-test-git-project ()
+  (proviso-test-reset-all)
+  (let ((base (file-name-directory load-file-name))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--load-file)
+               (lambda (_)
+                 (proviso-eval-string file-contents))))
+      ;; problematic to check-in a .git subdir, so we'll just create it here
+      (require 'dired-aux)
+      (dired-create-directory (concat base "a/gitproject/.git"))
+      ;; open file, init new project
+      (find-file (concat base "a/gitproject/g2/gfile2"))
+      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
+      (should (equal proviso-path-alist
+                     (cons (cons (concat base "a/gitproject/") "gitproject") nil)))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (string= (concat base "a/gitproject/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "gitproject"))
+      (dired-delete-file (concat base "a/gitproject/.git") 'always)
+      (kill-buffer "gfile2")
+      )))
 
 (ert-run-tests-batch-and-exit (car argv))
 
