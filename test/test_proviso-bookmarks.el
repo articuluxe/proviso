@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-03 22:57:53 dharms>
+;; Modified Time-stamp: <2018-05-02 17:41:14 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso bookmark test
 
@@ -33,6 +33,7 @@
 (ert-deftest proviso-register-test-bookmark-created ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
+        (proviso-bookmarks-create-bmk-on-proj-init t)
         file-contents)
     (cl-letf (((symbol-function 'proviso--load-file)
                (lambda (_)
@@ -65,6 +66,7 @@
 (ert-deftest proviso-register-test-bookmark-empty-project-file ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
+        (proviso-bookmarks-create-bmk-on-proj-init t)
         file-contents)
     (cl-letf (((symbol-function 'proviso--load-file)
                (lambda (_)
@@ -91,6 +93,7 @@
 (ert-deftest proviso-register-test-bookmark-switch-projects ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
+        (proviso-bookmarks-create-bmk-on-proj-init t)
         file-contents)
     (cl-letf (((symbol-function 'proviso--load-file)
                (lambda (_)
