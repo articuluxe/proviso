@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-02 08:39:23 dharms>
+;; Modified Time-stamp: <2018-05-02 08:50:59 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -111,12 +111,19 @@
   (interactive "P")
   (let* ((proj (proviso-current-project))
          (symbol (if arg :project-files-all :project-files))
-         (files (proviso-get proj symbol)))
-    (unless files
-      (setq files (proviso-finder-gather-files proj arg))
-      (proviso-put proj symbol files))
+         (files (proviso-get proj symbol))
+         (prompt (concat "Find file "
+                         (if proj
+                             (concat "in project \""
+                                     (proviso-get proj :project-name)
+                                     "\"")
+                           "under current directory"))))
+    (and (not files)
+         (setq files (proviso-finder-gather-files proj arg))
+         proj
+         (proviso-put proj symbol files))
     (ivy-set-prompt 'proviso-finder-find-file counsel-prompt-function)
-    (ivy-read "Find file in project" files
+    (ivy-read prompt files
               :action #'proviso-finder-open-file-action
               :caller #'proviso-finder-find-file)))
 
@@ -133,12 +140,19 @@
   (interactive "P")
   (let* ((proj (proviso-current-project))
          (symbol (if arg :project-dirs-all :project-dirs))
-         (dirs (proviso-get proj symbol)))
-    (unless dirs
-      (setq dirs (proviso-finder-gather-dirs proj arg))
-      (proviso-put proj symbol dirs))
+         (dirs (proviso-get proj symbol))
+         (prompt (concat "Open directory "
+                         (if proj
+                             (concat "in project \""
+                                     (proviso-get proj :project-name)
+                                     "\"")
+                           "under current directory"))))
+    (and (not dirs)
+         (setq dirs (proviso-finder-gather-dirs proj arg))
+         proj
+         (proviso-put proj symbol dirs))
     (ivy-set-prompt 'proviso-finder-open-dir counsel-prompt-function)
-    (ivy-read "Open directory in project" dirs
+    (ivy-read prompt dirs
               :action #'proviso-finder-open-dir-action
               :caller #'proviso-finder-open-dir)))
 
