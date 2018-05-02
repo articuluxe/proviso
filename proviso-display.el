@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-01 17:57:28 dharms>
+;; Modified Time-stamp: <2018-05-02 05:43:35 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -113,7 +113,7 @@ PROJ, if non-nil, will be highlighted in the results."
     (proviso-display-mode)
     (tabulated-list-print)))
 
-(define-key proviso-display-mode-map "r" #'proviso-display-open-root-dired)
+(define-key proviso-display-mode-map "d" #'proviso-display-open-root-dired)
 (define-key proviso-display-mode-map "x" #'proviso-display-erase-project)
 
 (defun proviso-display-open-root-dired ()
