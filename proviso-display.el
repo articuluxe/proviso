@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-01 17:48:46 dharms>
+;; Modified Time-stamp: <2018-05-01 17:57:28 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -114,6 +114,7 @@ PROJ, if non-nil, will be highlighted in the results."
     (tabulated-list-print)))
 
 (define-key proviso-display-mode-map "r" #'proviso-display-open-root-dired)
+(define-key proviso-display-mode-map "x" #'proviso-display-erase-project)
 
 (defun proviso-display-open-root-dired ()
   "Open a dired buffer at the root location of the selected project."
@@ -128,6 +129,16 @@ PROJ, if non-nil, will be highlighted in the results."
                      (proviso-get proj :root-dir))))
          (file-readable-p dir)
          (dired dir))))
+
+(defun proviso-display-erase-project ()
+  "Erase all traces of the selected project."
+  (interactive)
+  (let* ((name (tabulated-list-get-id))
+         (proj (intern-soft name proviso-obarray)))
+    (when proj
+      (proviso-hard-reset proj)
+      (tabulated-list-delete-entry)
+      )))
 
 (provide 'proviso-display)
 ;;; proviso-display.el ends here
