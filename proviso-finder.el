@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-02 08:50:59 dharms>
+;; Modified Time-stamp: <2018-05-02 17:25:14 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -57,14 +57,15 @@
                           (mapcar
                            (lambda (file)
                              ;; return a cons cell (display . absolute)
-                             (cons
-                              (string-remove-prefix
-                               (or remote "")
-                               (if (and entry (f-relative? entry))
-                                   (file-relative-name file root)
-                                 file))
-                              file))
-                           (sort files 'string-lessp))))
+                             (let ((stem (concat remote root)))
+                               (cons
+                                (string-remove-prefix
+                                 (or remote "")
+                                 (if (file-in-directory-p file stem)
+                                     (file-relative-name file stem)
+                                   file))
+                                file)))
+                             (sort files 'string-lessp))))
             (unless arg (throw 'done result))))
       (progress-reporter-done reporter))
     result))
@@ -93,13 +94,14 @@
                           (mapcar
                            (lambda (dir)
                              ;; return a cons cell (display . absolute)
-                             (cons
-                              (string-remove-prefix
-                               (or remote "")
-                               (if (and entry (f-relative? entry))
-                                   (file-relative-name dir root)
-                                 dir))
-                              dir))
+                             (let ((stem (concat remote root)))
+                               (cons
+                                (string-remove-prefix
+                                 (or remote "")
+                                 (if (file-in-directory-p dir stem)
+                                     (file-relative-name dir stem)
+                                   dir))
+                                dir)))
                            (sort dirs 'string-lessp))))
             (unless arg (throw 'done result))))
       (progress-reporter-done reporter))
