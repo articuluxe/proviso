@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-01 17:28:36 dharms>
+;; Modified Time-stamp: <2018-05-02 08:33:59 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -78,6 +78,8 @@ If there is no active project, nil is returned."
 ;; :registers
 ;; :tags-alist :tags-dir
 ;; :grep-cmd :ag-cmd :rg-cmd
+;; :project-files :project-files-all
+;; :project-dirs :project-dirs-all
 
 ;; hooks
 (defvar proviso-hook-on-project-pre-init '()
