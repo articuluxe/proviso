@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-03-22 17:25:19 dharms>
+;; Modified Time-stamp: <2018-05-03 13:34:03 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -33,7 +33,8 @@
 (require 's)
 
 (defcustom proviso-grep-args "-Isni"
-  "Standard arguments to give to grep.")
+  "Standard arguments to give to grep."
+  :group 'proviso-custom-group)
 
 (defun proviso--set-grep-dirs (proj)
   "Set grep directories according to PROJ's project definition."

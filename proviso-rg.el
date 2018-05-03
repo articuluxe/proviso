@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-03-22 17:29:10 dharms>
+;; Modified Time-stamp: <2018-05-03 13:40:24 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project rg ripgrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -34,23 +34,41 @@
 (require 'subr-x)
 (require 's)
 
+;; rg in a dos shell barfs on surrounding quotes
+(defcustom proviso-rg-quote-char
+  (if (string-match-p "cmdproxy" shell-file-name) "" "'")
+  "The quote character used in the rg command line."
+  :group 'proviso-custom-group)
+
 (defun proviso-rg--create-file-exclusion-str (lst)
   "Create an rg subcommand to exclude files from LST."
   (let (str)
     (dolist (elt lst str)
-      (setq str (concat str "-g '!" elt "' ")))))
+      (setq str (concat str "-g "
+                        proviso-rg-quote-char
+                        "!" elt
+                        proviso-rg-quote-char
+                        " ")))))
 
 (defun proviso-rg--create-dir-exclusion-str (lst)
   "Create an rg subcommand to exclude dirs from LST."
   (let (str)
     (dolist (elt lst str)
-      (setq str (concat str "-g '!" elt "' ")))))
+      (setq str (concat str "-g "
+                        proviso-rg-quote-char
+                        "!" elt
+                        proviso-rg-quote-char
+                        " ")))))
 
 (defun proviso-rg--create-inclusion-str (lst)
   "Create an rg subcommand to match files from LST."
   (let (str)
     (dolist (elt lst str)
-      (setq str (concat str "-g '" elt "' ")))))
+      (setq str (concat str "-g "
+                        proviso-rg-quote-char
+                        elt
+                        proviso-rg-quote-char
+                        " ")))))
 
 (defun proviso-rg--create-rg-str (proj)
   "Create an rg command string according to the settings of PROJ."
