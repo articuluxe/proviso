@@ -1,9 +1,9 @@
 ;;; proviso-defines.el --- defines useful for proviso
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-11-03 08:18:05 dharms>
+;; Modified Time-stamp: <2018-05-03 15:18:21 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -46,6 +46,7 @@
     "*.sh"
     "*.sql"
     "*.xml"
+    "*.lua"
     "CMakeLists.txt"
     "[Mm]akefile"
     )
