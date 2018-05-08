@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-04-25 07:51:51 dharms>
+;; Modified Time-stamp: <2018-05-08 08:31:59 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -67,11 +67,11 @@ filtered via `proviso-uninteresting-dirs'."
     result))
 
 
-(defun proviso-fulledit-gather-all-files (dir reporter &optional symbolic)
+(defun proviso-fulledit-gather-all-files (dir &optional reporter symbolic)
   "Gather a list of filenames recursively below directory DIR.
-REPORTER is a progress reporter.  SYMBOLIC should be non-nil to
-allow the presence of symlinks in the results.  Results are
-filtered via `proviso-interesting-files',
+REPORTER is an optional progress reporter.  SYMBOLIC should be
+non-nil to allow the presence of symlinks in the results.
+Results are filtered via `proviso-interesting-files',
 `proviso-uninteresting-files' and `proviso-uninteresting-dirs'."
   (let* ((proj (proviso-current-project))
          (exclude-files (or (proviso-get proj :grep-exclude-files)
@@ -98,8 +98,7 @@ filtered via `proviso-interesting-files',
              (mapcar 'proviso-regexp-glob-to-regex exclude-files)
              (file-name-nondirectory file)))
        (setq result (cons file result))
-       (progress-reporter-update reporter)
-       ))
+       (when reporter (progress-reporter-update reporter))))
     (dolist (dir dirs)
       (unless
           (proviso-fulledit-test-list-for-string
