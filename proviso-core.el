@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-02 08:33:59 dharms>
+;; Modified Time-stamp: <2018-05-08 08:34:46 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -27,7 +27,6 @@
 ;;
 
 ;;; Code:
-(require 'f)
 (require 'ivy)
 (require 'seq)
 (require 'tramp)

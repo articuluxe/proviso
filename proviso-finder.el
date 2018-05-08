@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-02 17:25:14 dharms>
+;; Modified Time-stamp: <2018-05-08 08:32:52 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -30,7 +30,6 @@
 ;;; Code:
 (require 'proviso-core)
 (require 'proviso-fulledit)
-(require 'f)
 (require 'counsel)
 
 (defun proviso-finder-gather-files (proj &optional arg)
@@ -49,7 +48,8 @@
             (setq dir
                   (concat
                    remote
-                   (when (or (null entry) (f-relative? entry)) root)
+                   (when (or (null entry) (not (file-name-absolute-p entry)))
+                     root)
                    entry))
             (setq files (proviso-fulledit-gather-all-files dir reporter t))
             (setq result (nconc
@@ -86,7 +86,8 @@
             (setq dir
                   (concat
                    remote
-                   (when (or (null entry) (f-relative? entry)) root)
+                   (when (or (null entry) (not (file-name-absolute-p entry)))
+                     root)
                    entry))
             (setq dirs (proviso-fulledit-gather-all-dirs dir reporter t))
             (setq result (nconc
