@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-08 08:32:52 dharms>
+;; Modified Time-stamp: <2018-05-08 17:21:45 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -31,16 +31,30 @@
 (require 'proviso-core)
 (require 'proviso-fulledit)
 (require 'counsel)
+(require 'async)
 
-(defun proviso-finder-gather-files (proj &optional arg)
-  "Gather files in project PROJ, according to ARG."
+(defun proviso-finder-gather-files-interactive (proj &optional all-files)
+  "Gather files in project PROJ.
+If ALL-FILES is nil, only the first source directory will be
+searched."
   (let ((remote (proviso-get proj :remote-prefix))
         (root (or (proviso-get proj :root-dir) default-directory))
-        (lst (proviso-get proj :proj-alist))
-        (reporter (make-progress-reporter "Gathering files..."))
-        result entry dir files)
+        (lst (proviso-get proj :proj-alist)))
+    (proviso-finder-gather-files remote root lst all-files)))
+
+(defun proviso-finder-gather-files (remote root lst &optional all-files async)
+  "Gather files at REMOTE under ROOT, according to LST (see `:proj-alist').
+If ALL-FILES is nil, only the first source directory will be searched.
+If ASYNC is non-nil, the search is occurring asynchronously."
+  (let ((reporter (unless async (make-progress-reporter "Gathering files...")))
+        result entry dir files msg)
     (if (seq-empty-p lst)
         (push (list root) lst))
+    (setq msg (format "athering %sfiles %sunder %s"
+                      (if all-files "all " "")
+                      (if async "asynchronously " "")
+                      (concat remote root)))
+    (message "G%s" msg)
     (unwind-protect
         (catch 'done
           (dolist (element lst)
@@ -65,20 +79,35 @@
                                      (file-relative-name file stem)
                                    file))
                                 file)))
-                             (sort files 'string-lessp))))
-            (unless arg (throw 'done result))))
-      (progress-reporter-done reporter))
+                           (sort files 'string-lessp))))
+            (unless all-files (throw 'done result))))
+      (when reporter (progress-reporter-done reporter))
+      (message "Done g%s (%d files)" msg (length result)))
     result))
 
-(defun proviso-finder-gather-dirs (proj &optional arg)
-  "Gather directories in project PROJ, according to ARG."
-  (let* ((remote (proviso-get proj :remote-prefix))
-         (root (or (proviso-get proj :root-dir) default-directory))
-         (lst (proviso-get proj :proj-alist))
-         (reporter (make-progress-reporter "Gathering directories..."))
-         result entry dir dirs)
+(defun proviso-finder-gather-dirs-interactive (proj &optional all-dirs)
+  "Gather directories in project PROJ.
+If ALL-DIRS is nil, only the first source directory will be
+searched."
+  (let ((remote (proviso-get proj :remote-prefix))
+        (root (or (proviso-get proj :root-dir) default-directory))
+        (lst (proviso-get proj :proj-alist)))
+    (proviso-finder-gather-dirs remote root lst all-dirs)))
+
+(defun proviso-finder-gather-dirs (remote root lst &optional all-dirs async)
+  "Gather directories at REMOTE under ROOT, according to LST.
+See `:proj-alist' for more details.  If ALL-DIRS is nil, only the
+first source directory will be searched.  If ASYNC is non-nil,
+the search is occurring asynchronously."
+  (let ((reporter (unless async (make-progress-reporter "Gathering directories...")))
+        result entry dir dirs msg)
     (if (seq-empty-p lst)
         (push (list root) lst))
+    (setq msg (format "athering %sdirs %sunder %s"
+                     (if all-dirs "all " "")
+                     (if async "asynchronously " "")
+                     (concat remote root)))
+    (message "G%s" msg)
     (unwind-protect
         (catch 'done
           (dolist (element lst)
@@ -104,8 +133,9 @@
                                    dir))
                                 dir)))
                            (sort dirs 'string-lessp))))
-            (unless arg (throw 'done result))))
-      (progress-reporter-done reporter))
+            (unless all-dirs (throw 'done result))))
+      (when reporter (progress-reporter-done reporter))
+      (message "Done g%s (%d dirs)" msg (length result)))
     result))
 
 ;;;###autoload
@@ -114,6 +144,7 @@
   (interactive "P")
   (let* ((proj (proviso-current-project))
          (symbol (if arg :project-files-all :project-files))
+         (future (if arg :project-files-all-future :project-files-future))
          (files (proviso-get proj symbol))
          (prompt (concat "Find file "
                          (if proj
@@ -122,7 +153,7 @@
                                      "\"")
                            "under current directory"))))
     (and (not files)
-         (setq files (proviso-finder-gather-files proj arg))
+         (setq files (async-get (proviso-get proj future)))
          proj
          (proviso-put proj symbol files))
     (ivy-set-prompt 'proviso-finder-find-file counsel-prompt-function)
@@ -143,6 +174,7 @@
   (interactive "P")
   (let* ((proj (proviso-current-project))
          (symbol (if arg :project-dirs-all :project-dirs))
+         (future (if arg :project-dirs-all-future :project-dirs-future))
          (dirs (proviso-get proj symbol))
          (prompt (concat "Open directory "
                          (if proj
@@ -151,7 +183,7 @@
                                      "\"")
                            "under current directory"))))
     (and (not dirs)
-         (setq dirs (proviso-finder-gather-dirs proj arg))
+         (setq dirs (async-get (proviso-get proj future)))
          proj
          (proviso-put proj symbol dirs))
     (ivy-set-prompt 'proviso-finder-open-dir counsel-prompt-function)
@@ -164,6 +196,49 @@
   (with-ivy-window
     (let* ((dir (cdr x)))
       (dired dir))))
+
+(defun proviso-finder--load-files (proj)
+  "Start an async process to gather files contained in PROJ."
+  (let ((remote (proviso-get proj :remote-prefix))
+        (root (or (proviso-get proj :root-dir) default-directory))
+        (lst (proviso-get proj :proj-alist)))
+    (proviso-put proj :project-files-future
+                 (async-start
+                  `(lambda ()
+                     ,(async-inject-variables "load-path")
+                     (require 'proviso)
+                     (setq deferred:debug t)
+                     (setq async-debug t)
+                     ;; (setq debug-on-error t)
+                     (proviso-finder-gather-files ,remote ,root (quote ,lst) nil t))))
+    (proviso-put proj :project-files-all-future
+                 (async-start
+                  `(lambda ()
+                     ,(async-inject-variables "load-path")
+                     (setq deferred:debug t)
+                     (setq async-debug t)
+                     ;; (setq debug-on-error t)
+                     (require 'proviso)
+                     (proviso-finder-gather-files ,remote ,root (quote ,lst) t t))))
+    (proviso-put proj :project-dirs-future
+                 (async-start
+                  `(lambda ()
+                     ,(async-inject-variables "load-path")
+                     (require 'proviso)
+                     (setq deferred:debug t)
+                     (setq async-debug t)
+                     (proviso-finder-gather-dirs ,remote ,root (quote ,lst) nil t))))
+    (proviso-put proj :project-dirs-all-future
+                 (async-start
+                  `(lambda ()
+                     ,(async-inject-variables "load-path")
+                     (require 'proviso)
+                     (setq deferred:debug t)
+                     (setq async-debug t)
+                     (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t t))))
+    ))
+
+(add-hook 'proviso-hook-on-project-init 'proviso-finder--load-files)
 
 (provide 'proviso-finder)
 ;;; proviso-finder.el ends here

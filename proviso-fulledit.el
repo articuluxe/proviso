@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-08 08:31:59 dharms>
+;; Modified Time-stamp: <2018-05-08 17:13:24 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -39,11 +39,11 @@ LST is a list of regexes."
       (if (string-match curr input)
           (throw 'found t)))))
 
-(defun proviso-fulledit-gather-all-dirs (dir reporter &optional symbolic)
+(defun proviso-fulledit-gather-all-dirs (dir &optional reporter symbolic)
   "Gather a list of directories recursivevly below DIR.
-REPORTER is a progress reporter.  SYMBOLIC should be non-nil to
-allow the presence of symlinks in the results.  Results are
-filtered via `proviso-uninteresting-dirs'."
+REPORTER is an optional progress reporter.  SYMBOLIC should be
+non-nil to allow the presence of symlinks in the results.
+Results are filtered via `proviso-uninteresting-dirs'."
   (let* ((proj (proviso-current-project))
          (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
                            proviso-uninteresting-dirs))
@@ -63,7 +63,8 @@ filtered via `proviso-uninteresting-dirs'."
               (append
                (list dir)
                result
-               (proviso-fulledit-gather-all-dirs dir reporter symbolic)))))
+               (proviso-fulledit-gather-all-dirs dir reporter symbolic)))
+        (when reporter (progress-reporter-update reporter))))
     result))
 
 
