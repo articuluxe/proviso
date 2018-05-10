@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-08 17:21:45 dharms>
+;; Modified Time-stamp: <2018-05-10 08:40:30 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -104,9 +104,9 @@ the search is occurring asynchronously."
     (if (seq-empty-p lst)
         (push (list root) lst))
     (setq msg (format "athering %sdirs %sunder %s"
-                     (if all-dirs "all " "")
-                     (if async "asynchronously " "")
-                     (concat remote root)))
+                      (if all-dirs "all " "")
+                      (if async "asynchronously " "")
+                      (concat remote root)))
     (message "G%s" msg)
     (unwind-protect
         (catch 'done
@@ -139,12 +139,42 @@ the search is occurring asynchronously."
     result))
 
 ;;;###autoload
+(defun proviso-finder-reset-file-cache ()
+  "Reset the file cache associated with the current project."
+  (interactive)
+  (let ((proj (proviso-current-project)))
+    ;; (when proj
+    ;;   (proviso-finder--load-files proj))))
+    (lexical-let ((func (lambda (proj place future)
+                          (proviso-put proj place
+                                       (proviso-get proj future)))))
+      (when proj
+        (funcall func proj :project-files :project-files-future)
+        (funcall func proj :project-files-all :project-files-all-future)
+        (funcall func proj :project-dirs :project-dirs-future)
+        (funcall func proj :project-dirs-all :project-dirs-all-future)))))
+
+;;;###autoload
 (defun proviso-finder-find-file (&optional arg)
-  "Find file in current project.  ARG customizes behavior."
+  "Find file in current project's primary source directory.
+ARG allows customizing the window to open the file in."
   (interactive "P")
+  (proviso-finder--find-file nil arg))
+
+;;;###autoload
+(defun proviso-finder-find-file-all (&optional arg)
+  "Find file among all files in current project.
+ARG will open the file in the other window."
+  (interactive "P")
+  (proviso-finder--find-file 'all arg))
+
+(defun proviso-finder--find-file (all other-window)
+  "Allow choosing a file to open in current project.
+ALL means to look in all project source directories, not just the first.
+OTHER-WINDOW means to open the file in the other window."
   (let* ((proj (proviso-current-project))
-         (symbol (if arg :project-files-all :project-files))
-         (future (if arg :project-files-all-future :project-files-future))
+         (symbol (if all :project-files-all :project-files))
+         (future (if all :project-files-all-future :project-files-future))
          (files (proviso-get proj symbol))
          (prompt (concat "Find file "
                          (if proj
@@ -152,11 +182,19 @@ the search is occurring asynchronously."
                                      (proviso-get proj :project-name)
                                      "\"")
                            "under current directory"))))
-    (and (not files)
-         (setq files (async-get (proviso-get proj future)))
-         proj
-         (proviso-put proj symbol files))
+    (when (not files)
+      (if proj
+          (progn
+            (unless (async-ready (proviso-get proj future))
+              (message "Still gathering files..."))
+            (setq files (async-get (proviso-get proj future)))
+            (when files
+              (proviso-put proj symbol files)))
+        (setq files (proviso-finder-gather-files
+                     (file-remote-p default-directory)
+                     default-directory nil all nil))))
     (ivy-set-prompt 'proviso-finder-find-file counsel-prompt-function)
+    ;; todo other window
     (ivy-read prompt files
               :action #'proviso-finder-open-file-action
               :caller #'proviso-finder-find-file)))
@@ -170,11 +208,25 @@ the search is occurring asynchronously."
 
 ;;;###autoload
 (defun proviso-finder-open-dir (&optional arg)
-  "Find directory in current project.  ARG customizes behavior."
+  "Find directory in current project.
+ARG allows customizing the window to open the file in."
   (interactive "P")
+  (proviso-finder--find-dir nil arg))
+
+;;;###autoload
+(defun proviso-finder-open-dir-all (&optional arg)
+  "Find directory among all directories in current project.
+ARG will open the file in the other window."
+  (interactive "P")
+  (proviso-finder--find-dir 'all arg))
+
+(defun proviso-finder--find-dir (all other-window)
+  "Allow choosing a directory to open in current project.
+ALL means to look in all project source directories, not just the first.
+OTHER-WINDOW means to open the file in the other window."
   (let* ((proj (proviso-current-project))
-         (symbol (if arg :project-dirs-all :project-dirs))
-         (future (if arg :project-dirs-all-future :project-dirs-future))
+         (symbol (if all :project-dirs-all :project-dirs))
+         (future (if all :project-dirs-all-future :project-dirs-future))
          (dirs (proviso-get proj symbol))
          (prompt (concat "Open directory "
                          (if proj
@@ -182,11 +234,19 @@ the search is occurring asynchronously."
                                      (proviso-get proj :project-name)
                                      "\"")
                            "under current directory"))))
-    (and (not dirs)
-         (setq dirs (async-get (proviso-get proj future)))
-         proj
-         (proviso-put proj symbol dirs))
+    (when (not dirs)
+      (if proj
+          (progn
+            (unless (async-ready (proviso-get proj future))
+              (message "Still gathering directories..."))
+            (setq dirs (async-get (proviso-get proj future)))
+            (when dirs
+              (proviso-put proj symbol dirs)))
+        (setq dirs (proviso-finder-gather-dirs
+                    (file-remote-p default-directory)
+                    default-directory nil all nil))))
     (ivy-set-prompt 'proviso-finder-open-dir counsel-prompt-function)
+    ;; todo other-window
     (ivy-read prompt dirs
               :action #'proviso-finder-open-dir-action
               :caller #'proviso-finder-open-dir)))
@@ -207,17 +267,11 @@ the search is occurring asynchronously."
                   `(lambda ()
                      ,(async-inject-variables "load-path")
                      (require 'proviso)
-                     (setq deferred:debug t)
-                     (setq async-debug t)
-                     ;; (setq debug-on-error t)
                      (proviso-finder-gather-files ,remote ,root (quote ,lst) nil t))))
     (proviso-put proj :project-files-all-future
                  (async-start
                   `(lambda ()
                      ,(async-inject-variables "load-path")
-                     (setq deferred:debug t)
-                     (setq async-debug t)
-                     ;; (setq debug-on-error t)
                      (require 'proviso)
                      (proviso-finder-gather-files ,remote ,root (quote ,lst) t t))))
     (proviso-put proj :project-dirs-future
@@ -225,16 +279,12 @@ the search is occurring asynchronously."
                   `(lambda ()
                      ,(async-inject-variables "load-path")
                      (require 'proviso)
-                     (setq deferred:debug t)
-                     (setq async-debug t)
                      (proviso-finder-gather-dirs ,remote ,root (quote ,lst) nil t))))
     (proviso-put proj :project-dirs-all-future
                  (async-start
                   `(lambda ()
                      ,(async-inject-variables "load-path")
                      (require 'proviso)
-                     (setq deferred:debug t)
-                     (setq async-debug t)
                      (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t t))))
     ))
 
