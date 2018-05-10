@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-10 17:43:23 dharms>
+;; Modified Time-stamp: <2018-05-10 17:45:49 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -145,24 +145,6 @@ the search is occurring asynchronously."
   (let ((proj (proviso-current-project)))
     (when proj
       (proviso-finder--load-files proj))))
-
-;;;###autoload
-(defun proviso-finder-reset-file-cache ()
-  "Reset the file cache associated with the current project.
-This does not recompute the cache, but rather cleans up the
-internal references.  This should not be needed."
-  (interactive)
-  (let ((proj (proviso-current-project)))
-    (lexical-let (func)
-      (setq func (lambda (proj place future)
-                   (proviso-put proj place
-                                (async-get
-                                 (proviso-get proj future)))))
-      (when proj
-        (funcall func proj :project-files :project-files-future)
-        (funcall func proj :project-files-all :project-files-all-future)
-        (funcall func proj :project-dirs :project-dirs-future)
-        (funcall func proj :project-dirs-all :project-dirs-all-future)))))
 
 ;;;###autoload
 (defun proviso-finder-find-file (&optional arg)
