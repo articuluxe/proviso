@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-11 08:34:53 dharms>
+;; Modified Time-stamp: <2018-05-11 08:58:20 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -50,14 +50,14 @@ searched."
   "Gather files at REMOTE under ROOT, according to LST (see `:proj-alist').
 If ALL-FILES is nil, only the first source directory will be searched.
 If ASYNC is non-nil, the search is occurring asynchronously."
-  (let ((reporter (unless async (make-progress-reporter "Gathering files...")))
-        result entry dir files msg)
-    (if (seq-empty-p lst)
-        (push (list root) lst))
-    (setq msg (format "athering %sfiles %sunder %s"
+  (let* ((msg (format "athering %sfiles %sunder %s"
                       (if all-files "all " "")
                       (if async "asynchronously " "")
                       (concat remote root)))
+         (reporter (unless async (make-progress-reporter (concat "G" msg "..."))))
+        result entry dir files)
+    (if (seq-empty-p lst)
+        (push (list root) lst))
     (message "G%s" msg)
     (unwind-protect
         (catch 'done
@@ -103,14 +103,14 @@ searched."
 See `:proj-alist' for more details.  If ALL-DIRS is nil, only the
 first source directory will be searched.  If ASYNC is non-nil,
 the search is occurring asynchronously."
-  (let ((reporter (unless async (make-progress-reporter "Gathering directories...")))
-        result entry dir dirs msg)
-    (if (seq-empty-p lst)
-        (push (list root) lst))
-    (setq msg (format "athering %sdirs %sunder %s"
+  (let* ((msg (format "athering %sdirs %sunder %s"
                       (if all-dirs "all " "")
                       (if async "asynchronously " "")
                       (concat remote root)))
+         (reporter (unless async (make-progress-reporter (concat "G" msg "..."))))
+        result entry dir dirs)
+    (if (seq-empty-p lst)
+        (push (list root) lst))
     (message "G%s" msg)
     (unwind-protect
         (catch 'done
