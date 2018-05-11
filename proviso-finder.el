@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-10 17:45:49 dharms>
+;; Modified Time-stamp: <2018-05-11 06:01:33 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -32,6 +32,10 @@
 (require 'proviso-fulledit)
 (require 'counsel)
 (require 'async)
+
+(defcustom proviso-finder-file-cache-enabled t
+  "Should the file cache be populated automatically."
+  :group 'proviso-custom-group)
 
 (defun proviso-finder-gather-files-interactive (proj &optional all-files)
   "Gather files in project PROJ.
@@ -249,35 +253,43 @@ OTHER-WINDOW means to open the file in the other window."
     (let* ((dir (cdr x)))
       (dired dir))))
 
+(defun proviso-finder--file-cache-enabled (proj)
+  "Check whether the file cache is enabled for project PROJ."
+  (let ((setting (proviso-get proj :file-cache)))
+    (cond ((eq setting 'enabled) t)
+          ((eq setting 'disabled) nil)
+          (t proviso-finder-file-cache-enabled))))
+
 (defun proviso-finder--load-files (proj)
   "Start an async process to gather files contained in PROJ."
   (let ((remote (proviso-get proj :remote-prefix))
         (root (or (proviso-get proj :root-dir) default-directory))
         (lst (proviso-get proj :proj-alist)))
-    (proviso-put proj :project-files-future
-                 (async-start
-                  `(lambda ()
-                     ,(async-inject-variables "load-path")
-                     (require 'proviso)
-                     (proviso-finder-gather-files ,remote ,root (quote ,lst) nil t))))
-    (proviso-put proj :project-files-all-future
-                 (async-start
-                  `(lambda ()
-                     ,(async-inject-variables "load-path")
-                     (require 'proviso)
-                     (proviso-finder-gather-files ,remote ,root (quote ,lst) t t))))
-    (proviso-put proj :project-dirs-future
-                 (async-start
-                  `(lambda ()
-                     ,(async-inject-variables "load-path")
-                     (require 'proviso)
-                     (proviso-finder-gather-dirs ,remote ,root (quote ,lst) nil t))))
-    (proviso-put proj :project-dirs-all-future
-                 (async-start
-                  `(lambda ()
-                     ,(async-inject-variables "load-path")
-                     (require 'proviso)
-                     (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t t))))
+    (when (proviso-finder--file-cache-enabled proj)
+      (proviso-put proj :project-files-future
+                   (async-start
+                    `(lambda ()
+                       ,(async-inject-variables "load-path")
+                       (require 'proviso)
+                       (proviso-finder-gather-files ,remote ,root (quote ,lst) nil t))))
+      (proviso-put proj :project-files-all-future
+                   (async-start
+                    `(lambda ()
+                       ,(async-inject-variables "load-path")
+                       (require 'proviso)
+                       (proviso-finder-gather-files ,remote ,root (quote ,lst) t t))))
+      (proviso-put proj :project-dirs-future
+                   (async-start
+                    `(lambda ()
+                       ,(async-inject-variables "load-path")
+                       (require 'proviso)
+                       (proviso-finder-gather-dirs ,remote ,root (quote ,lst) nil t))))
+      (proviso-put proj :project-dirs-all-future
+                   (async-start
+                    `(lambda ()
+                       ,(async-inject-variables "load-path")
+                       (require 'proviso)
+                       (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t t)))))
     ))
 
 (add-hook 'proviso-hook-on-project-init 'proviso-finder--load-files)

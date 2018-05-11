@@ -1,9 +1,9 @@
 ;;; proviso-test-common.el --- common test utilities for proviso
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, March 31, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-22 08:15:02 dharms>
+;; Modified Time-stamp: <2018-05-11 05:58:28 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso test
 
@@ -47,8 +47,9 @@
 (setq debug-on-error t)
 (setq bmkp-last-as-first-bookmark-file nil)
 
-;; test-specific code begins here
+;; project-specific code begins here
 (require 'proviso-core)
+(setq proviso-finder-file-cache-enabled nil)
 
 ;; helper defun
 (defun proviso-test-reset-all ()
