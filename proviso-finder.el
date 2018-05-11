@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-11 06:01:33 dharms>
+;; Modified Time-stamp: <2018-05-11 08:34:53 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -172,12 +172,11 @@ OTHER-WINDOW means to open the file in the other window."
          (symbol (if all :project-files-all :project-files))
          (future (if all :project-files-all-future :project-files-future))
          (files (proviso-get proj symbol))
-         (prompt (concat "Find file "
-                         (if proj
-                             (concat "in project \""
-                                     (proviso-get proj :project-name)
-                                     "\"")
-                           "under current directory"))))
+         (desc (if proj (concat "in project \""
+                                (proviso-get proj :project-name)
+                                "\"")
+                 "under current directory"))
+         (prompt (concat "Find file " desc)))
     (when (not files)
       (if proj
           (progn
@@ -189,6 +188,8 @@ OTHER-WINDOW means to open the file in the other window."
         (setq files (proviso-finder-gather-files
                      (file-remote-p default-directory)
                      default-directory nil all nil))))
+    (when (seq-empty-p files)
+        (error "No files to open %s" desc))
     (ivy-set-prompt 'proviso-finder-find-file counsel-prompt-function)
     ;; todo other window
     (ivy-read prompt files
@@ -224,12 +225,11 @@ OTHER-WINDOW means to open the file in the other window."
          (symbol (if all :project-dirs-all :project-dirs))
          (future (if all :project-dirs-all-future :project-dirs-future))
          (dirs (proviso-get proj symbol))
-         (prompt (concat "Open directory "
-                         (if proj
-                             (concat "in project \""
-                                     (proviso-get proj :project-name)
-                                     "\"")
-                           "under current directory"))))
+         (desc (if proj (concat "in project \""
+                                (proviso-get proj :project-name)
+                                "\"")
+                 "under current directory"))
+         (prompt (concat "Open directory " desc)))
     (when (not dirs)
       (if proj
           (progn
@@ -241,6 +241,8 @@ OTHER-WINDOW means to open the file in the other window."
         (setq dirs (proviso-finder-gather-dirs
                     (file-remote-p default-directory)
                     default-directory nil all nil))))
+    (when (seq-empty-p dirs)
+      (error "No directories to open %s" desc))
     (ivy-set-prompt 'proviso-finder-open-dir counsel-prompt-function)
     ;; todo other-window
     (ivy-read prompt dirs
