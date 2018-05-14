@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-08 17:13:24 dharms>
+;; Modified Time-stamp: <2018-05-14 17:47:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -28,7 +28,6 @@
 
 ;;; Code:
 (require 'seq)
-;(require 'em-glob)
 (require 'proviso-defines)
 
 (defun proviso-fulledit-test-list-for-string (lst input)
@@ -67,8 +66,7 @@ Results are filtered via `proviso-uninteresting-dirs'."
         (when reporter (progress-reporter-update reporter))))
     result))
 
-
-(defun proviso-fulledit-gather-all-files (dir &optional reporter symbolic)
+(defun proviso-fulledit-gather-all-files-interactive (dir &optional reporter symbolic)
   "Gather a list of filenames recursively below directory DIR.
 REPORTER is an optional progress reporter.  SYMBOLIC should be
 non-nil to allow the presence of symlinks in the results.
@@ -80,8 +78,18 @@ Results are filtered via `proviso-interesting-files',
          (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
                            proviso-uninteresting-dirs))
          (include-files (or (proviso-get proj :grep-include-files)
-                            proviso-interesting-files))
-         (all-results
+                            proviso-interesting-files)))
+    (proviso-fulledit-gather-files dir exclude-files exclude-dirs
+                                   include-files reporter symbolic)))
+
+(defun proviso-fulledit-gather-files (dir &optional exclude-files exclude-dirs
+                                          include-files reporter symbolic)
+  "Gather a list of filenames recursively below directory DIR.
+EXCLUDE-FILES, EXCLUDE-DIRS and INCLUDE-FILES provide filters to
+exclude and include results, respectively.  REPORTER is an
+optional progress reporter.  SYMBOLIC should be non-nil to allow
+the presence of symlinks in the results."
+  (let* ((all-results
           (directory-files
            dir t directory-files-no-dot-files-regexp t))
          (files (seq-remove 'file-directory-p all-results))
@@ -109,7 +117,7 @@ Results are filtered via `proviso-interesting-files',
          result
          (nconc
           result
-          (proviso-fulledit-gather-all-files dir reporter symbolic)))))
+          (proviso-fulledit-gather-files dir exclude-files exclude-dirs include-files reporter symbolic)))))
     result))
 
 (defun proviso-fulledit-open-file-list (files)
@@ -123,6 +131,7 @@ Results are filtered via `proviso-interesting-files',
       (progress-reporter-update reporter i))
     (progress-reporter-done reporter)))
 
+;;;###autoload
 (defun proviso-fulledit (root &optional arg)
   "Find (open) all files recursively below directory ROOT.
 With optional prefix argument ARG, will follow symbolic targets."
@@ -131,8 +140,8 @@ With optional prefix argument ARG, will follow symbolic targets."
      ,current-prefix-arg))
   (if root
       (let* ((reporter (make-progress-reporter "Gathering files..."))
-             (files (proviso-fulledit-gather-all-files (expand-file-name root)
-                                                       reporter arg)))
+             (files (proviso-fulledit-gather-all-files-interactive (expand-file-name root)
+                                                                   reporter arg)))
         (progress-reporter-done reporter)
         (proviso-fulledit-open-file-list files)
         )

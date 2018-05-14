@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-11 08:58:20 dharms>
+;; Modified Time-stamp: <2018-05-14 17:47:22 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -43,19 +43,29 @@ If ALL-FILES is nil, only the first source directory will be
 searched."
   (let ((remote (proviso-get proj :remote-prefix))
         (root (or (proviso-get proj :root-dir) default-directory))
-        (lst (proviso-get proj :proj-alist)))
-    (proviso-finder-gather-files remote root lst all-files)))
+        (lst (proviso-get proj :proj-alist))
+        (exclude-files (or (proviso-get proj :grep-exclude-files)
+                           proviso-uninteresting-files))
+        (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
+                          proviso-uninteresting-dirs))
+        (include-files (or (proviso-get proj :grep-include-files)
+                           proviso-interesting-files)))
+    (proviso-finder-gather-files remote root lst all-files nil
+                                 exclude-files exclude-dirs include-files)))
 
-(defun proviso-finder-gather-files (remote root lst &optional all-files async)
+(defun proviso-finder-gather-files (remote root lst &optional all-files async
+                                           exclude-files exclude-dirs include-files)
   "Gather files at REMOTE under ROOT, according to LST (see `:proj-alist').
-If ALL-FILES is nil, only the first source directory will be searched.
-If ASYNC is non-nil, the search is occurring asynchronously."
+If ALL-FILES is nil, only the first source directory will be
+searched.  If ASYNC is non-nil, the search is occurring
+asynchronously.  EXCLUDE-FILES, EXCLUDE-DIRS and INCLUDE-FILES,
+if present, are passed on to `proviso-fulledit-gather-files'."
   (let* ((msg (format "athering %sfiles %sunder %s"
                       (if all-files "all " "")
                       (if async "asynchronously " "")
                       (concat remote root)))
          (reporter (unless async (make-progress-reporter (concat "G" msg "..."))))
-        result entry dir files)
+         result entry dir files)
     (if (seq-empty-p lst)
         (push (list root) lst))
     (message "G%s" msg)
@@ -69,7 +79,9 @@ If ASYNC is non-nil, the search is occurring asynchronously."
                    (when (or (null entry) (not (file-name-absolute-p entry)))
                      root)
                    entry))
-            (setq files (proviso-fulledit-gather-all-files dir reporter t))
+            (setq files (proviso-fulledit-gather-files dir exclude-files
+                                                           exclude-dirs include-files
+                                                           reporter t))
             (setq result (nconc
                           result
                           (mapcar
@@ -108,7 +120,7 @@ the search is occurring asynchronously."
                       (if async "asynchronously " "")
                       (concat remote root)))
          (reporter (unless async (make-progress-reporter (concat "G" msg "..."))))
-        result entry dir dirs)
+         result entry dir dirs)
     (if (seq-empty-p lst)
         (push (list root) lst))
     (message "G%s" msg)
@@ -189,7 +201,7 @@ OTHER-WINDOW means to open the file in the other window."
                      (file-remote-p default-directory)
                      default-directory nil all nil))))
     (when (seq-empty-p files)
-        (error "No files to open %s" desc))
+      (error "No files to open %s" desc))
     (ivy-set-prompt 'proviso-finder-find-file counsel-prompt-function)
     ;; todo other window
     (ivy-read prompt files
@@ -266,32 +278,50 @@ OTHER-WINDOW means to open the file in the other window."
   "Start an async process to gather files contained in PROJ."
   (let ((remote (proviso-get proj :remote-prefix))
         (root (or (proviso-get proj :root-dir) default-directory))
-        (lst (proviso-get proj :proj-alist)))
+        (lst (proviso-get proj :proj-alist))
+        (exclude-files (or (proviso-get proj :grep-exclude-files)
+                           proviso-uninteresting-files))
+        (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
+                          proviso-uninteresting-dirs))
+        (include-files (or (proviso-get proj :grep-include-files)
+                           proviso-interesting-files)))
     (when (proviso-finder--file-cache-enabled proj)
       (proviso-put proj :project-files-future
                    (async-start
                     `(lambda ()
                        ,(async-inject-variables "load-path")
                        (require 'proviso)
-                       (proviso-finder-gather-files ,remote ,root (quote ,lst) nil t))))
+                       (proviso-finder-gather-files ,remote ,root (quote ,lst) nil t
+                                                    (quote ,exclude-files)
+                                                    (quote ,exclude-dirs)
+                                                    (quote ,include-files)))))
       (proviso-put proj :project-files-all-future
                    (async-start
                     `(lambda ()
                        ,(async-inject-variables "load-path")
                        (require 'proviso)
-                       (proviso-finder-gather-files ,remote ,root (quote ,lst) t t))))
+                       (proviso-finder-gather-files ,remote ,root (quote ,lst) t t
+                                                    (quote ,exclude-files)
+                                                    (quote ,exclude-dirs)
+                                                    (quote ,include-files)))))
       (proviso-put proj :project-dirs-future
                    (async-start
                     `(lambda ()
                        ,(async-inject-variables "load-path")
                        (require 'proviso)
-                       (proviso-finder-gather-dirs ,remote ,root (quote ,lst) nil t))))
+                       (proviso-finder-gather-dirs ,remote ,root (quote ,lst) nil t
+                                                   (quote ,exclude-files)
+                                                   (quote ,exclude-dirs)
+                                                   (quote ,include-files)))))
       (proviso-put proj :project-dirs-all-future
                    (async-start
                     `(lambda ()
                        ,(async-inject-variables "load-path")
                        (require 'proviso)
-                       (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t t)))))
+                       (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t t
+                                                   (quote ,exclude-files)
+                                                   (quote ,exclude-dirs)
+                                                   (quote ,include-files))))))
     ))
 
 (add-hook 'proviso-hook-on-project-init 'proviso-finder--load-files)
