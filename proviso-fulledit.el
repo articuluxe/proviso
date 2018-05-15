@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-14 17:47:41 dharms>
+;; Modified Time-stamp: <2018-05-15 05:46:18 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -38,15 +38,23 @@ LST is a list of regexes."
       (if (string-match curr input)
           (throw 'found t)))))
 
-(defun proviso-fulledit-gather-all-dirs (dir &optional reporter symbolic)
+(defun proviso-fulledit-gather-all-dirs-interactive (dir &optional reporter symbolic)
   "Gather a list of directories recursivevly below DIR.
 REPORTER is an optional progress reporter.  SYMBOLIC should be
 non-nil to allow the presence of symlinks in the results.
 Results are filtered via `proviso-uninteresting-dirs'."
   (let* ((proj (proviso-current-project))
          (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
-                           proviso-uninteresting-dirs))
-         (all-results
+                          proviso-uninteresting-dirs)))
+    (proviso-fulledit-gather-dirs dir exclude-dirs reporter symbolic)))
+
+(defun proviso-fulledit-gather-dirs (dir &optional exclude-dirs reporter symbolic)
+  "Gather a list of directories recursivevly below DIR.
+EXCLUDE-DIRS provides an optional filter to exclude results.
+REPORTER is an optional progress reporter.  SYMBOLIC should be
+non-nil to allow the presence of symlinks in the results.
+Results are filtered via `proviso-uninteresting-dirs'."
+  (let* ((all-results
           (directory-files
            dir t directory-files-no-dot-files-regexp t))
          (dirs (seq-filter 'file-directory-p all-results))
@@ -62,7 +70,7 @@ Results are filtered via `proviso-uninteresting-dirs'."
               (append
                (list dir)
                result
-               (proviso-fulledit-gather-all-dirs dir reporter symbolic)))
+               (proviso-fulledit-gather-dirs dir exclude-dirs reporter symbolic)))
         (when reporter (progress-reporter-update reporter))))
     result))
 
