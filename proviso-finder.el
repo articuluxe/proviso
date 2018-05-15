@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-15 05:54:59 dharms>
+;; Modified Time-stamp: <2018-05-15 08:38:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -191,12 +191,6 @@ OTHER-WINDOW means to open the file in the other window."
                                 (proviso-get proj :project-name)
                                 "\"")
                  "under current directory"))
-         (exclude-files (or (proviso-get proj :grep-exclude-files)
-                            proviso-uninteresting-files))
-         (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
-                           proviso-uninteresting-dirs))
-         (include-files (or (proviso-get proj :grep-include-files)
-                            proviso-interesting-files))
          (prompt (concat "Find file " desc)))
     (when (not files)
       (if proj
@@ -208,8 +202,7 @@ OTHER-WINDOW means to open the file in the other window."
               (proviso-put proj symbol files)))
         (setq files (proviso-finder-gather-files
                      (file-remote-p default-directory)
-                     default-directory nil all nil exclude-files
-                     exclude-dirs include-files))))
+                     default-directory nil all nil))))
     (when (seq-empty-p files)
       (error "No files to open %s" desc))
     (ivy-set-prompt 'proviso-finder-find-file counsel-prompt-function)
@@ -251,8 +244,6 @@ OTHER-WINDOW means to open the file in the other window."
                                 (proviso-get proj :project-name)
                                 "\"")
                  "under current directory"))
-         (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
-                           proviso-uninteresting-dirs))
          (prompt (concat "Open directory " desc)))
     (when (not dirs)
       (if proj
@@ -264,7 +255,7 @@ OTHER-WINDOW means to open the file in the other window."
               (proviso-put proj symbol dirs)))
         (setq dirs (proviso-finder-gather-dirs
                     (file-remote-p default-directory)
-                    default-directory nil all nil exclude-dirs))))
+                    default-directory nil all nil))))
     (when (seq-empty-p dirs)
       (error "No directories to open %s" desc))
     (ivy-set-prompt 'proviso-finder-open-dir counsel-prompt-function)
