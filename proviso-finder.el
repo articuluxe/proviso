@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-15 17:44:01 dharms>
+;; Modified Time-stamp: <2018-05-15 17:51:49 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -68,7 +68,7 @@ if present, are passed on to `proviso-fulledit-gather-files'."
          result entry dir files)
     (if (seq-empty-p lst)
         (push (list root) lst))
-    (message "G%s" msg)
+    (unless async (message "G%s" msg))
     (unwind-protect
         (catch 'done
           (dolist (element lst)
@@ -85,7 +85,8 @@ if present, are passed on to `proviso-fulledit-gather-files'."
             (setq result (nconc result (sort files 'string-lessp)))
             (unless all-files (throw 'done result))))
       (when reporter (progress-reporter-done reporter))
-      (message "Done g%s (%d files)" msg (length result)))
+      (unless async
+        (message "Done g%s (%d files)" msg (length result))))
     result))
 
 (defun proviso-finder-gather-dirs-interactive (proj &optional all-dirs)
@@ -113,7 +114,7 @@ optional exclusion list."
          result entry dir dirs)
     (if (seq-empty-p lst)
         (push (list root) lst))
-    (message "G%s" msg)
+    (unless async (message "G%s" msg))
     (unwind-protect
         (catch 'done
           (dolist (element lst)
@@ -128,7 +129,8 @@ optional exclusion list."
             (setq result (nconc result (sort dirs 'string-lessp)))
             (unless all-dirs (throw 'done result))))
       (when reporter (progress-reporter-done reporter))
-      (message "Done g%s (%d dirs)" msg (length result)))
+      (unless async
+        (message "Done g%s (%d dirs)" msg (length result))))
     result))
 
 ;;;###autoload
