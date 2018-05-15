@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-15 08:38:04 dharms>
+;; Modified Time-stamp: <2018-05-15 08:42:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -206,9 +206,10 @@ OTHER-WINDOW means to open the file in the other window."
     (when (seq-empty-p files)
       (error "No files to open %s" desc))
     (ivy-set-prompt 'proviso-finder-find-file counsel-prompt-function)
-    ;; todo other window
     (ivy-read prompt files
-              :action #'proviso-finder-open-file-action
+              :action (if other-window
+                          #'proviso-finder-open-file-other-window-action
+                        #'proviso-finder-open-file-action)
               :caller #'proviso-finder-find-file)))
 
 (defun proviso-finder-open-file-action (x)
@@ -217,6 +218,13 @@ OTHER-WINDOW means to open the file in the other window."
     (let* ((file (cdr x))
            (default-directory (file-name-directory file)))
       (find-file file))))
+
+(defun proviso-finder-open-file-other-window-action (x)
+  "Find file X in current project in other window."
+  (with-ivy-window
+    (let* ((file (cdr x))
+           (default-directory (file-name-directory file)))
+      (find-file-other-window file))))
 
 ;;;###autoload
 (defun proviso-finder-open-dir (&optional arg)
@@ -259,9 +267,10 @@ OTHER-WINDOW means to open the file in the other window."
     (when (seq-empty-p dirs)
       (error "No directories to open %s" desc))
     (ivy-set-prompt 'proviso-finder-open-dir counsel-prompt-function)
-    ;; todo other-window
     (ivy-read prompt dirs
-              :action #'proviso-finder-open-dir-action
+              :action (if other-window
+                          #'proviso-finder-open-dir-other-window-action
+                        #'proviso-finder-open-dir-action)
               :caller #'proviso-finder-open-dir)))
 
 (defun proviso-finder-open-dir-action (x)
@@ -269,6 +278,12 @@ OTHER-WINDOW means to open the file in the other window."
   (with-ivy-window
     (let* ((dir (cdr x)))
       (dired dir))))
+
+(defun proviso-finder-open-dir-other-window-action (x)
+  "Open dired on directory X in current project in other window."
+  (with-ivy-window
+    (let* ((dir (cdr x)))
+      (dired-other-window dir))))
 
 (defun proviso-finder--file-cache-enabled (proj)
   "Check whether the file cache is enabled for project PROJ."
