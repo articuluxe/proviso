@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-15 08:42:51 dharms>
+;; Modified Time-stamp: <2018-05-15 17:44:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -80,22 +80,9 @@ if present, are passed on to `proviso-fulledit-gather-files'."
                      root)
                    entry))
             (setq files (proviso-fulledit-gather-files dir exclude-files
-                                                           exclude-dirs include-files
-                                                           reporter t))
-            (setq result (nconc
-                          result
-                          (mapcar
-                           (lambda (file)
-                             ;; return a cons cell (display . absolute)
-                             (let ((stem (concat remote root)))
-                               (cons
-                                (string-remove-prefix
-                                 (or remote "")
-                                 (if (file-in-directory-p file stem)
-                                     (file-relative-name file stem)
-                                   file))
-                                file)))
-                           (sort files 'string-lessp))))
+                                                       exclude-dirs include-files
+                                                       reporter t))
+            (setq result (nconc result (sort files 'string-lessp)))
             (unless all-files (throw 'done result))))
       (when reporter (progress-reporter-done reporter))
       (message "Done g%s (%d files)" msg (length result)))
@@ -138,20 +125,7 @@ optional exclusion list."
                      root)
                    entry))
             (setq dirs (proviso-fulledit-gather-dirs dir exclude-dirs reporter t))
-            (setq result (nconc
-                          result
-                          (mapcar
-                           (lambda (dir)
-                             ;; return a cons cell (display . absolute)
-                             (let ((stem (concat remote root)))
-                               (cons
-                                (string-remove-prefix
-                                 (or remote "")
-                                 (if (file-in-directory-p dir stem)
-                                     (file-relative-name dir stem)
-                                   dir))
-                                dir)))
-                           (sort dirs 'string-lessp))))
+            (setq result (nconc result (sort dirs 'string-lessp)))
             (unless all-dirs (throw 'done result))))
       (when reporter (progress-reporter-done reporter))
       (message "Done g%s (%d dirs)" msg (length result)))
@@ -164,6 +138,23 @@ optional exclusion list."
   (let ((proj (proviso-current-project)))
     (when proj
       (proviso-finder--load-files proj))))
+
+(defun proviso-finder--adjust-paths (lst remote root)
+  "Adjust paths relative in LST, a list of files or directories.
+REMOTE is a possibly empty remote prefix, ROOT is the project root.
+The result is the same list, with each element transformed into a
+cons (NAME . ORIG), where ORIG was the original file or
+directory, and NAME is that name made relative to ROOT."
+  (let ((stem (concat remote root)))
+    (mapcar (lambda (name)
+              (cons
+               (string-remove-prefix
+                (or remote "")
+                (if (file-in-directory-p name stem)
+                    (file-relative-name name stem)
+                  name))
+               name))
+            lst)))
 
 ;;;###autoload
 (defun proviso-finder-find-file (&optional arg)
@@ -184,6 +175,8 @@ ARG will open the file in the other window."
 ALL means to look in all project source directories, not just the first.
 OTHER-WINDOW means to open the file in the other window."
   (let* ((proj (proviso-current-project))
+         (remote (proviso-get proj :remote-prefix))
+         (root (or (proviso-get proj :root-dir) default-directory))
          (symbol (if all :project-files-all :project-files))
          (future (if all :project-files-all-future :project-files-future))
          (files (proviso-get proj symbol))
@@ -197,12 +190,16 @@ OTHER-WINDOW means to open the file in the other window."
           (progn
             (unless (async-ready (proviso-get proj future))
               (message "Still gathering files..."))
-            (setq files (async-get (proviso-get proj future)))
-            (when files
+            (when (setq files (async-get (proviso-get proj future)))
+              (setq files (proviso-finder--adjust-paths files remote root))
               (proviso-put proj symbol files)))
-        (setq files (proviso-finder-gather-files
-                     (file-remote-p default-directory)
-                     default-directory nil all nil))))
+        (setq files (proviso-finder--adjust-paths
+                     (proviso-finder-gather-files (file-remote-p default-directory)
+                                                  default-directory nil all nil
+                                                  proviso-uninteresting-files
+                                                  proviso-uninteresting-dirs
+                                                  proviso-interesting-files)
+                     (file-remote-p default-directory) default-directory))))
     (when (seq-empty-p files)
       (error "No files to open %s" desc))
     (ivy-set-prompt 'proviso-finder-find-file counsel-prompt-function)
@@ -245,6 +242,8 @@ ARG will open the file in the other window."
 ALL means to look in all project source directories, not just the first.
 OTHER-WINDOW means to open the file in the other window."
   (let* ((proj (proviso-current-project))
+         (remote (proviso-get proj :remote-prefix))
+         (root (or (proviso-get proj :root-dir) default-directory))
          (symbol (if all :project-dirs-all :project-dirs))
          (future (if all :project-dirs-all-future :project-dirs-future))
          (dirs (proviso-get proj symbol))
@@ -258,12 +257,14 @@ OTHER-WINDOW means to open the file in the other window."
           (progn
             (unless (async-ready (proviso-get proj future))
               (message "Still gathering directories..."))
-            (setq dirs (async-get (proviso-get proj future)))
-            (when dirs
+            (when (setq dirs (async-get (proviso-get proj future)))
+              (setq dirs (proviso-finder--adjust-paths dirs remote root))
               (proviso-put proj symbol dirs)))
-        (setq dirs (proviso-finder-gather-dirs
-                    (file-remote-p default-directory)
-                    default-directory nil all nil))))
+        (setq dirs (proviso-finder--adjust-paths
+                    (proviso-finder-gather-dirs (file-remote-p default-directory)
+                                                default-directory nil all nil
+                                                proviso-uninteresting-dirs)
+                    (file-remote-p default-directory) default-directory))))
     (when (seq-empty-p dirs)
       (error "No directories to open %s" desc))
     (ivy-set-prompt 'proviso-finder-open-dir counsel-prompt-function)
