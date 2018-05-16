@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-15 17:51:49 dharms>
+;; Modified Time-stamp: <2018-05-16 08:05:36 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -312,6 +312,7 @@ OTHER-WINDOW means to open the file in the other window."
                     `(lambda ()
                        ,(async-inject-variables "load-path")
                        (require 'proviso)
+                       (setq inhibit-message t)
                        (proviso-finder-gather-files ,remote ,root (quote ,lst) nil t
                                                     (quote ,exclude-files)
                                                     (quote ,exclude-dirs)
@@ -321,6 +322,7 @@ OTHER-WINDOW means to open the file in the other window."
                     `(lambda ()
                        ,(async-inject-variables "load-path")
                        (require 'proviso)
+                       (setq inhibit-message t)
                        (proviso-finder-gather-files ,remote ,root (quote ,lst) t t
                                                     (quote ,exclude-files)
                                                     (quote ,exclude-dirs)
@@ -330,6 +332,7 @@ OTHER-WINDOW means to open the file in the other window."
                     `(lambda ()
                        ,(async-inject-variables "load-path")
                        (require 'proviso)
+                       (setq inhibit-message t)
                        (proviso-finder-gather-dirs ,remote ,root (quote ,lst) nil t
                                                    (quote ,exclude-dirs)))))
       (proviso-put proj :project-dirs-all-future
@@ -337,6 +340,7 @@ OTHER-WINDOW means to open the file in the other window."
                     `(lambda ()
                        ,(async-inject-variables "load-path")
                        (require 'proviso)
+                       (setq inhibit-message t)
                        (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t t
                                                    (quote ,exclude-dirs))))))
     ))
