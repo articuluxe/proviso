@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-16 08:17:54 dharms>
+;; Modified Time-stamp: <2018-05-16 16:50:14 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -163,21 +163,20 @@ directory, and NAME is that name made relative to ROOT."
   "Find file in current project's primary source directory.
 ARG allows customizing the window to open the file in."
   (interactive "P")
-  (proviso-finder--find-file nil arg))
+  (proviso-finder--find-file (proviso-current-project) nil arg))
 
 ;;;###autoload
 (defun proviso-finder-find-file-all (&optional arg)
   "Find file among all files in current project.
 ARG will open the file in the other window."
   (interactive "P")
-  (proviso-finder--find-file 'all arg))
+  (proviso-finder--find-file (proviso-current-project) 'all arg))
 
-(defun proviso-finder--find-file (all other-window)
-  "Allow choosing a file to open in current project.
+(defun proviso-finder--find-file (proj all other-window)
+  "Allow choosing a file to open in project PROJ.
 ALL means to look in all project source directories, not just the first.
 OTHER-WINDOW means to open the file in the other window."
-  (let* ((proj (proviso-current-project))
-         (remote (proviso-get proj :remote-prefix))
+  (let* ((remote (proviso-get proj :remote-prefix))
          (root (or (proviso-get proj :root-dir) default-directory))
          (symbol (if all :project-files-all :project-files))
          (future (if all :project-files-all-future :project-files-future))
@@ -233,21 +232,20 @@ OTHER-WINDOW means to open the file in the other window."
   "Find directory in current project.
 ARG allows customizing the window to open the file in."
   (interactive "P")
-  (proviso-finder--find-dir nil arg))
+  (proviso-finder--find-dir (proviso-current-project) nil arg))
 
 ;;;###autoload
 (defun proviso-finder-open-dir-all (&optional arg)
   "Find directory among all directories in current project.
 ARG will open the file in the other window."
   (interactive "P")
-  (proviso-finder--find-dir 'all arg))
+  (proviso-finder--find-dir (proviso-current-project) 'all arg))
 
-(defun proviso-finder--find-dir (all other-window)
-  "Allow choosing a directory to open in current project.
+(defun proviso-finder--find-dir (proj all other-window)
+  "Allow choosing a directory to open in project PROJ.
 ALL means to look in all project source directories, not just the first.
 OTHER-WINDOW means to open the file in the other window."
-  (let* ((proj (proviso-current-project))
-         (remote (proviso-get proj :remote-prefix))
+  (let* ((remote (proviso-get proj :remote-prefix))
          (root (or (proviso-get proj :root-dir) default-directory))
          (symbol (if all :project-dirs-all :project-dirs))
          (future (if all :project-dirs-all-future :project-dirs-future))
