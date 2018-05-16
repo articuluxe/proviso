@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-11 05:52:07 dharms>
+;; Modified Time-stamp: <2018-05-16 08:26:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -369,15 +369,17 @@ represents the user's home directory."
       (setq i (cdr curr)))))
 
 ;;;###autoload
-(defun proviso-choose-project ()
-  "Allow the user to choose a project among those currently defined."
+(defun proviso-choose-project (&optional prompt-string)
+  "Allow the user to choose a project among those currently defined.
+PROMPT-STRING allows customizing a special prompt."
   (interactive)
-  (let (lst)
+  (let ((prompt (or prompt-string "Project: "))
+        lst)
     (mapatoms (lambda (atom)
                 (push (symbol-name atom) lst)) proviso-obarray)
     (if (seq-empty-p lst)
         (error "No projects defined")
-      (ivy-read "Project: " lst
+      (ivy-read prompt lst
                 :caller 'proviso-choose-project
                 ))))
 
