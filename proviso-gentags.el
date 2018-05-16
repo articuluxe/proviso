@@ -1,9 +1,9 @@
-;; proviso-gentags.el --- Generate TAGS files
+;;; proviso-gentags.el --- Generate TAGS files
 ;; Copyright (C) 2015-2018   (dan.harms)
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-04-13 17:42:04 dharms>
+;; Modified Time-stamp: <2018-05-16 08:21:00 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -203,4 +203,4 @@ machine, if you are running on a remote host."
       (proviso-gentags--try-gen-next-file))))
 
 (provide 'proviso-gentags)
-;;; code ends here
+;;; proviso-gentags.el ends here
