@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-16 16:50:14 dharms>
+;; Modified Time-stamp: <2018-05-18 05:30:55 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -314,9 +314,9 @@ OTHER-WINDOW means to open the file in the other window."
       (proviso-put proj :project-files-future
                    (async-start
                     `(lambda ()
+                       (setq inhibit-message t)
                        ,(async-inject-variables "load-path")
                        (require 'proviso)
-                       (setq inhibit-message t)
                        (proviso-finder-gather-files ,remote ,root (quote ,lst) nil t
                                                     (quote ,exclude-files)
                                                     (quote ,exclude-dirs)
@@ -324,9 +324,9 @@ OTHER-WINDOW means to open the file in the other window."
       (proviso-put proj :project-files-all-future
                    (async-start
                     `(lambda ()
+                       (setq inhibit-message t)
                        ,(async-inject-variables "load-path")
                        (require 'proviso)
-                       (setq inhibit-message t)
                        (proviso-finder-gather-files ,remote ,root (quote ,lst) t t
                                                     (quote ,exclude-files)
                                                     (quote ,exclude-dirs)
@@ -334,17 +334,17 @@ OTHER-WINDOW means to open the file in the other window."
       (proviso-put proj :project-dirs-future
                    (async-start
                     `(lambda ()
+                       (setq inhibit-message t)
                        ,(async-inject-variables "load-path")
                        (require 'proviso)
-                       (setq inhibit-message t)
                        (proviso-finder-gather-dirs ,remote ,root (quote ,lst) nil t
                                                    (quote ,exclude-dirs)))))
       (proviso-put proj :project-dirs-all-future
                    (async-start
                     `(lambda ()
+                       (setq inhibit-message t)
                        ,(async-inject-variables "load-path")
                        (require 'proviso)
-                       (setq inhibit-message t)
                        (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t t
                                                    (quote ,exclude-dirs))))))
     ))
