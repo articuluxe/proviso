@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-18 08:46:04 dharms>
+;; Modified Time-stamp: <2018-05-18 17:52:13 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -36,13 +36,30 @@
   :group 'proviso-custom-group)
 
 ;;;###autoload
-(defun proviso-display-print-project ()
-  "Print properties of a selected project."
-  (interactive)
+(defun proviso-display-print-project (&optional arg)
+  "Print properties of a selected project.
+If ARG is non-nil, then a particular property can be chosen instead."
+  (interactive "P")
   (let ((proj (proviso-choose-project)))
-    (when proj
-      (with-output-to-temp-buffer (format "*Proviso-project: %s*" proj)
-        (proviso-display--print-project proj)))))
+    (if proj
+        (with-output-to-temp-buffer (format "*Proviso-project: %s*" proj)
+          (if (eq (prefix-numeric-value arg) 4)
+              (proviso-display--print-project-field proj)
+            (proviso-display--print-project proj (eq (prefix-numeric-value arg) 16))))
+      (error "No project selected"))))
+
+(defun proviso-display--print-project-field (proj)
+  "Print a particular field of project PROJ."
+  (let ((fields (proviso-display--gather-project-properties proj))
+        field)
+    (if fields
+        (progn
+          (setq field (ivy-read "Property: " fields
+                                :caller #'proviso-display--print-project-field))
+          (if field
+              (proviso-display--print-project-property proj field)
+            (error "No field selected")))
+      (error (format "No properties in project %s" proj)))))
 
 (defun proviso-display--print-project (proj &optional raw)
   "Return a string containing a textual representation of PROJ.
@@ -68,6 +85,25 @@ curated set of fields will be shown."
           (push (copy-tree (cadr seq)) lst))
         (setq seq (cddr seq)))
       (pp (nreverse lst)))))
+
+(defun proviso-display--gather-project-properties (proj)
+  "Return a list of the properties of PROJ.
+These are the symbols of the plist."
+  (let ((seq (proviso-get-plist proj))
+        lst)
+    (while seq
+      (push (car seq) lst)
+      (setq seq (cddr seq)))
+    (nreverse lst)))
+
+(defun proviso-display--print-project-property (proj prop)
+  "Print the value from project PROJ of property PROP."
+  (let ((seq (proviso-get-plist proj)))
+    (catch 'found
+      (while seq
+        (if (string-equal (car seq) prop)
+            (throw 'found (pp (cadr seq)))
+          (setq seq (cddr seq)))))))
 
 (defun proviso-display--get-project-names (&optional proj)
   "Return a list containing the current project names in `proviso-obarray'.
