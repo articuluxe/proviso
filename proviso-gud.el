@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-02-01 17:39:39 dharms>
+;; Modified Time-stamp: <2018-05-18 10:26:42 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools gdb proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -74,9 +74,9 @@ ARG allows customizing the location to search in."
                     ((and cands)
                      (cdr (car cands)))
                     (t (or (proviso-current-project-root) default-directory))))
-    (setq exe (read-file-name exe-prompt dir nil t))
-    (and (proviso-gud--exe-suitable-p exe)
-         exe)))
+    (setq exe (read-file-name exe-prompt dir nil t nil
+                              #'proviso-gud--exe-suitable-p))
+    exe))
 
 ;;;###autoload
 (defun proviso-gud-open-gdb (&optional arg)
