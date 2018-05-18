@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-02 05:43:35 dharms>
+;; Modified Time-stamp: <2018-05-18 08:46:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -44,9 +44,30 @@
       (with-output-to-temp-buffer (format "*Proviso-project: %s*" proj)
         (proviso-display--print-project proj)))))
 
-(defun proviso-display--print-project (proj)
-  "Return a string containing a textual representation of PROJ."
-  (pp (proviso-get-plist proj)))
+(defun proviso-display--print-project (proj &optional raw)
+  "Return a string containing a textual representation of PROJ.
+If RAW is non-nil, just print the entire raw alist.  Otherwise, a
+curated set of fields will be shown."
+  (if raw
+      (pp (proviso-get-plist proj))
+    (let ((seq (proviso-get-plist proj))
+          (exclusions '(
+                        :project-dirs
+                        :project-dirs-all
+                        :project-files
+                        :project-files-alls
+                        :project-files-future
+                        :project-files-all-future
+                        :project-dirs-future
+                        :project-dirs-all-future
+                        ))
+          lst)
+      (while seq
+        (unless (memq (car seq) exclusions)
+          (push (car seq) lst)
+          (push (copy-tree (cadr seq)) lst))
+        (setq seq (cddr seq)))
+      (pp (nreverse lst)))))
 
 (defun proviso-display--get-project-names (&optional proj)
   "Return a list containing the current project names in `proviso-obarray'.
