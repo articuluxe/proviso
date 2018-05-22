@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-18 17:52:13 dharms>
+;; Modified Time-stamp: <2018-05-22 08:45:22 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -38,14 +38,16 @@
 ;;;###autoload
 (defun proviso-display-print-project (&optional arg)
   "Print properties of a selected project.
-If ARG is non-nil, then a particular property can be chosen instead."
+With single universal argument ARG, print a particular property.
+With double universal argument, dump the raw project fields."
   (interactive "P")
   (let ((proj (proviso-choose-project)))
     (if proj
         (with-output-to-temp-buffer (format "*Proviso-project: %s*" proj)
-          (if (eq (prefix-numeric-value arg) 4)
-              (proviso-display--print-project-field proj)
-            (proviso-display--print-project proj (eq (prefix-numeric-value arg) 16))))
+          (pp
+           (if (eq (prefix-numeric-value arg) 4)
+               (proviso-display--print-project-field proj)
+             (proviso-display--print-project proj (eq (prefix-numeric-value arg) 16)))))
       (error "No project selected"))))
 
 (defun proviso-display--print-project-field (proj)
@@ -57,7 +59,9 @@ If ARG is non-nil, then a particular property can be chosen instead."
           (setq field (ivy-read "Property: " fields
                                 :caller #'proviso-display--print-project-field))
           (if field
-              (proviso-display--print-project-property proj field)
+              (concat
+               (format "Project %s: %s " proj field)
+               (proviso-display--print-project-property proj field))
             (error "No field selected")))
       (error (format "No properties in project %s" proj)))))
 
@@ -66,7 +70,7 @@ If ARG is non-nil, then a particular property can be chosen instead."
 If RAW is non-nil, just print the entire raw alist.  Otherwise, a
 curated set of fields will be shown."
   (if raw
-      (pp (proviso-get-plist proj))
+      (proviso-get-plist proj)
     (let ((seq (proviso-get-plist proj))
           (exclusions '(
                         :project-dirs
@@ -84,7 +88,7 @@ curated set of fields will be shown."
           (push (car seq) lst)
           (push (copy-tree (cadr seq)) lst))
         (setq seq (cddr seq)))
-      (pp (nreverse lst)))))
+      (nreverse lst))))
 
 (defun proviso-display--gather-project-properties (proj)
   "Return a list of the properties of PROJ.
@@ -97,12 +101,12 @@ These are the symbols of the plist."
     (nreverse lst)))
 
 (defun proviso-display--print-project-property (proj prop)
-  "Print the value from project PROJ of property PROP."
+  "Return the value from project PROJ of property PROP."
   (let ((seq (proviso-get-plist proj)))
     (catch 'found
       (while seq
         (if (string-equal (car seq) prop)
-            (throw 'found (pp (cadr seq)))
+            (throw 'found (cadr seq))
           (setq seq (cddr seq)))))))
 
 (defun proviso-display--get-project-names (&optional proj)
