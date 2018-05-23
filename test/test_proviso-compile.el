@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, May 25, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-04-16 11:38:40 dan.harms>
+;; Modified Time-stamp: <2018-05-23 08:47:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso test compile
 
@@ -104,7 +104,7 @@
    (proviso-put proj :build-subdirs
                 '( (:name \"bld\" :dir \"d2/\")))
   )
- (proviso-define-project \"c\" :initfun 'do-init :compile-cmd \"nmake -n \")
+ (proviso-define-project \"c\" :initfun 'do-init :compile-cmds '(\"nmake -n \"))
 ")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))

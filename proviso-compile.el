@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-02-13 10:43:59 dan.harms>
+;; Modified Time-stamp: <2018-05-23 17:40:00 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -54,11 +54,17 @@
   "Create a compile command for standard projects.
 ARG allows customizing behavior."
   (let ((root (or (proviso-get (proviso-current-project) :root-dir) "./"))
-        (cmd (or (proviso-get (proviso-current-project) :compile-cmd) "make"))
+        (cmds (proviso-get (proviso-current-project) :compile-cmds))
         (blddirs (proviso-get (proviso-current-project) :build-subdirs))
-        subdirs subdir dir)
+        subdirs subdir dir cmd)
     (setq subdirs (mapcar (lambda (elt)
                             (file-name-as-directory (plist-get elt :dir))) blddirs))
+    (setq cmd
+          (cond ((= (prefix-numeric-value arg) 16)
+                 (completing-read "Compile command: " cmds))
+                ((= (length cmds) 1)
+                 (car cmds))
+                (t "make")))
     (if arg
         (setq root (read-directory-name "Compile in: " default-directory nil t))
       (setq subdir (cond ((eq (seq-length subdirs) 1)
@@ -81,14 +87,20 @@ ARG allows customizing behavior."
   "Create a compile command for projects using a repo layout.
 ARG allows customizing behavior."
   (let ((root (or (proviso-get (proviso-current-project) :root-dir) "./"))
-        (cmd (or (proviso-get (proviso-current-project) :compile-cmd) "make"))
+        (cmds (proviso-get (proviso-current-project) :compile-cmds))
         (blddirs (proviso-get (proviso-current-project) :build-subdirs))
         (preface (or (proviso-get (proviso-current-project) :compile-cmd-preface)
                      ". %srepo-setup.sh && "))
-        origroot subdirs subdir dir)
+        origroot subdirs subdir dir cmd)
     (setq origroot root)
     (setq subdirs (mapcar (lambda (elt)
                             (file-name-as-directory (plist-get elt :dir))) blddirs))
+    (setq cmd
+          (cond ((= (prefix-numeric-value arg) 16)
+                 (completing-read "Compile command: " cmds))
+                ((= (length cmds) 1)
+                 (car cmds))
+                (t "make")))
     (if arg
         (setq root (read-directory-name "Compile in: " default-directory nil t))
       (setq subdir (cond ((eq (seq-length subdirs) 1)
@@ -128,7 +140,7 @@ ARG allows customizing behavior."
   (proviso-compile--pre-compile)
   (let ((cmd (or (proviso-get (proviso-current-project) :compile-defun)
                  proviso-compile-command
-                 'proviso-compile-command-std)))
+                 #'proviso-compile-command-std)))
     (when (setq compile-command (funcall cmd arg))
       (let ((current-prefix-arg nil))
         (call-interactively 'compile)))))

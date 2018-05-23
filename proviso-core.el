@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-16 08:26:50 dharms>
+;; Modified Time-stamp: <2018-05-23 08:55:36 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -65,7 +65,7 @@ If there is no active project, nil is returned."
 ;;   - External:
 ;;  :include-files :include-ff-files
 ;;  :build-subdirs :debug-subdirs
-;;  :compile-cmd :compile-defun
+;;  :compile-cmds :compile-defun
 ;;  :gcc-standard :clang-standard
 ;;  :grep-include-files :grep-exclude-files
 ;;  :grep-exclude-dirs
