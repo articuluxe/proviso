@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-22 08:45:22 dharms>
+;; Modified Time-stamp: <2018-05-24 08:42:57 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -106,7 +106,7 @@ These are the symbols of the plist."
     (catch 'found
       (while seq
         (if (string-equal (car seq) prop)
-            (throw 'found (cadr seq))
+            (throw 'found (format "%S" (cadr seq)))
           (setq seq (cddr seq)))))))
 
 (defun proviso-display--get-project-names (&optional proj)
