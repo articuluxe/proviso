@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, January 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-25 08:13:43 dharms>
+;; Modified Time-stamp: <2018-05-24 17:36:55 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project rg command
 
@@ -36,7 +36,7 @@
         (proviso-uninteresting-files '("*moc_*" "*qrc_*"))
         (proviso-uninteresting-dirs '("*.git" "*.tags"))
         )
-    (should (string= (proviso-rg--create-rg-str nil)
+    (should (string= (proviso-rg--create-rg-str nil "'")
                      (concat
                       "-g '!*moc_*' -g '!*qrc_*' -g '!*.git' -g '!*.tags' -g '*.cpp' -g '*.hpp' ")))))
 
@@ -46,7 +46,7 @@
         (proviso-uninteresting-files '())
         (proviso-uninteresting-dirs '("*.git" "*.tags"))
         )
-    (should (string= (proviso-rg--create-rg-str nil)
+    (should (string= (proviso-rg--create-rg-str nil "'")
                      (concat
                       "-g '!*.git' -g '!*.tags' -g '*.cpp' -g '*.hpp' ")))))
 
@@ -56,7 +56,7 @@
         (proviso-uninteresting-files '("*moc_*" "*qrc_*"))
         (proviso-uninteresting-dirs '())
         )
-    (should (string= (proviso-rg--create-rg-str nil)
+    (should (string= (proviso-rg--create-rg-str nil "'")
                      (concat
                       "-g '!*moc_*' -g '!*qrc_*' -g '*.cpp' -g '*.hpp' ")))))
 
@@ -66,7 +66,7 @@
         (proviso-uninteresting-files '())
         (proviso-uninteresting-dirs '())
         )
-    (should (string= (proviso-rg--create-rg-str nil)
+    (should (string= (proviso-rg--create-rg-str nil "'")
                      (concat
                       "-g '*.cpp' -g '*.hpp' ")))))
 
@@ -76,7 +76,7 @@
         (proviso-uninteresting-files '("*moc_*" "*qrc_*"))
         (proviso-uninteresting-dirs '("*.git" "*.tags"))
         )
-    (should (string= (proviso-rg--create-rg-str nil)
+    (should (string= (proviso-rg--create-rg-str nil "'")
                      (concat
                       "-g '!*moc_*' -g '!*qrc_*' -g '!*.git' -g '!*.tags' ")))))
 
@@ -86,7 +86,7 @@
         (proviso-uninteresting-files '())
         (proviso-uninteresting-dirs '())
         )
-    (should (string= (proviso-rg--create-rg-str nil)
+    (should (string= (proviso-rg--create-rg-str nil "'")
                      (concat
                       "")))))
 

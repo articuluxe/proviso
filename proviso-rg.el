@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-03 13:40:24 dan.harms>
+;; Modified Time-stamp: <2018-05-24 17:40:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project rg ripgrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -34,44 +34,39 @@
 (require 'subr-x)
 (require 's)
 
-;; rg in a dos shell barfs on surrounding quotes
-(defcustom proviso-rg-quote-char
-  (if (string-match-p "cmdproxy" shell-file-name) "" "'")
-  "The quote character used in the rg command line."
-  :group 'proviso-custom-group)
+(defun proviso-rg--compute-quote-char (remote)
+  "Return the quote character, with remote path REMOTE.
+Basically rg in a dos shell barfs on surrounding quotes.  Normal,
+sane shells do need the quotes to avoid premature expansion.  But
+even on windows, if we're connecting via tramp, we still need the
+quotes."
+  (if (and (string-match-p "cmdproxy" shell-file-name)
+           (not remote))
+      ;; works unless we remote into windows
+      ""
+    "'"))
 
-(defun proviso-rg--create-file-exclusion-str (lst)
-  "Create an rg subcommand to exclude files from LST."
+(defun proviso-rg--create-file-exclusion-str (lst quote)
+  "Create an rg subcommand to exclude files from LST, surrounded by QUOTE."
   (let (str)
     (dolist (elt lst str)
-      (setq str (concat str "-g "
-                        proviso-rg-quote-char
-                        "!" elt
-                        proviso-rg-quote-char
-                        " ")))))
+      (setq str (concat str "-g " quote "!" elt quote " ")))))
 
-(defun proviso-rg--create-dir-exclusion-str (lst)
-  "Create an rg subcommand to exclude dirs from LST."
+(defun proviso-rg--create-dir-exclusion-str (lst quote)
+  "Create an rg subcommand to exclude dirs from LST, surrounded by QUOTE."
   (let (str)
     (dolist (elt lst str)
-      (setq str (concat str "-g "
-                        proviso-rg-quote-char
-                        "!" elt
-                        proviso-rg-quote-char
-                        " ")))))
+      (setq str (concat str "-g " quote "!" elt quote " ")))))
 
-(defun proviso-rg--create-inclusion-str (lst)
-  "Create an rg subcommand to match files from LST."
+(defun proviso-rg--create-inclusion-str (lst quote)
+  "Create an rg subcommand to match files from LST, surrounded by QUOTE."
   (let (str)
     (dolist (elt lst str)
-      (setq str (concat str "-g "
-                        proviso-rg-quote-char
-                        elt
-                        proviso-rg-quote-char
-                        " ")))))
+      (setq str (concat str "-g " quote elt quote " ")))))
 
-(defun proviso-rg--create-rg-str (proj)
-  "Create an rg command string according to the settings of PROJ."
+(defun proviso-rg--create-rg-str (proj quote)
+  "Create an rg command string according to the settings of PROJ.
+The command will be delimited by QUOTE."
   (let ((exclude-files (or (proviso-get proj :grep-exclude-files)
                            proviso-uninteresting-files))
         (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
@@ -85,10 +80,10 @@
     (concat
      (when (or has-exclude-files-p has-exclude-dirs-p)
        (concat
-        (proviso-rg--create-file-exclusion-str exclude-files)
-        (proviso-rg--create-dir-exclusion-str exclude-dirs)))
+        (proviso-rg--create-file-exclusion-str exclude-files quote)
+        (proviso-rg--create-dir-exclusion-str exclude-dirs quote)))
      (when has-include-files-p
-       (proviso-rg--create-inclusion-str include-files))
+       (proviso-rg--create-inclusion-str include-files quote))
      )))
 
 (defun proviso-rg--create-command (&optional arg)
@@ -118,7 +113,7 @@ ARG allows customizing the selection of the root search directory."
                 (replace-regexp-in-string (regexp-quote remote) "" dir)
               (expand-file-name dir)))  ;not sure if this is needed for rg
       (when (string-empty-p cmd)
-        (setq cmd (proviso-rg--create-rg-str proj)))
+        (setq cmd (proviso-rg--create-rg-str proj (proviso-rg--compute-quote-char remote))))
       (when (and proj (not (proviso-get proj :rg-cmd)))
         (proviso-put proj :rg-cmd cmd))
       (setq substr (concat "rg " cmd "--no-heading -Snuu "))
