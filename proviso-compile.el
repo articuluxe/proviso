@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-25 14:16:42 dan.harms>
+;; Modified Time-stamp: <2018-05-25 15:00:44 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -66,10 +66,13 @@ ARG allows customizing behavior."
                             (file-name-as-directory (plist-get elt :dir))) blddirs))
     (setq cmd
           (cond ((= (prefix-numeric-value arg) 16)
-                 (completing-read "Compile command: " cmds))
-                ((= (length cmds) 1)
-                 (car cmds))
-                (t "make")))
+                 (completing-read "Compile command: "
+                                  (append (seq-remove (lambda (elt)
+                                                        (string-equal elt "make"))
+                                                      cmds) '("make"))))
+                ((seq-empty-p cmds)
+                 "make")
+                (t (car cmds))))
     (if arg
         (setq root (read-directory-name "Compile in: " default-directory nil t))
       (setq subdir (cond ((eq (seq-length subdirs) 1)
@@ -86,7 +89,7 @@ ARG allows customizing behavior."
     (setq dir (concat root (unless (string= subdir "./") subdir)))
     (add-to-list 'proviso-compile-dir-history dir)
     (format "cd %s && %s" dir cmd)
-  ))
+    ))
 
 (defun proviso-compile-command-repo (&optional arg)
   "Create a compile command for projects using a repo layout.
@@ -102,10 +105,13 @@ ARG allows customizing behavior."
                             (file-name-as-directory (plist-get elt :dir))) blddirs))
     (setq cmd
           (cond ((= (prefix-numeric-value arg) 16)
-                 (completing-read "Compile command: " cmds))
-                ((= (length cmds) 1)
-                 (car cmds))
-                (t "make")))
+                 (completing-read "Compile command: "
+                                  (append (seq-remove (lambda (elt)
+                                                        (string-equal elt "make"))
+                                                      cmds) '("make"))))
+                ((seq-empty-p cmds)
+                 "make")
+                (t (car cmds))))
     (if arg
         (setq root (read-directory-name "Compile in: " default-directory nil t))
       (setq subdir (cond ((eq (seq-length subdirs) 1)
@@ -122,7 +128,7 @@ ARG allows customizing behavior."
     (setq dir (concat root (unless (string= subdir "./") subdir)))
     (add-to-list 'proviso-compile-dir-history dir)
     (format (concat preface "cd %s && %s") origroot dir cmd)
-  ))
+    ))
 
 (defun proviso-compile-choose-compile-command()
   "Select the command used to create compile commands.
