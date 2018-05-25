@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-16 17:28:18 dharms>
+;; Modified Time-stamp: <2018-05-25 08:52:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -57,17 +57,42 @@
   "Create a dashboard for project PROJ."
   (interactive)
   (with-current-buffer (get-buffer-create proviso-dashboard-buffer-name)
-    (let ((buffer-read-only nil))
+    (let ((inhibit-read-only t)
+          (remote (proviso-get proj :remote-host))
+          (bmk (proviso-get proj :bookmark-file))
+          (clang (proviso-get proj :clang-format))
+          )
       (erase-buffer)
       (proviso-dashboard-mode)
-      (princ "Project:")
+      (insert "     Project: ")
       (insert (propertize (proviso-get proj :project-name)
-                          'face 'success))
-      (princ "\n---------------\n")
-      (princ "Root:")
+                          'face 'highlight))
+      (insert "\n        Root: ")
       (insert (propertize (proviso-get proj :root-dir)
                           'face '(bold)))
-      )))
+      (insert "\n")
+      (when remote
+        (insert " Remote host: ")
+        (insert (propertize remote 'face '(bold)))
+        (insert "\n"))
+      (insert "        Tags: ")
+      (insert (propertize (proviso-get proj :tags-dir)
+                          'face '(bold)))
+      (insert "\n")
+      (insert "   Bookmarks: ")
+      (insert (propertize bmk 'face
+                          (if (and bmk (file-exists-p bmk))
+                              '(bold)
+                            '(shadow))))
+      (insert "\n")
+      (insert "Clang format: ")
+      (insert (propertize clang 'face
+                          (if (and clang (file-exists-p clang))
+                              '(bold)
+                            '(shadow))))
+      (insert "\n")))
+  (pop-to-buffer proviso-dashboard-buffer-name)
+  )
 
 (defun proviso-dashboard-refresh-buffer ()
   "Refresh the dashboard."
