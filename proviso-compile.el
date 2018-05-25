@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-25 15:00:44 dan.harms>
+;; Modified Time-stamp: <2018-05-25 15:52:35 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -69,7 +69,8 @@ ARG allows customizing behavior."
                  (completing-read "Compile command: "
                                   (append (seq-remove (lambda (elt)
                                                         (string-equal elt "make"))
-                                                      cmds) '("make"))))
+                                                      cmds) '("make"))
+                                  nil nil nil nil (car cmds)))
                 ((seq-empty-p cmds)
                  "make")
                 (t (car cmds))))
@@ -108,7 +109,8 @@ ARG allows customizing behavior."
                  (completing-read "Compile command: "
                                   (append (seq-remove (lambda (elt)
                                                         (string-equal elt "make"))
-                                                      cmds) '("make"))))
+                                                      cmds) '("make"))
+                                  nil nil nil nil (car cmds)))
                 ((seq-empty-p cmds)
                  "make")
                 (t (car cmds))))
