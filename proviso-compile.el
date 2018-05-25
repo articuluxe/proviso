@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-23 17:40:00 dharms>
+;; Modified Time-stamp: <2018-05-25 14:16:42 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -33,6 +33,11 @@
 (require 'seq)
 
 (setq compilation-environment '("TERM=dumb"))
+
+(defcustom proviso-compile-cmds-comint-filters nil
+  "List of regexp to apply to compile commands.
+A match means that command should be run in `comint-mode'."
+  :group 'proviso-custom-group)
 
 (defvar proviso-compile--window-visible nil
   "Internal variable tracks whether the compile window was visible originally.")
@@ -140,9 +145,16 @@ ARG allows customizing behavior."
   (proviso-compile--pre-compile)
   (let ((cmd (or (proviso-get (proviso-current-project) :compile-defun)
                  proviso-compile-command
-                 #'proviso-compile-command-std)))
+                 #'proviso-compile-command-std))
+        (filters (or (proviso-get (proviso-current-project)
+                                  :compile-cmds-comint-filters)
+                     proviso-compile-cmds-comint-filters)))
     (when (setq compile-command (funcall cmd arg))
-      (let ((current-prefix-arg nil))
+      (let ((current-prefix-arg
+             (if (seq-find (lambda (filter)
+                             (string-match-p filter compile-command))
+                           filters)
+                 '(4) nil)))
         (call-interactively 'compile)))))
 
 (defun proviso-recompile (&optional arg)
