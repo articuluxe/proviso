@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-24 17:40:09 dharms>
+;; Modified Time-stamp: <2018-05-28 09:02:18 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project rg ripgrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -140,6 +140,11 @@ ARG allows customizing the selection of the root search directory."
 Uses rg, ripgrep.  ARG allows customizing the root search
 directory."
   (interactive "P")
+  ;; HACK around a bug in 'grep-compute-defaults when accessing
+  ;; grep-host-defaults-alist for a different host
+  (unless (assq (intern (or (file-remote-p default-directory) "localhost"))
+                grep-host-defaults-alist)
+    (grep-compute-defaults))
   (grep-apply-setting 'grep-command (proviso-rg--create-command arg))
   (grep-apply-setting 'grep-use-null-device nil)
   (command-execute 'grep))
