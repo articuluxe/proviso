@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-25 08:52:15 dharms>
+;; Modified Time-stamp: <2018-05-28 06:59:49 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -48,10 +48,13 @@
   )
 
 ;;;###autoload
-(defun proviso-dashboard-show ()
-  "Show a dashboard."
-  (interactive)
-  (proviso-dashboard-create (proviso-current-project)))
+(defun proviso-dashboard-show (&optional arg)
+  "Show a dashboard.
+Optional ARG allows choosing a project."
+  (interactive "P")
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (proviso-dashboard-create proj)))
 
 (defun proviso-dashboard-create (proj)
   "Create a dashboard for project PROJ."
