@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-28 06:51:25 dharms>
+;; Modified Time-stamp: <2018-05-28 07:19:47 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -161,16 +161,39 @@ directory, and NAME is that name made relative to ROOT."
 ;;;###autoload
 (defun proviso-finder-find-file (&optional arg)
   "Find file in current project's primary source directory.
-ARG allows customizing the window to open the file in."
+If ARG is non-nil, another project can be chosen."
   (interactive "P")
-  (proviso-finder--find-file (proviso-current-project) nil arg))
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (proviso-finder--find-file proj nil nil)))
+
+;;;###autoload
+(defun proviso-finder-find-file-other-window (&optional arg)
+  "Find file in other window among project's primary source directory.
+If ARG is non-nil, another project can be chosen; otherwise the
+current project is used."
+  (interactive "P")
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (proviso-finder--find-file proj nil 'other)))
 
 ;;;###autoload
 (defun proviso-finder-find-file-all (&optional arg)
   "Find file among all files in current project.
-ARG will open the file in the other window."
+If ARG is non-nil, another project can be chosen."
   (interactive "P")
-  (proviso-finder--find-file (proviso-current-project) 'all arg))
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (proviso-finder--find-file proj 'all nil)))
+
+;;;###autoload
+(defun proviso-finder-find-file-all-other-window (&optional arg)
+  "Find file among all files in current project, in other window.
+If ARG is non-nil, another project can be chosen."
+  (interactive "P")
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (proviso-finder--find-file proj 'all 'other)))
 
 (defun proviso-finder--find-file (proj all other-window)
   "Allow choosing a file to open in project PROJ.
@@ -230,16 +253,38 @@ OTHER-WINDOW means to open the file in the other window."
 ;;;###autoload
 (defun proviso-finder-open-dir (&optional arg)
   "Find directory in current project.
-ARG allows customizing the window to open the file in."
+If ARG is non-nil, another project can be chosen."
   (interactive "P")
-  (proviso-finder--find-dir (proviso-current-project) nil arg))
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (proviso-finder--find-dir proj nil nil)))
+
+;;;###autoload
+(defun proviso-finder-open-dir-other-window (&optional arg)
+  "Find directory in current project in the other window.
+If ARG is non-nil, another project can be chosen."
+  (interactive "P")
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (proviso-finder--find-dir proj nil 'other)))
 
 ;;;###autoload
 (defun proviso-finder-open-dir-all (&optional arg)
   "Find directory among all directories in current project.
-ARG will open the file in the other window."
+If ARG is non-nil, another project can be chosen."
   (interactive "P")
-  (proviso-finder--find-dir (proviso-current-project) 'all arg))
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (proviso-finder--find-dir proj 'all nil)))
+
+;;;###autoload
+(defun proviso-finder-open-dir-all-other-window (&optional arg)
+  "Find directory in other window among those in current project.
+If ARG is non-nil, another project can be chosen."
+  (interactive "P")
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (proviso-finder--find-dir proj 'all 'other)))
 
 (defun proviso-finder--find-dir (proj all other-window)
   "Allow choosing a directory to open in project PROJ.
