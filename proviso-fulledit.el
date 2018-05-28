@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-15 05:46:18 dharms>
+;; Modified Time-stamp: <2018-05-28 06:53:13 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -29,6 +29,7 @@
 ;;; Code:
 (require 'seq)
 (require 'proviso-defines)
+(require 'proviso-regexp)
 
 (defun proviso-fulledit-test-list-for-string (lst input)
   "Return non-nil if there exists in LST a match for string INPUT.

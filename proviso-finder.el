@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-18 05:30:55 dharms>
+;; Modified Time-stamp: <2018-05-28 06:51:25 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -316,7 +316,7 @@ OTHER-WINDOW means to open the file in the other window."
                     `(lambda ()
                        (setq inhibit-message t)
                        ,(async-inject-variables "load-path")
-                       (require 'proviso)
+                       (require 'proviso-finder)
                        (proviso-finder-gather-files ,remote ,root (quote ,lst) nil t
                                                     (quote ,exclude-files)
                                                     (quote ,exclude-dirs)
@@ -326,7 +326,7 @@ OTHER-WINDOW means to open the file in the other window."
                     `(lambda ()
                        (setq inhibit-message t)
                        ,(async-inject-variables "load-path")
-                       (require 'proviso)
+                       (require 'proviso-finder)
                        (proviso-finder-gather-files ,remote ,root (quote ,lst) t t
                                                     (quote ,exclude-files)
                                                     (quote ,exclude-dirs)
@@ -336,7 +336,7 @@ OTHER-WINDOW means to open the file in the other window."
                     `(lambda ()
                        (setq inhibit-message t)
                        ,(async-inject-variables "load-path")
-                       (require 'proviso)
+                       (require 'proviso-finder)
                        (proviso-finder-gather-dirs ,remote ,root (quote ,lst) nil t
                                                    (quote ,exclude-dirs)))))
       (proviso-put proj :project-dirs-all-future
@@ -344,7 +344,7 @@ OTHER-WINDOW means to open the file in the other window."
                     `(lambda ()
                        (setq inhibit-message t)
                        ,(async-inject-variables "load-path")
-                       (require 'proviso)
+                       (require 'proviso-finder)
                        (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t t
                                                    (quote ,exclude-dirs))))))
     ))
