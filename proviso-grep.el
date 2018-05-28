@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-03 13:34:03 dan.harms>
+;; Modified Time-stamp: <2018-05-28 09:02:18 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -164,6 +164,7 @@ ARG allows customizing the root search directory, see `proviso-grep--create-comm
                 grep-host-defaults-alist)
     (grep-compute-defaults))
   (grep-apply-setting 'grep-command (proviso-grep--create-command arg))
+  (grep-apply-setting 'grep-use-null-device nil)
   (command-execute 'grep))
 
 (provide 'proviso-grep)
