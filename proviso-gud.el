@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-18 10:26:42 dan.harms>
+;; Modified Time-stamp: <2018-05-28 13:19:49 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools gdb proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -66,11 +66,12 @@ ARG allows customizing the location to search in."
         (exe-prompt "Debug executable: ")
         dir exe)
     (setq dir (cond ((and arg (eq (prefix-numeric-value arg) 16))
-                     default-directory)
+                     (read-file-name dir-prompt default-directory nil t))
                     ((eq (length cands) 1)
                      (cdr (car cands)))
                     ((and cands arg (eq (prefix-numeric-value arg) 4))
-                     (completing-read dir-prompt cands))
+                     (read-file-name dir-prompt
+                                     (completing-read dir-prompt cands) nil t))
                     ((and cands)
                      (cdr (car cands)))
                     (t (or (proviso-current-project-root) default-directory))))
