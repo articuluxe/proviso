@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-28 07:19:47 dharms>
+;; Modified Time-stamp: <2018-05-31 08:55:52 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -87,7 +87,7 @@ if present, are passed on to `proviso-fulledit-gather-files'."
       (when reporter (progress-reporter-done reporter))
       (unless async
         (message "Done g%s (%d files)" msg (length result))))
-    result))
+    (proviso-finder--adjust-paths result remote root)))
 
 (defun proviso-finder-gather-dirs-interactive (proj &optional all-dirs)
   "Gather directories in project PROJ.
@@ -131,7 +131,7 @@ optional exclusion list."
       (when reporter (progress-reporter-done reporter))
       (unless async
         (message "Done g%s (%d dirs)" msg (length result))))
-    result))
+    (proviso-finder--adjust-paths result remote root)))
 
 ;;;###autoload
 (defun proviso-finder-recompute-cache ()
@@ -215,15 +215,12 @@ OTHER-WINDOW means to open the file in the other window."
             (unless (async-ready (proviso-get proj future))
               (message "Still gathering files..."))
             (when (setq files (async-get (proviso-get proj future)))
-              (setq files (proviso-finder--adjust-paths files remote root))
               (proviso-put proj symbol files)))
-        (setq files (proviso-finder--adjust-paths
-                     (proviso-finder-gather-files (file-remote-p default-directory)
-                                                  default-directory nil all nil
-                                                  proviso-uninteresting-files
-                                                  proviso-uninteresting-dirs
-                                                  proviso-interesting-files)
-                     (file-remote-p default-directory) default-directory))))
+        (setq files (proviso-finder-gather-files (file-remote-p default-directory)
+                                                 default-directory nil all nil
+                                                 proviso-uninteresting-files
+                                                 proviso-uninteresting-dirs
+                                                 proviso-interesting-files))))
     (when (seq-empty-p files)
       (error "No files to open %s" desc))
     (ivy-set-prompt 'proviso-finder--find-file counsel-prompt-function)
@@ -306,13 +303,10 @@ OTHER-WINDOW means to open the file in the other window."
             (unless (async-ready (proviso-get proj future))
               (message "Still gathering directories..."))
             (when (setq dirs (async-get (proviso-get proj future)))
-              (setq dirs (proviso-finder--adjust-paths dirs remote root))
               (proviso-put proj symbol dirs)))
-        (setq dirs (proviso-finder--adjust-paths
-                    (proviso-finder-gather-dirs (file-remote-p default-directory)
-                                                default-directory nil all nil
-                                                proviso-uninteresting-dirs)
-                    (file-remote-p default-directory) default-directory))))
+        (setq dirs (proviso-finder-gather-dirs (file-remote-p default-directory)
+                                               default-directory nil all nil
+                                               proviso-uninteresting-dirs))))
     (when (seq-empty-p dirs)
       (error "No directories to open %s" desc))
     (ivy-set-prompt 'proviso-finder--find-dir counsel-prompt-function)
