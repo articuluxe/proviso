@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, June 28, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-26 17:21:15 dharms>
+;; Modified Time-stamp: <2018-06-01 08:13:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project dired
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -29,6 +29,15 @@
 ;;; Code:
 (require 'proviso-core)
 (require 'ivy)
+
+(defun proviso-dired-open-project (proj)
+  "Open dired on project PROJ."
+  (let* ((remote (proviso-get proj :remote-prefix))
+         (root (proviso-get proj :root-dir))
+         (dir (directory-file-name
+               (concat remote root))))
+    (and (file-readable-p dir)
+         (dired dir))))
 
 (defun proviso-gather-dired-dirs (proj)
   "Gather all dired targets for project PROJ."

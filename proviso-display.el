@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-24 08:42:57 dharms>
+;; Modified Time-stamp: <2018-06-01 08:13:48 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -28,6 +28,7 @@
 
 ;;; Code:
 (require 'proviso-core)
+(require 'proviso-dired)
 (require 'tabulated-list)
 
 (defface proviso-face-heading '((((background dark)) (:foreground "Yellow"))
@@ -183,13 +184,8 @@ PROJ, if non-nil, will be highlighted in the results."
   (let* ((name (tabulated-list-get-id))
          (proj (intern-soft name proviso-obarray))
          dir)
-    (and proj
-         (setq dir (directory-file-name
-                    (concat
-                     (proviso-get proj :remote-prefix)
-                     (proviso-get proj :root-dir))))
-         (file-readable-p dir)
-         (dired dir))))
+    (when proj
+      (proviso-dired-open-project proj))))
 
 (defun proviso-display-erase-project ()
   "Erase all traces of the selected project."
