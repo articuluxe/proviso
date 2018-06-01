@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-06-01 17:19:26 dharms>
+;; Modified Time-stamp: <2018-06-01 17:29:24 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -40,6 +40,7 @@
     (define-key map "n" #'proviso-dashboard-move-next-marker)
     (define-key map "p" #'proviso-dashboard-move-prev-marker)
     (define-key map "t" #'ignore)
+    (define-key map "q" #'delete-window)
     map))
 
 (defvar-local proviso-dashboard-buffer-name nil
