@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-04-23 17:52:28 dharms>
+;; Modified Time-stamp: <2018-06-05 08:58:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project tags gentags
 
@@ -45,7 +45,9 @@
                (lambda (name buf prog &rest args)
                  (let ((str (mapconcat 'identity args " ")))
                    (should (string= (car arg-contents) str))
-                   (pop arg-contents)))))
+                   (pop arg-contents))))
+              ((symbol-function 'proviso-gentags-exe)
+               (lambda() "exctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
       (setq file-contents "
@@ -112,7 +114,9 @@
                (lambda (name buf prog &rest args)
                  (let ((str (mapconcat 'identity args " ")))
                    (should (string= (car arg-contents) str))
-                   (pop arg-contents)))))
+                   (pop arg-contents))))
+              ((symbol-function 'proviso-gentags-exe)
+               (lambda() "exctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
       (setq file-contents "")
@@ -153,7 +157,9 @@
                (lambda (name buf prog &rest args)
                  (let ((str (mapconcat 'identity args " ")))
                    (should (string= (car arg-contents) str))
-                   (pop arg-contents)))))
+                   (pop arg-contents))))
+              ((symbol-function 'proviso-gentags-exe)
+               (lambda() "exctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
       (setq file-contents "
@@ -220,7 +226,9 @@
                (lambda (name buf prog &rest args)
                  (let ((str (mapconcat 'identity args " ")))
                    (should (string= (car arg-contents) str))
-                   (pop arg-contents)))))
+                   (pop arg-contents))))
+              ((symbol-function 'proviso-gentags-exe)
+               (lambda() "exctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
       (setq file-contents "
@@ -287,7 +295,9 @@
                (lambda (name buf prog &rest args)
                  (let ((str (mapconcat 'identity args " ")))
                    (should (string= (car arg-contents) str))
-                   (pop arg-contents)))))
+                   (pop arg-contents))))
+              ((symbol-function 'proviso-gentags-exe)
+               (lambda() "exctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
       (setq file-contents "
@@ -354,7 +364,9 @@
                (lambda (name buf prog &rest args)
                  (let ((str (mapconcat 'identity args " ")))
                    (should (string= (car arg-contents) str))
-                   (pop arg-contents)))))
+                   (pop arg-contents))))
+              ((symbol-function 'proviso-gentags-exe)
+               (lambda() "exctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
       (setq file-contents "
@@ -422,7 +434,9 @@
                (lambda (name buf prog &rest args)
                  (let ((str (mapconcat 'identity args " ")))
                    (should (string= (car arg-contents) str))
-                   (pop arg-contents)))))
+                   (pop arg-contents))))
+              ((symbol-function 'proviso-gentags-exe)
+               (lambda() "exctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
       (setq file-contents "
@@ -477,7 +491,6 @@
 (ert-deftest proviso-gentags-test-tags-override-gentags-exe ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
-        (proviso-gentags-exe "myctags")
         file-contents arg-contents)
     (cl-letf (((symbol-function 'proviso--load-file)
                (lambda (_)
@@ -490,7 +503,9 @@
                (lambda (name buf prog &rest args)
                  (let ((str (mapconcat 'identity args " ")))
                    (should (string= (car arg-contents) str))
-                   (pop arg-contents)))))
+                   (pop arg-contents))))
+              ((symbol-function 'proviso-gentags-exe)
+               (lambda() "myctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
       (setq file-contents "

@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-16 08:21:00 dharms>
+;; Modified Time-stamp: <2018-06-05 08:53:39 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -30,12 +30,13 @@
 (require 'proviso-core)
 (require 'find-file)
 
-;; customization variables
-(defvar proviso-gentags-exe
-  (cond ((executable-find "exctags") "exctags")
-        ((executable-find "ctags") "ctags")
-        (t "ctags"))
-  "The ctags executable.")
+;; customization points
+(defun proviso-gentags-exe ()
+  "Return path to executable to use for TAGS generation."
+  (or (executable-find "exctags")
+      (executable-find "ctags")
+      "ctags"))
+
 (defvar proviso-gentags-ctags-cpp-kinds "+l" "Default ctags cpp-kinds options.")
 (defvar proviso-gentags-copy-remote nil)
 
@@ -43,7 +44,7 @@
   "Generate the ctags command.
 REST, if not nil, is appended."
   (append
-   (list proviso-gentags-exe "-Re"
+   (list (proviso-gentags-exe) "-Re"
          (concat "--c++-kinds=" proviso-gentags-ctags-cpp-kinds)
          "--file-scope=no"
          "--tag-relative=no") (if (listp rest) rest (list rest))))
