@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-28 13:19:49 dan.harms>
+;; Modified Time-stamp: <2018-06-06 20:56:40 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools gdb proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -30,6 +30,20 @@
 (require 'proviso-core)
 (require 'ivy)
 (require 'realgud)
+
+;; gud settings
+(setq realgud-safe-mode nil)
+;; gdb settings
+(add-hook 'gud-mode-hook
+          (lambda()
+            (set (make-local-variable 'gdb-show-main) t)
+            ;; highlight recently-changed variables
+            (set (make-local-variable 'gdb-show-changed-values) t)
+            ;; watch expressions sharing same variable name
+            (set (make-local-variable 'gdb-use-colon-colon-notation) t)
+            (set (make-local-variable 'gdb-create-source-file-list) nil)
+            (gdb-many-windows 1)
+            ))
 
 (defun proviso-gud--exe-suitable-p (exe)
   "Return non-nil if EXE is an executable that can be debugged."
