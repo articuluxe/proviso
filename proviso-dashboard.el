@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-06-01 17:29:24 dharms>
+;; Modified Time-stamp: <2018-06-27 12:19:01 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -197,7 +197,7 @@ Optional ARG allows choosing a project."
 ;;   (proviso-dashboard-create (proviso-current-project))
 ;;   (switch-to-buffer proviso-dashboard-buffer-name))
 
-(add-hook 'proviso-hook-on-project-post-init #'proviso-dashboard-switch-to)
+;; (add-hook 'proviso-hook-on-project-post-init #'proviso-dashboard-switch-to)
 
 (provide 'proviso-dashboard)
 ;;; proviso-dashboard.el ends here
