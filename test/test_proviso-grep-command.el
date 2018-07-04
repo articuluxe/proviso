@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-03 22:57:52 dharms>
+;; Modified Time-stamp: <2018-07-04 14:49:27 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project grep command
 
@@ -40,7 +40,7 @@
                      (concat
                       " \"(\" -name \"*moc_*\" -o -name \"*qrc_*\" -o -path \"*.git\" \")\" "
                       "-prune -o -type f \"(\" -name \"*.cpp\" -o -name \"*.hpp"
-                      "\" \")\" -print0 | xargs -0 grep -Isni ")))
+                      "\" \")\" -print0 | xargs -0 grep --null -Isni ")))
     ))
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude-empty-file-blacklist ()
@@ -53,7 +53,7 @@
                      (concat
                       " \"(\" -path \"*.git\" \")\" "
                       "-prune -o -type f \"(\" -name \"*.cpp\" -o -name \"*.hpp"
-                      "\" \")\" -print0 | xargs -0 grep -Isni ")))
+                      "\" \")\" -print0 | xargs -0 grep --null -Isni ")))
     ))
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude-empty-dir-blacklist ()
@@ -66,7 +66,7 @@
                      (concat
                       " \"(\" -name \"*moc_*\" -o -name \"*qrc_*\" \")\" "
                       "-prune -o -type f \"(\" -name \"*.cpp\" -o -name \"*.hpp"
-                      "\" \")\" -print0 | xargs -0 grep -Isni ")))
+                      "\" \")\" -print0 | xargs -0 grep --null -Isni ")))
     ))
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude-empty-dir-and-file-blacklist ()

@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-28 09:02:18 dan.harms>
+;; Modified Time-stamp: <2018-07-04 14:46:38 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project rg ripgrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -116,7 +116,7 @@ ARG allows customizing the selection of the root search directory."
         (setq cmd (proviso-rg--create-rg-str proj (proviso-rg--compute-quote-char remote))))
       (when (and proj (not (proviso-get proj :rg-cmd)))
         (proviso-put proj :rg-cmd cmd))
-      (setq substr (concat "rg " cmd "--no-heading -Snuu "))
+      (setq substr (concat "rg " cmd "--no-heading --null -Snuu "))
       (setq idx (string-width substr))
       (cons
        (concat

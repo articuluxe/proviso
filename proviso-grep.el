@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-28 09:02:18 dan.harms>
+;; Modified Time-stamp: <2018-07-04 14:45:32 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -32,7 +32,7 @@
 (require 'subr-x)
 (require 's)
 
-(defcustom proviso-grep-args "-Isni"
+(defcustom proviso-grep-args "--null -Isni"
   "Standard arguments to give to grep."
   :group 'proviso-custom-group)
 
