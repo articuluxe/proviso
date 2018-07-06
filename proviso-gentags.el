@@ -3,11 +3,11 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-06-05 08:53:39 dharms>
+;; Modified Time-stamp: <2018-07-06 08:34:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
-;; Package-Requires: ((emacs "24.4"))
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 
 ;;; Code:
 (require 'proviso-core)
+(require 'subr-x)
 (require 'find-file)
 
 ;; customization points
@@ -38,92 +39,85 @@
       "ctags"))
 
 (defvar proviso-gentags-ctags-cpp-kinds "+l" "Default ctags cpp-kinds options.")
-(defvar proviso-gentags-copy-remote nil)
 
 (defun proviso-gentags-command (&optional rest)
   "Generate the ctags command.
 REST, if not nil, is appended."
   (append
-   (list (proviso-gentags-exe) "-Re"
+   (list (proviso-gentags-exe)
+         "-Re"
          (concat "--c++-kinds=" proviso-gentags-ctags-cpp-kinds)
          "--file-scope=no"
-         "--tag-relative=no") (if (listp rest) rest (list rest))))
+         "--tag-relative=no")
+   (if (listp rest) rest (list rest))))
 
-;; internal variables
-(defvar proviso-gentags--iter nil "Current item being processed.")
-(defvar proviso-gentags--total-num 0 "Total number of TAGS files to create.")
-(defvar proviso-gentags--curr-num 0 "Current number of TAGS file being created.")
-(defvar proviso-gentags--buffer nil "Buffer used by proviso-gentags.")
-(defvar proviso-gentags--remote nil
-  "Are tags being generating for a remote source repository?")
-(defvar proviso-gentags--msg)
-(defvar proviso-gentags--start-time 0
-  "Time TAGS generation commenced.")
-(defvar proviso-gentags--curr-proj nil "Current project.")
-(defvar proviso-gentags--intermediate-dest-dir nil
-  "An intermediate staging location for each TAGS file being generated.
-This is useful for generating TAGS on a remote server.")
-(defvar proviso-gentags--intermediate-dest-file nil
-  "The intermediate staging file for each TAGS file that is generated.
-This is useful for generating TAGS on a remote server.  On a local server,
-this will be the same as the tags-dir.")
-(defvar proviso-gentags--final-dest-dir nil
-  "The final destination for the TAGS files being generated.")
-(defvar proviso-gentags--final-dest-file nil
-  "The final file being written for the current TAGS generation.")
+(defvar-local proviso-gentags--procs nil
+  "Spawned processes to generate tags.")
+(defvar-local proviso-gentags--start-time nil
+  "Per-process start time that tags generation began.")
 
 ;;;###autoload
 (defun proviso-gentags-generate-tags (&optional arg)
-  "Generate TAGS files according to the current project.
-If optional ARG is supplied, also copy them to the local
-machine, if you are running on a remote host."
-  (interactive)
-  (unless (proviso-proj-p proviso-curr-proj)
-    (error "Could not generate tags: no active project"))
-  (setq proviso-gentags-copy-remote current-prefix-arg)
-  (proviso-gentags--first-file))
+  "Generate tags according to the current project.
+If ARG is non-nil any remotely-generated files will be copied
+locally."
+  (interactive "P")
+  (let ((proj (if (= (prefix-numeric-value current-prefix-arg) 16)
+                  (proviso-choose-project) (proviso-current-project))))
+    (unless (proviso-proj-p proj)
+      (error "Could not generate tags: no active project"))
+    (proviso-gentags--start-gen proj arg)))
 
-(defun proviso-gentags--on-finish ()
-  "Called when TAGS generation completes."
-  (let ((elapsed (float-time
-                  (time-subtract (current-time) proviso-gentags--start-time))))
-    (with-current-buffer proviso-gentags--buffer
-      (goto-char (point-max))
-      (insert
-       (format "\nTAGS generation finished at %s (it took %.3f seconds).\n\n\n"
-               (current-time-string) elapsed)))))
+(defun proviso-gentags--start-gen (proj &optional copy-remote)
+  "Generate tags for project PROJ.
+If COPY-REMOTE is non-nil, remote tags files will be copied to a
+local destination automatically."
+  (let* ((tags-alist (proviso-get proj :proj-alist))
+         (remote (proviso-get proj :remote-prefix))
+         (root (proviso-get proj :root-dir))
+         (dest-dir (proviso-get proj :tags-dir))
+         (remote-tags-dir (or (proviso-get proj :tags-subdir) ".tags/"))
+         (intermediate-dir (if (not remote) dest-dir
+                             (file-name-as-directory
+                              (if (file-name-absolute-p remote-tags-dir)
+                                  remote-tags-dir
+                                (concat root remote-tags-dir)))))
+         lst)
+    (when remote
+      (make-directory (concat remote intermediate-dir) t))
+    (make-directory dest-dir t)
+    (dolist (elt tags-alist)
+      (let* ((name (plist-get elt :name))
+             (dir (plist-get elt :dir))
+             (dir-abs (if (and dir (file-name-absolute-p dir)) dir
+                        (concat root dir)))
+             (subname (concat name "-tags"))
+             (destfile (concat intermediate-dir subname))
+             (remotefile (concat dest-dir subname)) ;only used for remote
+             (arglist (plist-get elt :ctags-opts))
+             (args (append (proviso-gentags-command arglist)
+                           (list "-f" destfile
+                                 (directory-file-name dir-abs))))
+             (cmd (mapconcat 'identity args " ")))
+        (push (append
+               (list :cmd cmd
+                     :dir (if remote (concat remote dir-abs) dir-abs)
+                     :copy-remote copy-remote
+                     ) (when copy-remote
+                         (list
+                          :remote-src (concat remote destfile)
+                          :remote-dst remotefile)))
+              lst)))
+    (proviso-gentags--run (proviso-get proj :project-name)
+                          (nreverse lst))))
 
-(defun proviso-gentags--first-file ()
-  "Start generating a series of TAGS files."
-  (let ((tags-alist (proviso-get proviso-curr-proj :proj-alist))
-        (remote-tags-dir (or
-                          (proviso-get proviso-curr-proj :tags-subdir)
-                          ".tags/")))
-    (setq proviso-gentags--buffer (get-buffer-create " *proviso-gentags*"))
-    (setq proviso-gentags--total-num (length tags-alist))
-    (setq proviso-gentags--iter tags-alist)
-    (setq proviso-gentags--remote (proviso-get proviso-curr-proj :remote-prefix))
-    (setq proviso-gentags--final-dest-dir (proviso-get proviso-curr-proj :tags-dir))
-    (if proviso-gentags--remote
-        ;; we're generating TAGS on a remote host, so set up a
-        ;; staging area for generation, before we copy them to the
-        ;; local destination.
-        (progn
-          (setq proviso-gentags--intermediate-dest-dir
-                (file-name-as-directory
-                 (if (file-name-absolute-p remote-tags-dir)
-                     remote-tags-dir
-                   (concat (proviso-get proviso-curr-proj :root-dir)
-                           remote-tags-dir))))
-          (make-directory (concat proviso-gentags--remote
-                                  proviso-gentags--intermediate-dest-dir) t))
-      ;; else everything is local, so set up our variables in order to
-      ;; generate output directly into the final destination.
-      (setq proviso-gentags--intermediate-dest-dir
-            proviso-gentags--final-dest-dir))
-    (make-directory proviso-gentags--final-dest-dir t)
-    (pop-to-buffer proviso-gentags--buffer)
-    (with-current-buffer proviso-gentags--buffer
+(defun proviso-gentags--run (name lst)
+  "Run a series of tags invocations for project NAME according to LST.
+LST is a list of plists, each of which contains necessary parameters."
+  (let ((buffer (get-buffer-create (format " *gentags-%s*" name)))
+        (start-time (current-time)))
+    (pop-to-buffer buffer)
+    (with-current-buffer buffer
       (setq-local window-point-insertion-type t)
       (let ((map (make-sparse-keymap)))
         (define-key map "q" #'quit-window)
@@ -131,77 +125,68 @@ machine, if you are running on a remote host."
         (use-local-map map))
       (goto-char (point-max))
       (insert (format "TAGS generation started at %s\n\n"
-                      (current-time-string)))))
-  (setq proviso-gentags--start-time (current-time))
-  (proviso-gentags--try-gen-next-file))
+                      (current-time-string start-time)))
+      (setq proviso-gentags--start-time start-time))
+    (if (seq-empty-p lst)
+        (proviso-gentags--done buffer)
+      (dolist (entry lst)
+        (proviso-gentags--spawn entry buffer)))))
 
-(defun proviso-gentags--try-gen-next-file ()
-  "Generate a tags file."
-  (if proviso-gentags--iter
-      (proviso-gentags--gen-next-file)
-    (proviso-gentags--on-finish)))
-
-(defun proviso-gentags--gen-next-file ()
-  "Generate TAGS for the current element."
-  (let* ((name (plist-get (car proviso-gentags--iter) :name))
-         (dir (plist-get (car proviso-gentags--iter) :dir))
-         (sub-name (concat name "-tags"))
-         (default-directory
-           (if (and dir (file-name-absolute-p dir)) dir
-             (concat (proviso-get proviso-curr-proj :root-dir) dir)))
-         (arg-list (plist-get (car proviso-gentags--iter) :ctags-opts))
-         args process)
-    (setq proviso-gentags--intermediate-dest-file
-          (concat proviso-gentags--intermediate-dest-dir sub-name))
-    ;; this won't be used in the local scenario
-    (setq proviso-gentags--final-dest-file
-          (concat proviso-gentags--final-dest-dir sub-name))
-    (setq proviso-gentags--msg (format "Generating tags for %s into %s..."
-                                default-directory
-                                proviso-gentags--intermediate-dest-file))
-    (with-current-buffer proviso-gentags--buffer
-      (goto-char (point-max))
-      (insert proviso-gentags--msg))
-    (setq args
-          (append (proviso-gentags-command arg-list)
-                  (list "-f" proviso-gentags--intermediate-dest-file
-                        ;; ctags on windows will barf if the source
-                        ;; directory has a trailing slash
-                        (directory-file-name default-directory))))
-    ;; if remote, we need the remote prefix
-    (when proviso-gentags--remote
-      (setq default-directory
-            (concat proviso-gentags--remote default-directory)))
-    ;; /bin/sh -c "<script>" requires its argument (the script) be
-    ;; quoted by strings; and `start-file-process' expects
-    ;; a string of all arguments to be passed, starting with the executable.
-    (setq process (start-file-process
+(defun proviso-gentags--spawn (plist buffer)
+  "Execute a tags invocation according to PLIST.
+BUFFER is an output buffer."
+  (let* ((default-directory (plist-get plist :dir))
+         (cmd (plist-get plist :cmd))
+         ;; /bin/sh -c "<script>" requires its argument (the script) be
+         ;; quoted by strings; and `start-file-process' expects
+         ;; a string of all arguments to be passed, starting with the executable.
+         (process (start-file-process
                    "generate TAGS"
-                   proviso-gentags--buffer
+                   buffer
                    "sh" "-c"
-                   (mapconcat 'identity args " ")))
-    (set-process-sentinel process #'proviso-gentags--proc-sentinel)))
+                   cmd)))
+    (with-current-buffer buffer
+      (push (cons process
+                  (list
+                   (plist-get plist :copy-remote)
+                   (plist-get plist :remote-src)
+                   (plist-get plist :remote-dst)))
+            proviso-gentags--procs)
+      (set-process-sentinel process #'proviso-gentags--sentinel)
+      (insert (format "%s\n" cmd)))
+    ))
 
-(defun proviso-gentags--proc-sentinel (proc change)
-  "A process sentinel called for PROC's changed state, as described by CHANGE."
+(defun proviso-gentags--sentinel (proc change)
+  "Process sentinel notifying that PROC underwent CHANGE."
   (when (string-match-p "\\(finished\\|exited\\)" change)
-    (with-current-buffer proviso-gentags--buffer
+    (let ((buffer (process-buffer proc)))
+      (with-current-buffer buffer
+        (if-let ((entry (assoc proc proviso-gentags--procs))
+                 (start (current-time)))
+            (progn
+              (if-let ((copy (nth 0 entry))
+                       (src (nth 1 entry))
+                       (dst (nth 2 entry)))
+                  (progn
+                    (copy-file src dst 'overwrite)
+                    (goto-char (point-max))
+                    (insert (format
+                             "\n Copied %s to %s (remote transfer took %.3f sec.)"
+                             src dst (float-time (time-subtract (current-time) start))))))
+              (setq proviso-gentags--procs (delete entry proviso-gentags--procs))
+              (when (seq-empty-p proviso-gentags--procs)
+                (proviso-gentags--done buffer))))))))
+
+(defun proviso-gentags--done (buffer)
+  "Called when tags invocation has completed for buffer BUFFER."
+  (with-current-buffer buffer
+    (let* ((now (current-time))
+           (nowstr (current-time-string))
+           (elapsed (float-time (time-subtract
+                                 now proviso-gentags--start-time))))
       (goto-char (point-max))
-      (insert "done.\n")
-      (when (and proviso-gentags--remote proviso-gentags-copy-remote)
-        (let ((start (current-time)))
-          (copy-file
-           (concat proviso-gentags--remote
-                   proviso-gentags--intermediate-dest-file)
-           proviso-gentags--final-dest-file t)
-          (insert
-           (format
-            " Copied to %s (remote transfer took %.3f sec.)\n"
-            proviso-gentags--final-dest-file
-            (float-time (time-subtract (current-time) start))))))
-      (pop proviso-gentags--iter)
-      (setq proviso-gentags--curr-num (1+ proviso-gentags--curr-num))
-      (proviso-gentags--try-gen-next-file))))
+      (insert (format "\nTAGS generation finished at %s (it took %.3f seconds).\n\n"
+                      nowstr elapsed)))))
 
 (provide 'proviso-gentags)
 ;;; proviso-gentags.el ends here

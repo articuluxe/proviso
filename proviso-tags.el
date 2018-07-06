@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-04-23 17:45:25 dharms>
+;; Modified Time-stamp: <2018-06-07 07:49:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso tags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -45,7 +45,7 @@ Format is useful for uniquely naming the local TAGS directory."
     (proviso-get proj :root-stem))))
 
 (defun proviso-tags-compute-tags-dir (proj base)
-  "Compute where a profile PROJ's local TAGS should live.
+  "Compute where project PROJ's local TAGS should live.
 BASE gives the root directory."
   (let ((tags-base (or (getenv "EMACS_TAGS_DIR") "~"))
         (sub (or (proviso-get proj :tags-subdir) ".tags/"))
@@ -80,7 +80,7 @@ into :tags-alist."
           (list
            (list (concat
                   ;; this first capture group is needed to match
-                  ;; the remote prefix
+                  ;; any remote prefix
                   "^\\(.*\\)"
                   (proviso-get proj :root-stem)
                   "\\(.*\\)$"))))
@@ -93,7 +93,7 @@ into :tags-alist."
         ;; save external dirs, which need a separate entry
         (push (concat
                ;; this first capture group is needed to match
-               ;; the remote prefix
+               ;; any remote prefix
                "^\\(.*\\)" dir "\\(.*\\)$")
               ext-dirs))
       (push entry (car tags-alist)))
