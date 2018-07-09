@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-16 16:39:23 dharms>
+;; Modified Time-stamp: <2018-07-09 10:09:07 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -152,10 +152,6 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
   (with-current-buffer buffer
     (make-local-variable 'proviso-local-proj)
     (put 'proviso-local-proj 'permanent-local t)
-    (setq proviso-local-proj
-          (intern-soft (proviso-find-path-alist
-                        (expand-file-name filename))
-                       proviso-obarray))
     (let* ((root (proviso--find-root (file-name-directory filename) t))
            (root-file (car root))
            (root-dir (cdr root))
@@ -164,7 +160,10 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
       (when remote-props
         (setq remote-host (car remote-props))
         (setq remote-localname (cadr remote-props))
-        (setq remote-prefix (caddr remote-props)))
+        (setq remote-prefix (caddr remote-props))
+        (setq root-dir remote-localname))
+      (setq proviso-local-proj
+            (intern-soft (proviso-find-path-alist root-dir) proviso-obarray))
       (when (and root root-file root-dir
                  (or (not proviso-local-proj)
                      (not (string-equal root-dir
@@ -180,8 +179,6 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
         ;; (while (proviso-name-p basename)
         (unless proviso--last-proj-defined
           (proviso-define-project basename))
-        (when remote-props
-          (setq root-dir remote-localname))
         (push (cons root-dir basename) proviso-path-alist)
         (setq proviso-local-proj
               (intern-soft (proviso-find-path-alist

@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-06-27 12:17:53 dan.harms>
+;; Modified Time-stamp: <2018-07-09 10:08:04 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -308,7 +308,7 @@ Returns a list (ROOT FILE)."
 
 (defun proviso--find-root (dir &optional absolute)
   "Search for the project root, starting from DIR and moving up the file tree.
-Returns a cons (file, dir) containing the project file and its parent
+Returns a cons (file . dir) containing the project file and its parent
 directory, if found, else nil.  If ABSOLUTE is non-nil, the path, if found,
 will be absolute.  Project files can look like any of the following:
     1) .proviso
