@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-07-10 08:39:08 dharms>
+;; Modified Time-stamp: <2018-07-10 08:59:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -114,7 +114,8 @@ local destination automatically."
                           :remote-dst remotefile)))
               lst)))
     (proviso-gentags--run (proviso-get proj :project-name)
-                          (nreverse lst))))
+                          (nreverse lst))
+    (proviso-put proj :tags-lastgen (current-time))))
 
 (defun proviso-gentags--run (name lst)
   "Run a series of tags invocations for project NAME according to LST.

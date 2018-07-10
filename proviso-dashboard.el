@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-06-27 12:19:01 dan.harms>
+;; Modified Time-stamp: <2018-07-10 09:13:58 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -124,6 +124,8 @@ Optional ARG allows choosing a project."
   (with-current-buffer (get-buffer-create proviso-dashboard-buffer-name)
     (let ((inhibit-read-only t)
           (remote (proviso-get proj :remote-host))
+          (tags-dir (proviso-get proj :tags-dir))
+          (tags-gen (proviso-get proj :tags-lastgen))
           (bmk (proviso-get proj :bookmark-file))
           (clang (proviso-get proj :clang-format))
           )
@@ -132,10 +134,10 @@ Optional ARG allows choosing a project."
       (setq-local proviso-local-proj proj)
       (setq-local proviso-dashboard--local-map (current-local-map))
       (setq proviso-dashboard-markers nil)
-      (insert "     Project: ")
+      (insert "       Project: ")
       (insert (propertize (proviso-get proj :project-name)
                           'face 'highlight))
-      (insert "\n        Root: ")
+      (insert "\n          Root: ")
       (push (cons (point-marker)
                   (let ((map (make-sparse-keymap)))
                     (define-key map "d" #'proviso-dashboard-goto-root)
@@ -145,18 +147,28 @@ Optional ARG allows choosing a project."
                           'face '(bold)))
       (insert "\n")
       (when remote
-        (insert " Remote host: ")
+        (insert "   Remote host: ")
         (insert (propertize remote 'face '(bold)))
         (insert "\n"))
-      (insert "        Tags: ")
+      (insert "     Tags file: ")
       (push (cons (point-marker)
                   (let ((map (make-sparse-keymap)))
                     map))
             proviso-dashboard-markers)
-      (insert (propertize (proviso-get proj :tags-dir)
+      (insert (propertize tags-dir
                           'face '(bold)))
       (insert "\n")
-      (insert "   Bookmarks: ")
+      (insert "Tags generated: ")
+      (push (cons (point-marker)
+                  (let ((map (make-sparse-keymap)))
+                    map))
+            proviso-dashboard-markers)
+      (insert (propertize (if tags-gen
+                              (current-time-string tags-gen)
+                            "")
+                          'face '(bold)))
+      (insert "\n")
+      (insert "     Bookmarks: ")
       (push (cons (point-marker)
                   (let ((map (make-sparse-keymap)))
                     map))
@@ -166,7 +178,7 @@ Optional ARG allows choosing a project."
                               '(bold)
                             '(shadow))))
       (insert "\n")
-      (insert "Clang format: ")
+      (insert "  Clang format: ")
       (push (cons (point-marker)
                   (let ((map (make-sparse-keymap)))
                     map))
