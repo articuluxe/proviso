@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-07-06 08:34:37 dharms>
+;; Modified Time-stamp: <2018-07-10 08:39:08 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -40,11 +40,11 @@
 
 (defvar proviso-gentags-ctags-cpp-kinds "+l" "Default ctags cpp-kinds options.")
 
-(defun proviso-gentags-command (&optional rest)
-  "Generate the ctags command.
+(defun proviso-gentags-command (exe &optional rest)
+  "Generate the ctags command using executable EXE.
 REST, if not nil, is appended."
   (append
-   (list (proviso-gentags-exe)
+   (list exe
          "-Re"
          (concat "--c++-kinds=" proviso-gentags-ctags-cpp-kinds)
          "--file-scope=no"
@@ -95,9 +95,14 @@ local destination automatically."
              (destfile (concat intermediate-dir subname))
              (remotefile (concat dest-dir subname)) ;only used for remote
              (arglist (plist-get elt :ctags-opts))
-             (args (append (proviso-gentags-command arglist)
-                           (list "-f" destfile
-                                 (directory-file-name dir-abs))))
+             (args (append
+                    (proviso-gentags-command
+                     (let ((default-directory
+                             (if remote (concat remote dir-abs) dir-abs)))
+                       (proviso-gentags-exe))
+                     arglist)
+                    (list "-f" destfile
+                          (directory-file-name dir-abs))))
              (cmd (mapconcat 'identity args " ")))
         (push (append
                (list :cmd cmd

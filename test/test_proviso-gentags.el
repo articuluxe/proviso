@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-07-06 08:38:03 dharms>
+;; Modified Time-stamp: <2018-07-10 08:40:52 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project tags gentags
 
@@ -565,7 +565,7 @@
                    (should (string= (car arg-contents) str))
                    (pop arg-contents))))
               ((symbol-function 'proviso-gentags-command)
-               (lambda (args)
+               (lambda (_ args)
                  (list "totally new options"))))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
