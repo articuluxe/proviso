@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-07-10 08:59:32 dharms>
+;; Modified Time-stamp: <2018-07-12 08:24:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -31,12 +31,22 @@
 (require 'subr-x)
 (require 'find-file)
 
+(defun proviso-gentags-remote-executable-find (exe)
+  "Try to find the binary associated with EXE on a remote host.
+Note that `executable-find' operates on the local host."
+  (string-trim (shell-command-to-string
+                (format "which %s" exe))))
+
 ;; customization points
-(defun proviso-gentags-exe ()
-  "Return path to executable to use for TAGS generation."
-  (or (executable-find "exctags")
-      (executable-find "ctags")
-      "ctags"))
+(defun proviso-gentags-exe (remote)
+  "Return path to executable to use for TAGS generation.
+The remote settings, if any, are described by REMOTE."
+  (let ((func (if remote
+                  #'proviso-gentags-remote-executable-find
+                #'executable-find)))
+    (or (funcall func "exctags")
+        (funcall func "ctags")
+        "ctags")))
 
 (defvar proviso-gentags-ctags-cpp-kinds "+l" "Default ctags cpp-kinds options.")
 
@@ -97,9 +107,7 @@ local destination automatically."
              (arglist (plist-get elt :ctags-opts))
              (args (append
                     (proviso-gentags-command
-                     (let ((default-directory
-                             (if remote (concat remote dir-abs) dir-abs)))
-                       (proviso-gentags-exe))
+                     (proviso-gentags-exe remote)
                      arglist)
                     (list "-f" destfile
                           (directory-file-name dir-abs))))
