@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-07-12 08:24:56 dharms>
+;; Modified Time-stamp: <2018-07-24 08:38:53 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -30,6 +30,7 @@
 (require 'proviso-core)
 (require 'subr-x)
 (require 'find-file)
+(require 'async)
 
 (defun proviso-gentags-remote-executable-find (exe)
   "Try to find the binary associated with EXE on a remote host.
@@ -113,13 +114,13 @@ local destination automatically."
                           (directory-file-name dir-abs))))
              (cmd (mapconcat 'identity args " ")))
         (push (append
-               (list :cmd cmd
+               (list :cmd (list cmd)
                      :dir (if remote (concat remote dir-abs) dir-abs)
                      :copy-remote copy-remote
                      ) (when copy-remote
-                         (list
-                          :remote-src (concat remote destfile)
-                          :remote-dst remotefile)))
+                     (list
+                      :remote-src (concat remote destfile)
+                      :remote-dst remotefile)))
               lst)))
     (proviso-gentags--run (proviso-get proj :project-name)
                           (nreverse lst))
@@ -150,7 +151,7 @@ LST is a list of plists, each of which contains necessary parameters."
   "Execute a tags invocation according to PLIST.
 BUFFER is an output buffer."
   (let* ((default-directory (plist-get plist :dir))
-         (cmd (plist-get plist :cmd))
+         (cmd (car (plist-get plist :cmd)))
          ;; /bin/sh -c "<script>" requires its argument (the script) be
          ;; quoted by strings; and `start-file-process' expects
          ;; a string of all arguments to be passed, starting with the executable.
@@ -178,16 +179,22 @@ BUFFER is an output buffer."
         (if-let ((entry (assoc proc proviso-gentags--procs))
                  (start (current-time)))
             (progn
+              (setq proviso-gentags--procs (delete entry proviso-gentags--procs))
               (if-let ((copy (nth 0 entry))
                        (src (nth 1 entry))
                        (dst (nth 2 entry)))
-                  (progn
-                    (copy-file src dst 'overwrite)
-                    (goto-char (point-max))
-                    (insert (format
-                             "\n Copied %s to %s (remote transfer took %.3f sec.)"
-                             src dst (float-time (time-subtract (current-time) start))))))
-              (setq proviso-gentags--procs (delete entry proviso-gentags--procs))
+                  (async-start
+                   `(lambda ()
+                      (setq inhibit-message t)
+                      (copy-file ,src ,dst 'overwrite)
+                      (current-time))
+                   `(lambda (result)
+                      (with-current-buffer ,buffer
+                        (goto-char (point-max))
+                        (insert (format
+                                 "\n  cp %s %s (it took %.3f sec.)"
+                                 ,src ,dst
+                                 (float-time (time-subtract result ,start))))))))
               (when (seq-empty-p proviso-gentags--procs)
                 (proviso-gentags--done buffer))))))))
 
