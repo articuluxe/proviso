@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-07-24 08:38:53 dharms>
+;; Modified Time-stamp: <2018-07-27 08:27:06 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -62,6 +62,14 @@ REST, if not nil, is appended."
          "--tag-relative=no")
    (if (listp rest) rest (list rest))))
 
+(defvar proviso-gentags-max-jobs-local 10
+  "Maximum allowed concurrently spawned processes for local projects.")
+(defvar proviso-gentags-max-jobs-remote 6
+  "Maximum allowed concurrently spawned processes for remote projects.")
+(defvar-local proviso-gentags--max-jobs proviso-gentags-max-jobs-local
+  "Maximum number of spawned processes allowed at once.")
+(defvar-local proviso-gentags--jobs nil
+  "List of commands that will be spawned to generate tags.")
 (defvar-local proviso-gentags--procs nil
   "Spawned processes to generate tags.")
 (defvar-local proviso-gentags--start-time nil
@@ -126,14 +134,19 @@ local destination automatically."
                           (nreverse lst))
     (proviso-put proj :tags-lastgen (current-time))))
 
-(defun proviso-gentags--run (name lst)
+(defun proviso-gentags--run (name lst &optional remote)
   "Run a series of tags invocations for project NAME according to LST.
-LST is a list of plists, each of which contains necessary parameters."
+LST is a list of plists, each of which contains necessary parameters.
+REMOTE is non-nil if the project is on a remote host."
   (let ((buffer (get-buffer-create (format " *gentags-%s*" name)))
         (start-time (current-time)))
     (pop-to-buffer buffer)
     (with-current-buffer buffer
       (setq-local window-point-insertion-type t)
+      (setq proviso-gentags--jobs lst)
+      (setq proviso-gentags--max-jobs
+            (if remote proviso-gentags-max-jobs-remote
+              proviso-gentags-max-jobs-local))
       (let ((map (make-sparse-keymap)))
         (define-key map "q" #'quit-window)
         (set-keymap-parent map (current-local-map))
@@ -142,10 +155,23 @@ LST is a list of plists, each of which contains necessary parameters."
       (insert (format "TAGS generation started at %s\n\n"
                       (current-time-string start-time)))
       (setq proviso-gentags--start-time start-time))
-    (if (seq-empty-p lst)
-        (proviso-gentags--done buffer)
-      (dolist (entry lst)
-        (proviso-gentags--spawn entry buffer)))))
+    (proviso-gentags--spawn-jobs buffer)))
+
+(defun proviso-gentags--spawn-jobs (buffer)
+  "Spawn as many jobs as appropriate, with buffer BUFFER."
+  (with-current-buffer buffer
+    (let ((pnd (length proviso-gentags--jobs))
+          (wrk (length proviso-gentags--procs)))
+      (cond ((eq pnd 0)
+             (if (seq-empty-p proviso-gentags--procs)
+                 (proviso-gentags--done buffer)))
+            ((>= wrk proviso-gentags--max-jobs)
+             nil)
+            (t (dotimes (i (- proviso-gentags--max-jobs wrk) t)
+                 (unless (seq-empty-p proviso-gentags--jobs)
+                   (proviso-gentags--spawn
+                    (pop proviso-gentags--jobs)
+                    buffer))))))))
 
 (defun proviso-gentags--spawn (plist buffer)
   "Execute a tags invocation according to PLIST.
@@ -195,8 +221,7 @@ BUFFER is an output buffer."
                                  "\n  cp %s %s (it took %.3f sec.)"
                                  ,src ,dst
                                  (float-time (time-subtract result ,start))))))))
-              (when (seq-empty-p proviso-gentags--procs)
-                (proviso-gentags--done buffer))))))))
+              (proviso-gentags--spawn-jobs buffer)))))))
 
 (defun proviso-gentags--done (buffer)
   "Called when tags invocation has completed for buffer BUFFER."
