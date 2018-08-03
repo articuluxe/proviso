@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-07-27 08:27:06 dharms>
+;; Modified Time-stamp: <2018-08-03 08:03:05 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -206,13 +206,13 @@ BUFFER is an output buffer."
                  (start (current-time)))
             (progn
               (setq proviso-gentags--procs (delete entry proviso-gentags--procs))
-              (if-let ((copy (nth 0 entry))
-                       (src (nth 1 entry))
-                       (dst (nth 2 entry)))
+              (if-let ((copy (nth 1 entry))
+                       (src (nth 2 entry))
+                       (dst (nth 3 entry)))
                   (async-start
                    `(lambda ()
                       (setq inhibit-message t)
-                      (copy-file ,src ,dst 'overwrite)
+                      (copy-file ,src ,dst 'overwrite t t t)
                       (current-time))
                    `(lambda (result)
                       (with-current-buffer ,buffer
