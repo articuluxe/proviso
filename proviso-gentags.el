@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-03 08:03:05 dharms>
+;; Modified Time-stamp: <2018-08-03 10:51:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -64,7 +64,7 @@ REST, if not nil, is appended."
 
 (defvar proviso-gentags-max-jobs-local 10
   "Maximum allowed concurrently spawned processes for local projects.")
-(defvar proviso-gentags-max-jobs-remote 6
+(defvar proviso-gentags-max-jobs-remote 4
   "Maximum allowed concurrently spawned processes for remote projects.")
 (defvar-local proviso-gentags--max-jobs proviso-gentags-max-jobs-local
   "Maximum number of spawned processes allowed at once.")
@@ -131,7 +131,7 @@ local destination automatically."
                       :remote-dst remotefile)))
               lst)))
     (proviso-gentags--run (proviso-get proj :project-name)
-                          (nreverse lst))
+                          (nreverse lst) remote)
     (proviso-put proj :tags-lastgen (current-time))))
 
 (defun proviso-gentags--run (name lst &optional remote)
@@ -220,7 +220,8 @@ BUFFER is an output buffer."
                         (insert (format
                                  "\n  cp %s %s (it took %.3f sec.)"
                                  ,src ,dst
-                                 (float-time (time-subtract result ,start))))))))
+                                 (float-time (time-subtract result
+                                                            (quote ,start)))))))))
               (proviso-gentags--spawn-jobs buffer)))))))
 
 (defun proviso-gentags--done (buffer)
