@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-07-10 09:13:58 dharms>
+;; Modified Time-stamp: <2018-07-27 08:38:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -90,6 +90,17 @@ This will be formatted with the project name.")
       (goto-char (marker-position (car prev)))
       (proviso-dashboard-on-line))))
 
+(defun proviso-dashboard-revert-buffer ()
+  "Reverts (recreates) the dashboard buffer."
+  (interactive)
+  (proviso-dashboard-create (proviso-current-project)))
+
+(defvar proviso-dashboard-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "g" #'proviso-dashboard-revert-buffer)
+  map)
+  "Keymap for `proviso-dashboard-mode'.")
+
 (define-derived-mode proviso-dashboard-mode special-mode
   "Dashboard"
   "Major mode for providing an overview of a proviso project.
@@ -97,6 +108,7 @@ This will be formatted with the project name.")
 "
   (setq buffer-read-only t)
   (setq truncate-lines t)
+  (use-local-map proviso-dashboard-mode-map)
   )
 
 ;;;###autoload
@@ -119,8 +131,9 @@ Optional ARG allows choosing a project."
 (defun proviso-dashboard-create (proj)
   "Create a dashboard for project PROJ."
   (interactive)
-  (setq-local proviso-dashboard-buffer-name
-              (format proviso-dashboard-buffer-name-prefix proj))
+  (setq proviso-dashboard-buffer-name
+        (format proviso-dashboard-buffer-name-prefix proj))
+  (setq proviso-local-proj proj)
   (with-current-buffer (get-buffer-create proviso-dashboard-buffer-name)
     (let ((inhibit-read-only t)
           (remote (proviso-get proj :remote-host))
@@ -161,6 +174,7 @@ Optional ARG allows choosing a project."
       (insert "Tags generated: ")
       (push (cons (point-marker)
                   (let ((map (make-sparse-keymap)))
+                    (define-key map "t" #'proviso-gentags-generate-tags)
                     map))
             proviso-dashboard-markers)
       (insert (propertize (if tags-gen
@@ -181,12 +195,17 @@ Optional ARG allows choosing a project."
       (insert "  Clang format: ")
       (push (cons (point-marker)
                   (let ((map (make-sparse-keymap)))
+                    (define-key map "t" #'proviso-clang-format-toggle-active)
+                    (define-key map "f" #'proviso-clang-format-buffer-or-region)
                     map))
             proviso-dashboard-markers)
       (insert (propertize clang 'face
                           (if (and clang (file-exists-p clang))
                               '(bold)
                             '(shadow))))
+      (insert " [" (if proviso-clang-format-active-p
+                       (propertize "active" 'face '(bold))
+                     (propertize "inactive" 'face '(shadow))) "]")
       (insert "\n")
       (setq proviso-dashboard-markers
             (sort proviso-dashboard-markers (lambda (lhs rhs)
