@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-03 11:59:42 dharms>
+;; Modified Time-stamp: <2018-08-13 13:37:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -32,18 +32,12 @@
 (require 'find-file)
 (require 'async)
 
-(defun proviso-gentags-remote-executable-find (exe)
-  "Try to find the binary associated with EXE on a remote host.
-Note that `executable-find' operates on the local host."
-  (string-trim (shell-command-to-string
-                (format "which %s" exe))))
-
 ;; customization points
 (defun proviso-gentags-exe (remote)
   "Return path to executable to use for TAGS generation.
 The remote settings, if any, are described by REMOTE."
   (let ((func (if remote
-                  #'proviso-gentags-remote-executable-find
+                  #'proviso-core-remote-executable-find
                 #'executable-find)))
     (or (funcall func "exctags")
         (funcall func "ctags")

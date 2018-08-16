@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-07-10 22:44:23 dharms>
+;; Modified Time-stamp: <2018-08-13 13:37:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -365,6 +365,12 @@ This is useful in regexp-matching.  The project's root-dir is
 probably a relative path, possibly including a `~' that
 represents the user's home directory."
   (replace-regexp-in-string "~/" "" (proviso-get proj :root-dir)))
+
+(defun proviso-core-remote-executable-find (exe)
+  "Try to find the binary associated with EXE on a remote host.
+Note that `executable-find' operates on the local host."
+  (string-trim (shell-command-to-string
+                (format "which %s" exe))))
 
 (defun proviso-eval-string (str)
   "Evaluate the contents of STR."
