@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, August 13, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-22 09:04:15 dharms>
+;; Modified Time-stamp: <2018-08-22 09:24:02 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -30,6 +30,7 @@
 (require 'proviso-core)
 (require 'dired-aux)
 (require 'seq)
+(require 'async)
 
 (defvar proviso-transfer-rules-alist
   '(
@@ -73,6 +74,30 @@ METHOD is a plist, see each element of `proviso-transfer-rules-alist'."
                              src dest element))
                           rules)))
     method))
+
+(defun proviso-transfer-file-async (src dest &optional buffer)
+  "Transfer SRC to DEST asynchronously.
+If a non-nil BUFFER is supplied, insert message there."
+  (interactive "fSource file: \nGDestination: ")
+  (let ((start (current-time))
+        msg)
+    (async-start
+     `(lambda ()
+        (setq inhibit-message t)
+        ,(async-inject-variables "load-path")
+        (require 'proviso-transfer)
+        (proviso-transfer-file ,src ,dest))
+     `(lambda (_)
+        (setq msg
+              (format "Transferred %s to %s in %.3f sec."
+                      ,src ,dest
+                      (float-time
+                       (time-subtract
+                        (current-time) (quote ,start)))))
+        (if ,buffer
+            (with-current-buffer ,buffer
+              (insert msg))
+          (message "%s" msg))))))
 
 (defun proviso-transfer-file (src dest)
   "Transfer SRC to DEST."
