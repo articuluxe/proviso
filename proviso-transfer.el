@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, August 13, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-21 17:29:40 dharms>
+;; Modified Time-stamp: <2018-08-22 09:04:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -47,6 +47,9 @@
                    :uncompress-cmd "gunzip -c9 %i > %o")
     ))
 
+(defvar proviso-transfer-debug t
+  "Controls the output of debugging info for `proviso-transfer'.")
+
 (defun proviso-transfer-find-executable (path exe)
   "Search for executable EXE given directory PATH."
   (let ((default-directory path)
@@ -74,7 +77,6 @@ METHOD is a plist, see each element of `proviso-transfer-rules-alist'."
 (defun proviso-transfer-file (src dest)
   "Transfer SRC to DEST."
   (interactive "fSource file: \nGDestination: ")
-  ;; (message "Src %s Dest %s" src dest)
   (let* ((src-path (file-name-directory src))
          (src-file (file-name-nondirectory src))
          (dest-path (file-name-directory dest))
@@ -86,10 +88,11 @@ METHOD is a plist, see each element of `proviso-transfer-rules-alist'."
          )
     (when (string-empty-p dest-file)
       (setq dest-file src-file))
-    ;; (message "src-path %s src-file %s dst-path %s dst-file %s"
-    ;;          src-path src-file dest-path dest-file)
-    ;; (message "exe %s cmd %s transform %s" (plist-get method :compress-exe)
-    ;;          (plist-get method :compress-cmd) (plist-get method :transform))
+    (when proviso-transfer-debug
+      (message "Transferring %s to %s via %s"
+               (expand-file-name src-file src-path)
+               (expand-file-name dest-file dest-path)
+               (if method (plist-get method :compress-exe) "standard copy")))
     (if (and compress method)
         (progn
           (setq src-file (proviso-transfer-compress-file src-path src-file dest-file method))
@@ -104,24 +107,28 @@ METHOD is a plist, see each element of `proviso-transfer-rules-alist'."
 (defun proviso-transfer-compress-file (path src dst method)
   "At PATH, compress SRC into DST using METHOD.
 METHOD's format is a plist according to `proviso-transfer-rules-alist'."
-  (let ((default-directory path)
-        (output (funcall (plist-get method :transform) dst)))
-    ;; (message "Compressing %s to %s" src output)
-    (dired-shell-command
-     (format-spec (plist-get method :compress-cmd)
-                  `((?\i . ,src)
-                    (?\o . ,output))))
+  (let* ((default-directory path)
+         (output (funcall (plist-get method :transform) dst))
+         (cmd (format-spec (plist-get method :compress-cmd)
+                           `((?\i . ,src)
+                             (?\o . ,output)))))
+    (when proviso-transfer-debug
+      (message "proviso-transfer compressing %s to %s: %s"
+               src output cmd))
+    (dired-shell-command cmd)
     output))
 
 (defun proviso-transfer-uncompress-file (path src dst method)
   "At PATH, uncompress SRC to DST using METHOD.
 METHOD's format is a plist according to `proviso-transfer-rules-alist'."
-  (let ((default-directory path))
-    ;; (message "Uncompressing %s to %s" src dst)
-    (dired-shell-command
-     (format-spec (plist-get method :uncompress-cmd)
-                  `((?\i . ,src)
-                    (?\o . ,dst))))
+  (let ((default-directory path)
+        (cmd (format-spec (plist-get method :uncompress-cmd)
+                          `((?\i . ,src)
+                            (?\o . ,dst)))))
+    (when proviso-transfer-debug
+      (message "proviso-transfer uncompressing %s to %s: %s"
+               src dst cmd))
+    (dired-shell-command cmd)
     (delete-file src)))
 
 (provide 'proviso-transfer)
