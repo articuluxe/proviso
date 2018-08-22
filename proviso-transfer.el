@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, August 13, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-22 09:24:02 dharms>
+;; Modified Time-stamp: <2018-08-22 09:40:13 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -59,26 +59,33 @@
                 #'executable-find)))
     (funcall func exe)))
 
-(defun proviso-transfer--test-compression-method (src-path dst-path method)
+(defun proviso-transfer--test-compression-method (src-path dst-path method
+                                                           &optional force)
   "Test SRC-PATH and DST-PATH for compression METHOD.
-METHOD is a plist, see each element of `proviso-transfer-rules-alist'."
+METHOD is a plist, see each element of `proviso-transfer-rules-alist'.
+Optional FORCE specifies a compression method."
   (let ((compress (plist-get method :compress-exe))
         (uncompress (plist-get method :uncompress-exe)))
-    (and (proviso-transfer-find-executable src-path compress)
-         (proviso-transfer-find-executable dst-path uncompress))))
+    (or (and force
+             (string-equal force compress))
+        (and (proviso-transfer-find-executable src-path compress)
+             (proviso-transfer-find-executable dst-path uncompress)))))
 
-(defun proviso-transfer--find-compression-method (src dest rules)
-  "Return a valid compression method among RULES to use for SRC and DEST."
+(defun proviso-transfer--find-compression-method (src dest rules
+                                                      &optional force)
+  "Return a valid compression method among RULES to use for SRC and DEST.
+Optional FORCE specifies a compression method."
   (let ((method (seq-find (lambda (element)
                             (proviso-transfer--test-compression-method
-                             src dest element))
+                             src dest element force))
                           rules)))
     method))
 
-(defun proviso-transfer-file-async (src dest &optional buffer)
+(defun proviso-transfer-file-async (src dest &optional force buffer)
   "Transfer SRC to DEST asynchronously.
+Optional FORCE specifies a compression method.
 If a non-nil BUFFER is supplied, insert message there."
-  (interactive "fSource file: \nGDestination: ")
+  (interactive "fSource file: \nGDestination: \nsMethod: ")
   (let ((start (current-time))
         msg)
     (async-start
@@ -86,7 +93,7 @@ If a non-nil BUFFER is supplied, insert message there."
         (setq inhibit-message t)
         ,(async-inject-variables "load-path")
         (require 'proviso-transfer)
-        (proviso-transfer-file ,src ,dest))
+        (proviso-transfer-file ,src ,dest ,force))
      `(lambda (_)
         (setq msg
               (format "Transferred %s to %s in %.3f sec."
@@ -99,17 +106,18 @@ If a non-nil BUFFER is supplied, insert message there."
               (insert msg))
           (message "%s" msg))))))
 
-(defun proviso-transfer-file (src dest)
-  "Transfer SRC to DEST."
-  (interactive "fSource file: \nGDestination: ")
+(defun proviso-transfer-file (src dest &optional force)
+  "Transfer SRC to DEST.
+Optional FORCE forces a compression method."
+  (interactive "fSource file: \nGDestination: \nsMethod: ")
   (let* ((src-path (file-name-directory src))
          (src-file (file-name-nondirectory src))
          (dest-path (file-name-directory dest))
          (dest-file (file-name-nondirectory dest))
-                                        ;(compress (or (file-remote-p src) (file-remote-p dest)))
+         ;; (compress (or (file-remote-p src) (file-remote-p dest)))
          (compress t)
          (method (proviso-transfer--find-compression-method
-                  src-path dest-path proviso-transfer-rules-alist))
+                  src-path dest-path proviso-transfer-rules-alist force))
          )
     (when (string-empty-p dest-file)
       (setq dest-file src-file))
