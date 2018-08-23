@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, August 13, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-23 09:32:12 dan.harms>
+;; Modified Time-stamp: <2018-08-23 09:46:11 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -51,12 +51,14 @@
 (defvar proviso-transfer-debug t
   "Controls the output of debugging info for `proviso-transfer'.")
 
-(defun proviso-transfer-find-executable (path exe)
-  "Search for executable EXE given directory PATH."
-  (let ((default-directory path)
-        (func (if (file-remote-p path)
-                  #'proviso-core-remote-executable-find
-                #'executable-find)))
+(defun proviso-transfer-find-executable (exe &optional path)
+  "Search for executable EXE given directory PATH.
+If PATH is not supplied, `default-directory' is used."
+  (let* ((default-directory (or path default-directory))
+         (path default-directory)
+         (func (if (file-remote-p path)
+                   #'proviso-core-remote-executable-find
+                 #'executable-find)))
     (funcall func exe)))
 
 (defun proviso-transfer--test-compression-method (src-path dst-path method
@@ -66,8 +68,8 @@ METHOD is a plist, see each element of `proviso-transfer-rules-alist'.
 Optional FORCE specifies a compression method."
   (let ((compress (plist-get method :compress-exe))
         (uncompress (plist-get method :uncompress-exe)))
-    (and (proviso-transfer-find-executable src-path compress)
-         (proviso-transfer-find-executable dst-path uncompress)
+    (and (proviso-transfer-find-executable compress src-path)
+         (proviso-transfer-find-executable uncompress dst-path)
          (or (not force) (string-equal force compress)))))
 
 (defun proviso-transfer--find-compression-method (src dest rules
