@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, August 13, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-23 09:46:11 dan.harms>
+;; Modified Time-stamp: <2018-08-24 06:53:47 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -112,6 +112,12 @@ If a non-nil BUFFER is supplied, insert message there."
               (insert msg))
           (message "%s" msg))))))
 
+(defun proviso-transfer--should-compress (src dest)
+  "Return non-nil if SRC should be compressed before copying to DEST."
+  (or
+   t
+   (file-remote-p src) (file-remote-p dest)))
+
 (defun proviso-transfer-file (src dest &optional force)
   "Transfer SRC to DEST.
 Optional FORCE forces a compression method."
@@ -120,8 +126,7 @@ Optional FORCE forces a compression method."
          (src-file (file-name-nondirectory src))
          (dest-path (file-name-directory dest))
          (dest-file (file-name-nondirectory dest))
-         ;; (compress (or (file-remote-p src) (file-remote-p dest)))
-         (compress t)
+         (compress (proviso-transfer--should-compress src dest))
          (method (proviso-transfer--find-compression-method
                   src-path dest-path proviso-transfer-rules-alist force))
          )
