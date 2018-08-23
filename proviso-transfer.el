@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, August 13, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-22 09:40:13 dharms>
+;; Modified Time-stamp: <2018-08-23 09:32:12 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -66,10 +66,9 @@ METHOD is a plist, see each element of `proviso-transfer-rules-alist'.
 Optional FORCE specifies a compression method."
   (let ((compress (plist-get method :compress-exe))
         (uncompress (plist-get method :uncompress-exe)))
-    (or (and force
-             (string-equal force compress))
-        (and (proviso-transfer-find-executable src-path compress)
-             (proviso-transfer-find-executable dst-path uncompress)))))
+    (and (proviso-transfer-find-executable src-path compress)
+         (proviso-transfer-find-executable dst-path uncompress)
+         (or (not force) (string-equal force compress)))))
 
 (defun proviso-transfer--find-compression-method (src dest rules
                                                       &optional force)
@@ -79,6 +78,11 @@ Optional FORCE specifies a compression method."
                             (proviso-transfer--test-compression-method
                              src dest element force))
                           rules)))
+    (when (and force (not method))      ;didn't find the override
+      (setq method (seq-find (lambda (element)
+                               (proviso-transfer--test-compression-method
+                                src dest element))
+                             rules)))
     method))
 
 (defun proviso-transfer-file-async (src dest &optional force buffer)
