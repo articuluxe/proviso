@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, August 13, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-24 06:53:47 dharms>
+;; Modified Time-stamp: <2018-08-24 06:55:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -156,9 +156,7 @@ METHOD's format is a plist according to `proviso-transfer-rules-alist'."
          (cmd (format-spec (plist-get method :compress-cmd)
                            `((?\i . ,src)
                              (?\o . ,output)))))
-    (when proviso-transfer-debug
-      (message "proviso-transfer compressing %s to %s: %s"
-               src output cmd))
+    (when proviso-transfer-debug (message "proviso-transfer: %s" cmd))
     (dired-shell-command cmd)
     output))
 
@@ -169,9 +167,7 @@ METHOD's format is a plist according to `proviso-transfer-rules-alist'."
         (cmd (format-spec (plist-get method :uncompress-cmd)
                           `((?\i . ,src)
                             (?\o . ,dst)))))
-    (when proviso-transfer-debug
-      (message "proviso-transfer uncompressing %s to %s: %s"
-               src dst cmd))
+    (when proviso-transfer-debug (message "proviso-transfer: %s" cmd))
     (dired-shell-command cmd)
     (delete-file src)))
 
