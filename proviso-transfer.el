@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, August 13, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-24 06:55:15 dharms>
+;; Modified Time-stamp: <2018-08-24 10:36:00 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -99,7 +99,7 @@ If a non-nil BUFFER is supplied, insert message there."
         (setq inhibit-message t)
         ,(async-inject-variables "load-path")
         (require 'proviso-transfer)
-        (proviso-transfer-file ,src ,dest ,force))
+        (proviso-transfer-file ,src ,dest ,force t))
      `(lambda (_)
         (setq msg
               (format "Transferred %s to %s in %.3f sec."
@@ -118,9 +118,10 @@ If a non-nil BUFFER is supplied, insert message there."
    t
    (file-remote-p src) (file-remote-p dest)))
 
-(defun proviso-transfer-file (src dest &optional force)
+(defun proviso-transfer-file (src dest &optional force quiet)
   "Transfer SRC to DEST.
-Optional FORCE forces a compression method."
+Optional FORCE forces a compression method.
+Optional QUIET will inhibit debugging output."
   (interactive "fSource file: \nGDestination: \nsMethod: ")
   (let* ((src-path (file-name-directory src))
          (src-file (file-name-nondirectory src))
@@ -129,14 +130,10 @@ Optional FORCE forces a compression method."
          (compress (proviso-transfer--should-compress src dest))
          (method (proviso-transfer--find-compression-method
                   src-path dest-path proviso-transfer-rules-alist force))
+         (start (current-time))
          )
     (when (string-empty-p dest-file)
       (setq dest-file src-file))
-    (when proviso-transfer-debug
-      (message "Transferring %s to %s via %s"
-               (expand-file-name src-file src-path)
-               (expand-file-name dest-file dest-path)
-               (if method (plist-get method :compress-exe) "standard copy")))
     (if (and compress method)
         (progn
           (setq src-file (proviso-transfer-compress-file src-path src-file dest-file method))
@@ -146,6 +143,13 @@ Optional FORCE forces a compression method."
            t)
           (proviso-transfer-uncompress-file dest-path src-file dest-file method))
       (copy-file src dest t t t t))
+    (and proviso-transfer-debug
+         (not quiet)
+         (message "Transferred %s to %s via %s in %.3f sec."
+                  (expand-file-name src-file src-path)
+                  (expand-file-name dest-file dest-path)
+                  (if method (plist-get method :compress-exe) "standard copy")
+                  (float-time (time-subtract (current-time) start))))
     ))
 
 (defun proviso-transfer-compress-file (path src dst method)
@@ -155,9 +159,11 @@ METHOD's format is a plist according to `proviso-transfer-rules-alist'."
          (output (funcall (plist-get method :transform) dst))
          (cmd (format-spec (plist-get method :compress-cmd)
                            `((?\i . ,src)
-                             (?\o . ,output)))))
-    (when proviso-transfer-debug (message "proviso-transfer: %s" cmd))
-    (dired-shell-command cmd)
+                             (?\o . ,output))))
+         return)
+    (setq return (shell-command cmd))
+    (when proviso-transfer-debug (message "proviso-transfer: %s (result:%d)"
+                                          cmd return))
     output))
 
 (defun proviso-transfer-uncompress-file (path src dst method)
@@ -166,9 +172,11 @@ METHOD's format is a plist according to `proviso-transfer-rules-alist'."
   (let ((default-directory path)
         (cmd (format-spec (plist-get method :uncompress-cmd)
                           `((?\i . ,src)
-                            (?\o . ,dst)))))
-    (when proviso-transfer-debug (message "proviso-transfer: %s" cmd))
-    (dired-shell-command cmd)
+                            (?\o . ,dst))))
+        return)
+    (setq return (shell-command cmd))
+    (when proviso-transfer-debug (message "proviso-transfer: %s (result:%d)"
+                                          cmd return))
     (delete-file src)))
 
 (provide 'proviso-transfer)
