@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-13 13:37:56 dharms>
+;; Modified Time-stamp: <2018-08-29 13:27:41 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -206,7 +206,9 @@ BUFFER is an output buffer."
                   (async-start
                    `(lambda ()
                       (setq inhibit-message t)
-                      (copy-file ,src ,dst 'overwrite t t t)
+                      ,(async-inject-variables "load-path")
+                      (require 'proviso-transfer)
+                      (proviso-transfer-file ,src ,dst)
                       (current-time))
                    `(lambda (result)
                       (with-current-buffer ,buffer
@@ -215,8 +217,9 @@ BUFFER is an output buffer."
                                  "\n  cp %s %s (it took %.3f sec.)"
                                  ,src ,dst
                                  (float-time (time-subtract result
-                                                            (quote ,start)))))))))
-              (proviso-gentags--spawn-jobs buffer)))))))
+                                                            (quote ,start))))))
+                      (proviso-gentags--spawn-jobs ,buffer)))
+                (proviso-gentags--spawn-jobs buffer))))))))
 
 (defun proviso-gentags--done (buffer)
   "Called when tags invocation has completed for buffer BUFFER."
