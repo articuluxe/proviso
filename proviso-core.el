@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-27 10:20:56 dan.harms>
+;; Modified Time-stamp: <2018-09-04 12:39:39 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -355,9 +355,10 @@ DIR may be remote."
                       rem-method rem-user
                       (if (vectorp rem)
                           (list rem-host "" rem-hop)
-                        (ignore-errors
-                          (list rem-domain rem-host
-                                rem-port "" rem-hop))))))))
+                        (condition-case nil
+                            (list rem-domain rem-host
+                                  rem-port "" rem-hop)
+                          (error (list "" rem-host rem-port "" rem-hop)))))))))
 
 (defun proviso--compute-stem (proj)
   "Compute a project PROJ's stem.
