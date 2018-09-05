@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, August 13, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-24 10:36:00 dan.harms>
+;; Modified Time-stamp: <2018-09-05 06:57:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -115,7 +115,7 @@ If a non-nil BUFFER is supplied, insert message there."
 (defun proviso-transfer--should-compress (src dest)
   "Return non-nil if SRC should be compressed before copying to DEST."
   (or
-   t
+   ;; TODO: check file size
    (file-remote-p src) (file-remote-p dest)))
 
 (defun proviso-transfer-file (src dest &optional force quiet)
@@ -148,7 +148,9 @@ Optional QUIET will inhibit debugging output."
          (message "Transferred %s to %s via %s in %.3f sec."
                   (expand-file-name src-file src-path)
                   (expand-file-name dest-file dest-path)
-                  (if method (plist-get method :compress-exe) "standard copy")
+                  (if (and method compress)
+                      (plist-get method :compress-exe)
+                    "standard copy")
                   (float-time (time-subtract (current-time) start))))
     ))
 
