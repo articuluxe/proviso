@@ -108,11 +108,12 @@
     (insert (funcall create))
     (goto-char pos)))
 
-(defun proviso-gui-add-to-buffer (buffer lst)
+(defun proviso-gui-add-to-buffer (buffer lst &optional maxwidth)
   "Add GUI elements TO BUFFER based on LST.
-Returns a sorted list of markers in the buffer."
+Returns a sorted list of markers in the buffer.
+MAXWIDTH allows specifying the minimum length of the headings."
   (let ((inhibit-read-only t)
-        (max-heading 0)
+        (max-heading (or maxwidth 0))
         pred content)
     (with-current-buffer buffer
       (setq lst (seq-remove (lambda (elt)
