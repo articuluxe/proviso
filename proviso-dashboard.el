@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-07-27 08:38:03 dharms>
+;; Modified Time-stamp: <2018-09-12 09:10:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -28,20 +28,7 @@
 
 ;;; Code:
 (require 'proviso-core)
-
-(defvar-local proviso-dashboard-markers nil
-  "List of markers in dashboard buffer to navigate to.")
-
-(defvar-local proviso-dashboard--local-map nil
-  "The local map in use in `proviso-dashboard-mode'.")
-
-(defvar proviso-dashboard-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map "n" #'proviso-dashboard-move-next-marker)
-    (define-key map "p" #'proviso-dashboard-move-prev-marker)
-    (define-key map "t" #'ignore)
-    (define-key map "q" #'delete-window)
-    map))
+(require 'proviso-gui)
 
 (defvar-local proviso-dashboard-buffer-name nil
   "Buffer name for `proviso-dashboard' mode.")
@@ -49,46 +36,6 @@
 (defconst proviso-dashboard-buffer-name-prefix "*%s-project*"
   "Buffer prefix string for `proviso-dashboard'.
 This will be formatted with the project name.")
-
-(defun proviso-dashboard--find-current-cell ()
-  "Return the element of `proviso-dashboard-markers' near point, if any."
-  (let ((beg (line-beginning-position))
-        (end (line-end-position))
-        pos)
-    (seq-find (lambda (elt)
-                (setq pos (marker-position (car elt)))
-                (and (>= pos beg)
-                     (<= pos end)))
-              proviso-dashboard-markers)))
-
-(defun proviso-dashboard-on-line ()
-  "Examine the current line, set the current keymap if necessary."
-  (let ((cell (proviso-dashboard--find-current-cell)))
-    (when cell
-      (set-keymap-parent (cdr cell) proviso-dashboard--local-map)
-      (use-local-map (cdr cell)))))
-
-(defun proviso-dashboard-move-next-marker ()
-  "Move to the next marker position in the dashboard buffer."
-  (interactive)
-  (let* ((pt (point))
-         (next (seq-find (lambda (cell)
-                           (> (marker-position (car cell)) pt))
-                         proviso-dashboard-markers)))
-    (when next
-      (goto-char (marker-position (car next)))
-      (proviso-dashboard-on-line))))
-
-(defun proviso-dashboard-move-prev-marker ()
-  "Move to the previous marker position in the dashboard buffer."
-  (interactive)
-  (let* ((pt (point))
-         (prev (seq-find (lambda (cell)
-                           (< (marker-position (car cell)) pt))
-                         (reverse proviso-dashboard-markers))))
-    (when prev
-      (goto-char (marker-position (car prev)))
-      (proviso-dashboard-on-line))))
 
 (defun proviso-dashboard-revert-buffer ()
   "Reverts (recreates) the dashboard buffer."
@@ -98,7 +45,7 @@ This will be formatted with the project name.")
 (defvar proviso-dashboard-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "g" #'proviso-dashboard-revert-buffer)
-  map)
+    map)
   "Keymap for `proviso-dashboard-mode'.")
 
 (define-derived-mode proviso-dashboard-mode special-mode
@@ -108,7 +55,6 @@ This will be formatted with the project name.")
 "
   (setq buffer-read-only t)
   (setq truncate-lines t)
-  (use-local-map proviso-dashboard-mode-map)
   )
 
 ;;;###autoload
@@ -133,102 +79,73 @@ Optional ARG allows choosing a project."
   (interactive)
   (setq proviso-dashboard-buffer-name
         (format proviso-dashboard-buffer-name-prefix proj))
-  (setq proviso-local-proj proj)
-  (with-current-buffer (get-buffer-create proviso-dashboard-buffer-name)
-    (let ((inhibit-read-only t)
-          (remote (proviso-get proj :remote-host))
-          (tags-dir (proviso-get proj :tags-dir))
-          (tags-gen (proviso-get proj :tags-lastgen))
-          (bmk (proviso-get proj :bookmark-file))
-          (clang (proviso-get proj :clang-format))
-          )
-      (erase-buffer)
-      (proviso-dashboard-mode)
+  (let ((buffer (get-buffer-create proviso-dashboard-buffer-name)))
+    (proviso-gui-init-buffer buffer proviso-dashboard-mode-map)
+    (with-current-buffer buffer
       (setq-local proviso-local-proj proj)
-      (setq-local proviso-dashboard--local-map (current-local-map))
-      (setq proviso-dashboard-markers nil)
-      (insert "       Project: ")
-      (insert (propertize (proviso-get proj :project-name)
-                          'face 'highlight))
-      (insert "\n          Root: ")
-      (push (cons (point-marker)
-                  (let ((map (make-sparse-keymap)))
-                    (define-key map "d" #'proviso-dashboard-goto-root)
-                    map))
-            proviso-dashboard-markers)
-      (insert (propertize (proviso-get proj :root-dir)
-                          'face '(bold)))
-      (insert "\n")
-      (when remote
-        (insert "   Remote host: ")
-        (insert (propertize remote 'face '(bold)))
-        (insert "\n"))
-      (insert "     Tags file: ")
-      (push (cons (point-marker)
-                  (let ((map (make-sparse-keymap)))
-                    map))
-            proviso-dashboard-markers)
-      (insert (propertize tags-dir
-                          'face '(bold)))
-      (insert "\n")
-      (insert "Tags generated: ")
-      (push (cons (point-marker)
-                  (let ((map (make-sparse-keymap)))
-                    (define-key map "t" #'proviso-gentags-generate-tags)
-                    map))
-            proviso-dashboard-markers)
-      (insert (propertize (if tags-gen
-                              (current-time-string tags-gen)
-                            "")
-                          'face '(bold)))
-      (insert "\n")
-      (insert "     Bookmarks: ")
-      (push (cons (point-marker)
-                  (let ((map (make-sparse-keymap)))
-                    map))
-            proviso-dashboard-markers)
-      (insert (propertize bmk 'face
-                          (if (and bmk (file-exists-p bmk))
-                              '(bold)
-                            '(shadow))))
-      (insert "\n")
-      (insert "  Clang format: ")
-      (push (cons (point-marker)
-                  (let ((map (make-sparse-keymap)))
-                    (define-key map "t" #'proviso-clang-format-toggle-active)
-                    (define-key map "f" #'proviso-clang-format-buffer-or-region)
-                    map))
-            proviso-dashboard-markers)
-      (insert (propertize clang 'face
-                          (if (and clang (file-exists-p clang))
-                              '(bold)
-                            '(shadow))))
-      (insert " [" (if proviso-clang-format-active-p
-                       (propertize "active" 'face '(bold))
-                     (propertize "inactive" 'face '(shadow))) "]")
-      (insert "\n")
-      (setq proviso-dashboard-markers
-            (sort proviso-dashboard-markers (lambda (lhs rhs)
-                                              (< (marker-position (car lhs))
-                                                 (marker-position (car rhs))))))
-      (proviso-dashboard-on-line)
-      )))
+      (proviso-dashboard-mode))
+    (proviso-gui-add-to-buffer buffer
+     '((:heading "project"
+                 :content (lambda ()
+                            (propertize (proviso-get proviso-local-proj :project-name)
+                                        'face 'highlight)))
+       (:heading "root"
+                 :content (lambda ()
+                            (propertize (proviso-get proviso-local-proj :root-dir)
+                                        'face '(bold)))
+                 :bindings (("d" . proviso-dashboard-goto-root)))
+       (:heading "Remote host"
+                 :predicate (lambda ()
+                              (proviso-get proviso-local-proj :remote-host))
+                 :content (lambda ()
+                            (propertize (proviso-get proviso-local-proj :remote-host)
+                                        'face '(bold))))
+       (:heading "Tags file"
+                 :content (lambda ()
+                            (let ((gen (proviso-get proviso-local-proj :tags-lastgen)))
+                              (propertize (if gen (current-time-string gen)
+                                            "")
+                                          'face '(bold))))
+                 :bindings (("t" . #'proviso-gentags-generate-tags)))
+       (:heading "Bookmarks"
+                 :content (lambda ()
+                            (let ((bmk (proviso-get proviso-local-proj :bookmark-file)))
+                              (propertize bmk 'face
+                                          (if (and bmk (file-exists-p bmk))
+                                              '(bold) '(shadow))))))
+       (:heading "Clang format"
+                 :content (lambda ()
+                            (let ((clang (proviso-get proviso-local-proj :clang-format)))
+                              (concat
+                               (propertize clang 'face
+                                           (if (and clang (file-exists-p clang))
+                                               '(bold) '(shadow)))
+                               " ["
+                               (if proviso-clang-format-active-p
+                                   (propertize "active" 'face '(bold))
+                                 (propertize "inactive" 'face '(shadow)))
+                               "]"
+                               )))
+                 :bindings (("t" . proviso-clang-format-toggle-active)
+                            ("f" . #'proviso-clang-format-buffer-or-region)
+                            ))
+       ))
+    (proviso-gui-finalize-buffer buffer)
+    ))
 
 ;;;###autoload
-(defun proviso-dashboard-switch-to (proj)
-  "Switch to the dashboard for projecdt PROJ in other window."
-  (when proj
-    (proviso-dashboard-create proj)
-    (display-buffer proviso-dashboard-buffer-name)))
+  (defun proviso-dashboard-switch-to (proj)
+    "Switch to the dashboard for projecdt PROJ in other window."
+    (when proj
+      (proviso-dashboard-create proj)
+      (display-buffer proviso-dashboard-buffer-name)))
 
-;; (defun proviso-dashboard-refresh-buffer ()
-;;   "Refresh the dashboard."
-;;   (interactive)
-;;   (kill-buffer proviso-dashboard-buffer-name)
-;;   (proviso-dashboard-create (proviso-current-project))
-;;   (switch-to-buffer proviso-dashboard-buffer-name))
+  ;; (defun proviso-dashboard-refresh-buffer ()
+  ;;   "Refresh the dashboard."
+  ;;   (interactive)
+  ;;   (kill-buffer proviso-dashboard-buffer-name)
+  ;;   (proviso-dashboard-create (proviso-current-project))
+  ;;   (switch-to-buffer proviso-dashboard-buffer-name))
 
-;; (add-hook 'proviso-hook-on-project-post-init #'proviso-dashboard-switch-to)
-
-(provide 'proviso-dashboard)
+  (provide 'proviso-dashboard)
 ;;; proviso-dashboard.el ends here
