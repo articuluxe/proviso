@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-09-12 08:56:36 dharms>
+;; Modified Time-stamp: <2018-09-12 09:18:19 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -39,9 +39,9 @@
 (defvar proviso-gui-map
   (let ((map (make-sparse-keymap)))
     (define-key map "n" #'proviso-gui-move-next-marker)
-    (define-key map "<down>" #'proviso-gui-move-next-marker)
+;    (define-key map "<down>" #'proviso-gui-move-next-marker)
     (define-key map "p" #'proviso-gui-move-prev-marker)
-    (define-key map "<up>" #'proviso-gui-move-prev-marker)
+;    (define-key map "<up>" #'proviso-gui-move-prev-marker)
     (define-key map "t" #'ignore)
     (define-key map "q" #'delete-window)
     map))
@@ -95,6 +95,10 @@
       (setq proviso-gui--local-map (copy-keymap keymap))
       (set-keymap-parent proviso-gui-map (keymap-parent keymap))
       (set-keymap-parent proviso-gui--local-map proviso-gui-map)
+      (define-key proviso-gui--local-map [remap previous-line]
+        #'proviso-gui-move-prev-marker)
+      (define-key proviso-gui--local-map [remap next-line]
+        #'proviso-gui-move-next-marker)
       )))
 
 (defun proviso-gui-cb (cb create marker)
