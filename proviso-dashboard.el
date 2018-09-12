@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-09-12 09:10:51 dharms>
+;; Modified Time-stamp: <2018-09-12 09:51:42 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -84,7 +84,8 @@ Optional ARG allows choosing a project."
     (with-current-buffer buffer
       (setq-local proviso-local-proj proj)
       (proviso-dashboard-mode))
-    (proviso-gui-add-to-buffer buffer
+    (proviso-gui-add-to-buffer
+     buffer
      '((:heading "project"
                  :content (lambda ()
                             (propertize (proviso-get proviso-local-proj :project-name)
@@ -134,18 +135,18 @@ Optional ARG allows choosing a project."
     ))
 
 ;;;###autoload
-  (defun proviso-dashboard-switch-to (proj)
-    "Switch to the dashboard for projecdt PROJ in other window."
-    (when proj
-      (proviso-dashboard-create proj)
-      (display-buffer proviso-dashboard-buffer-name)))
+(defun proviso-dashboard-switch-to (proj)
+  "Switch to the dashboard for projecdt PROJ in other window."
+  (when proj
+    (proviso-dashboard-create proj)
+    (display-buffer proviso-dashboard-buffer-name)))
 
-  ;; (defun proviso-dashboard-refresh-buffer ()
-  ;;   "Refresh the dashboard."
-  ;;   (interactive)
-  ;;   (kill-buffer proviso-dashboard-buffer-name)
-  ;;   (proviso-dashboard-create (proviso-current-project))
-  ;;   (switch-to-buffer proviso-dashboard-buffer-name))
+;; (defun proviso-dashboard-refresh-buffer ()
+;;   "Refresh the dashboard."
+;;   (interactive)
+;;   (kill-buffer proviso-dashboard-buffer-name)
+;;   (proviso-dashboard-create (proviso-current-project))
+;;   (switch-to-buffer proviso-dashboard-buffer-name))
 
-  (provide 'proviso-dashboard)
+(provide 'proviso-dashboard)
 ;;; proviso-dashboard.el ends here
