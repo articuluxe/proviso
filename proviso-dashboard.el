@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-09-12 09:51:42 dharms>
+;; Modified Time-stamp: <2018-09-13 08:46:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -86,11 +86,11 @@ Optional ARG allows choosing a project."
       (proviso-dashboard-mode))
     (proviso-gui-add-to-buffer
      buffer
-     '((:heading "project"
+     '((:heading "Project"
                  :content (lambda ()
                             (propertize (proviso-get proviso-local-proj :project-name)
                                         'face 'highlight)))
-       (:heading "root"
+       (:heading "Root"
                  :content (lambda ()
                             (propertize (proviso-get proviso-local-proj :root-dir)
                                         'face '(bold)))
