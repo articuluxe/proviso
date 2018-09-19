@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-31 08:55:52 dharms>
+;; Modified Time-stamp: <2018-09-19 08:07:19 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -223,7 +223,7 @@ OTHER-WINDOW means to open the file in the other window."
                                                  proviso-interesting-files))))
     (when (seq-empty-p files)
       (error "No files to open %s" desc))
-    (ivy-set-prompt 'proviso-finder--find-file counsel-prompt-function)
+    (ivy-set-prompt 'proviso-finder--find-file #'counsel-prompt-function-default)
     (ivy-read prompt files
               :action (if other-window
                           #'proviso-finder-open-file-other-window-action
@@ -309,7 +309,7 @@ OTHER-WINDOW means to open the file in the other window."
                                                proviso-uninteresting-dirs))))
     (when (seq-empty-p dirs)
       (error "No directories to open %s" desc))
-    (ivy-set-prompt 'proviso-finder--find-dir counsel-prompt-function)
+    (ivy-set-prompt 'proviso-finder--find-dir #'counsel-prompt-function-default)
     (ivy-read prompt dirs
               :action (if other-window
                           #'proviso-finder-open-dir-other-window-action
