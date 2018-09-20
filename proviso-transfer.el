@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, August 13, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-09-05 06:57:32 dharms>
+;; Modified Time-stamp: <2018-09-20 14:28:38 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -134,6 +134,7 @@ Optional QUIET will inhibit debugging output."
          )
     (when (string-empty-p dest-file)
       (setq dest-file src-file))
+    (make-directory dest-path t)
     (if (and compress method)
         (progn
           (setq src-file (proviso-transfer-compress-file src-path src-file dest-file method))
