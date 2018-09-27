@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-09-26 09:06:43 dharms>
+;; Modified Time-stamp: <2018-09-27 08:30:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -63,7 +63,7 @@ This will be used to display them to the user."
   "Execute a deployment represented by SPEC."
   (let ((src (plist-get spec :source))
         (dst (plist-get spec :destination)))
-    (message "Transferring %s to %s..." src dst)
+    (message "Deploying %s to %s..." src dst)
     (proviso-transfer-file-async src dst)))
 
 (defun proviso-deploy-all (specs)
@@ -200,7 +200,9 @@ If ARG is non-nil, another project can be chosen."
          spec)
     (if lst
         (if (setq spec (proviso-deploy-choose-deploy lst))
-            (proviso-deploy-one spec)
+            (progn
+              (proviso-deploy-one spec)
+              (proviso-put proj :last-deploy spec))
           (message "No deployment chosen."))
       (message "No deployments found."))))
 
@@ -215,10 +217,16 @@ If ARG is non-nil, another project can be chosen."
     (proviso-deploy-all lst)))
 
 ;;;###autoload
-(defun proviso-deploy-run-last ()
-  "Rerun the last deployment."
-  ;; TODO
-  )
+(defun proviso-deploy-run-last (&optional arg)
+  "Rerun the last deployment, if any.
+If ARG is non-nil, another project can be chosen."
+  (interactive "P")
+  (let* ((proj (if arg (proviso-choose-project)
+                 (proviso-current-project)))
+         (spec (proviso-get proj :last-deploy)))
+    (if spec
+        (proviso-deploy-one spec)
+      (user-error "No last deployment to run"))))
 
 ;;;###autoload
 (defun proviso-deploy-revert-file (&optional arg)
