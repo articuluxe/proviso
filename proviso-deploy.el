@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-09-28 08:36:33 dharms>
+;; Modified Time-stamp: <2018-09-28 08:55:18 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -113,15 +113,15 @@ This will be used to display them to the user."
 (defun proviso-deploy-write-to-file (filename specs)
   "Save a deployment specification SPECS to FILENAME."
   (with-temp-buffer
-    (prin1
-     (mapcar
-      (lambda (spec)
+    (insert "(\n")
+    (dolist (spec specs)
+      (prin1
         (cons
          (plist-get spec :source)
-         (plist-get spec :destination)))
-      specs)
-     (current-buffer))
-    (insert "\n")
+         (plist-get spec :destination))
+        (current-buffer))
+      (insert "\n"))
+    (insert ")\n")
     (write-file filename)))
 
 (defun proviso-deploy--read-from-str (str)
@@ -163,6 +163,32 @@ If ARG is non-nil, another project can be chosen."
                             nil nil defaultfile))
       (proviso-put proj :deploy-file store))
     (proviso-deploy-write-to-file store lst)))
+
+;;;###autoload
+(defun proviso-deploy-save-file-as (&optional arg)
+  "Save current deployments to a new file.
+If ARG is non-nil, another project can be chosen."
+  (interactive "P")
+  (let* ((proj (if arg (proviso-choose-project)
+                 (proviso-current-project)))
+         (remote (proviso-get proj :remote-prefix))
+         (root (proviso-get proj :root-dir))
+         (store (proviso-get proj :deploy-file))
+         (defaultfile (or store
+                          (concat (or (proviso-get proj :project-name)
+                                  "default")
+                                  ".deploy")))
+         (lst (proviso-get proj :deployments))
+         file)
+    (setq file
+          (read-file-name "Save deployments to: "
+                            (concat remote root)
+                            nil nil defaultfile))
+    (if file
+        (progn
+          (proviso-put proj :deploy-file file)
+          (proviso-deploy-write-to-file file lst))
+      (message "No file selected, not saving."))))
 
 (defun proviso-deploy--file-predicate (file)
   "Return non-nil if FILE is a suitable deployment file."
