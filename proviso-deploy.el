@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-09-27 08:30:04 dharms>
+;; Modified Time-stamp: <2018-09-28 08:36:33 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -77,17 +77,34 @@ This will be used to display them to the user."
 
 (defun proviso-deploy-choose-deploy (specs)
   "Let user select a deployment from SPECS."
-  (let ((lst
-         (mapcar (lambda (spec)
-                   (cons
-                    (format "%s --> %s"
-                            (plist-get spec :source)
-                            (plist-get spec :destination))
-                    spec))
-                 specs)))
+  (let* ((home (getenv "HOME"))
+         (lst
+          (mapcar (lambda (spec)
+                    (cons
+                     (cons
+                      (replace-regexp-in-string
+                       home "~" (plist-get spec :source))
+                     (replace-regexp-in-string
+                      home "~" (plist-get spec :destination)))
+                     spec))
+                  specs))
+         (max 0) len)
+    (dolist (elt lst)
+      (setq len (string-width (caar elt)))
+      (setq max (max len max)))
     (catch 'exit
       (ivy-read "Choose deployment: "
-                lst
+                (mapcar
+                 (lambda (elt)
+                   (cons
+                    (format
+                     (concat "%-"
+                             (format "%d" max)
+                             "s -> %s")
+                     (car (car elt))
+                     (cdr (car elt)))
+                    (cdr elt)))
+                 lst)
                 :action (lambda (x)
                           (throw 'exit (cdr x)))
                 :caller 'proviso-deploy-choose-deploy
