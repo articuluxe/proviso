@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-09-28 08:55:18 dharms>
+;; Modified Time-stamp: <2018-09-28 09:02:11 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -84,8 +84,8 @@ This will be used to display them to the user."
                      (cons
                       (replace-regexp-in-string
                        home "~" (plist-get spec :source))
-                     (replace-regexp-in-string
-                      home "~" (plist-get spec :destination)))
+                      (replace-regexp-in-string
+                       home "~" (plist-get spec :destination)))
                      spec))
                   specs))
          (max 0) len)
@@ -116,10 +116,10 @@ This will be used to display them to the user."
     (insert "(\n")
     (dolist (spec specs)
       (prin1
-        (cons
-         (plist-get spec :source)
-         (plist-get spec :destination))
-        (current-buffer))
+       (cons
+        (plist-get spec :source)
+        (plist-get spec :destination))
+       (current-buffer))
       (insert "\n"))
     (insert ")\n")
     (write-file filename)))
@@ -176,14 +176,14 @@ If ARG is non-nil, another project can be chosen."
          (store (proviso-get proj :deploy-file))
          (defaultfile (or store
                           (concat (or (proviso-get proj :project-name)
-                                  "default")
+                                      "default")
                                   ".deploy")))
          (lst (proviso-get proj :deployments))
          file)
     (setq file
           (read-file-name "Save deployments to: "
-                            (concat remote root)
-                            nil nil defaultfile))
+                          (concat remote root)
+                          nil nil defaultfile))
     (if file
         (progn
           (proviso-put proj :deploy-file file)
