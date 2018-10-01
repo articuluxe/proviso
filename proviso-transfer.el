@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, August 13, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-09-20 14:28:38 dan.harms>
+;; Modified Time-stamp: <2018-10-01 08:41:35 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -92,6 +92,8 @@ Optional FORCE specifies a compression method."
 Optional FORCE specifies a compression method.
 If a non-nil BUFFER is supplied, insert message there."
   (interactive "fSource file: \nGDestination: \nsMethod: ")
+  (unless (file-exists-p src)
+    (user-error "File '%s' does not exist" src))
   (let ((start (current-time))
         msg)
     (async-start
@@ -132,6 +134,8 @@ Optional QUIET will inhibit debugging output."
                   src-path dest-path proviso-transfer-rules-alist force))
          (start (current-time))
          )
+    (unless (file-exists-p src)
+      (user-error "File '%s' does not exist" src))
     (when (string-empty-p dest-file)
       (setq dest-file src-file))
     (make-directory dest-path t)
