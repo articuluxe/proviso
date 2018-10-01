@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-09-28 09:02:11 dharms>
+;; Modified Time-stamp: <2018-10-01 08:36:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -128,11 +128,20 @@ This will be used to display them to the user."
   "Read deployments from STR."
   (let (specs)
     (dolist (spec (car (read-from-string str)))
-      (add-to-list 'specs
-                   (list :source
-                         (car spec)
-                         :destination
-                         (cdr spec)) t))
+      (cond ((eq (car spec) 'deploy)
+             (dolist (elt (cdr spec))
+               (add-to-list 'specs
+                            (list :source
+                                  (car elt)
+                                  :destination
+                                  (cdr elt))
+                            t)))
+            (t (add-to-list 'specs
+                            (list :source
+                                  (car spec)
+                                  :destination
+                                  (cdr spec))
+                            t))))
     specs))
 
 (defun proviso-deploy-read-from-file (filename)
