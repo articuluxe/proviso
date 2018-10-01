@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-09-24 08:46:20 dharms>
+;; Modified Time-stamp: <2018-10-01 08:46:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -83,10 +83,13 @@
 (defun proviso--log-project-inited (proj)
   "Log a project PROJ upon initialization."
   (let ((name (symbol-name proj)))
-    (message "Loaded project %s (%s) at %s"
-             (proviso-get proj :project-name)
-             name
-             (proviso-get proj :root-dir))))
+    (message (concat
+              "Loaded project "
+              (propertize (proviso-get proj :project-name)
+                          'face '(bold))
+              " at "
+              (propertize (proviso-get proj :root-dir)
+                          'face '(italic))))))
 
 (defun proviso--loaded (proj)
   "A project PROJ has been loaded.
