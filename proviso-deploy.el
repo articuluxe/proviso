@@ -313,6 +313,23 @@ If ARG is non-nil, another project can be chosen."
                      (proviso-get proj :deployments)))
           (message "No deployment chosen."))
       (message "No deployments found to delete."))))
+;;;###autoload
+(defun proviso-deploy-check-file (&optional arg)
+  "Check a deployed file for alterations.
+If ARG is non-nil, another project can be chosen."
+  (interactive "P")
+  (let* ((proj (if arg (proviso-choose-project)
+                 (proviso-current-project)))
+         (specs (proviso-get proj :deployments))
+         (spec
+          (proviso-deploy-choose-deploy specs)))
+    (if spec
+        (if (ediff-same-file-contents
+             (plist-get spec :source)
+             (plist-get spec :destination))
+            (message "Files are identical.")
+          (message "Files are different."))
+      (user-error "No deployment chosen"))))
 (defvar proviso-deploy-mode-map
   (let ((map (make-sparse-keymap)))
     map)
