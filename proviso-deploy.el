@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-02 09:04:25 dharms>
+;; Modified Time-stamp: <2018-10-02 09:23:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -75,9 +75,11 @@ This will be used to display them to the user."
   (interactive "FSource: \nFDestination: ")
   (list :source source :destination dest))
 
-(defun proviso-deploy-choose-deploy (specs)
-  "Let user select a deployment from SPECS."
+(defun proviso-deploy-choose-deploy (specs &optional prompt)
+  "Let user select a deployment from SPECS.
+PROMPT is an optional prompt."
   (let* ((home (getenv "HOME"))
+         (prompt (or prompt "Choose deployment: "))
          (lst
           (mapcar (lambda (spec)
                     (cons
@@ -93,7 +95,7 @@ This will be used to display them to the user."
       (setq len (string-width (caar elt)))
       (setq max (max len max)))
     (catch 'exit
-      (ivy-read "Choose deployment: "
+      (ivy-read prompt
                 (mapcar
                  (lambda (elt)
                    (cons
@@ -251,7 +253,10 @@ If ARG is non-nil, another project can be chosen."
          (lst (proviso-get proj :deployments))
          spec)
     (if lst
-        (if (setq spec (proviso-deploy-choose-deploy lst))
+        (if (setq spec
+                  (proviso-deploy-choose-deploy
+                   lst
+                   "Choose deployment to run: "))
             (progn
               (proviso-deploy-one spec)
               (proviso-put proj :last-deploy spec))
@@ -306,7 +311,10 @@ If ARG is non-nil, another project can be chosen."
          (lst (proviso-get proj :deployments))
          spec)
     (if lst
-        (if (setq spec (proviso-deploy-choose-deploy lst))
+        (if (setq spec
+                  (proviso-deploy-choose-deploy
+                   lst
+                   "Choose deployment to delete: "))
             (proviso-put
              proj :deployments
              (delete spec
@@ -323,13 +331,29 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
          (spec
-          (proviso-deploy-choose-deploy specs)))
+          (proviso-deploy-choose-deploy
+           specs
+           "Choose deployment to check for changes: "))
+         src dst)
     (if spec
-        (if (ediff-same-file-contents
-             (plist-get spec :source)
-             (plist-get spec :destination))
-            (message "Files are identical.")
-          (message "Files are different."))
+        (progn
+          (setq src (plist-get spec :source))
+          (setq dst (plist-get spec :destination))
+          (if (ediff-same-file-contents src dst)
+              (message "Files are identical.")
+            (let
+                ((choices '(?d ?e ?n))
+                 (prompt
+                  "Files are different; run diff?  Enter [d]iff, [e]diff or [n]o: ")
+                 ch)
+              (while (null ch)
+                (setq ch (read-char-choice prompt choices)))
+              (cond ((eq ch ?d)
+                     (diff src dst))
+                    ((eq ch ?e)
+                     (ediff src dst))
+                    (t
+                     (message "Diff aborted."))))))
       (user-error "No deployment chosen"))))
 
 ;;;###autoload
@@ -341,7 +365,9 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
          (spec
-          (proviso-deploy-choose-deploy specs)))
+          (proviso-deploy-choose-deploy
+           specs
+           "Choose deployment to diff: ")))
     (if spec
         (diff
          (plist-get spec :source)
@@ -357,7 +383,9 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
          (spec
-          (proviso-deploy-choose-deploy specs)))
+          (proviso-deploy-choose-deploy
+           specs
+           "Choose deployment to ediff: ")))
     (if spec
         (ediff-files
          (plist-get spec :source)
