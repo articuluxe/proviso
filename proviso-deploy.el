@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-01 08:36:56 dharms>
+;; Modified Time-stamp: <2018-10-02 09:00:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -256,7 +256,7 @@ If ARG is non-nil, another project can be chosen."
               (proviso-deploy-one spec)
               (proviso-put proj :last-deploy spec))
           (message "No deployment chosen."))
-      (message "No deployments found."))))
+      (message "No deployments found to run."))))
 
 ;;;###autoload
 (defun proviso-deploy-run-all-deploys (&optional arg)
@@ -296,6 +296,23 @@ If ARG is non-nil, another project can be chosen."
         (proviso-put proj :deployments lst)
       (message "No deployments read in from %s." file))))
 
+;;;###autoload
+(defun proviso-deploy-delete-deploy (&optional arg)
+  "Select a deployment for deletion.
+If ARG is non-nil, another project can be chosen."
+  (interactive "P")
+  (let* ((proj (if arg (proviso-choose-project)
+                 (proviso-current-project)))
+         (lst (proviso-get proj :deployments))
+         spec)
+    (if lst
+        (if (setq spec (proviso-deploy-choose-deploy lst))
+            (proviso-put
+             proj :deployments
+             (delete spec
+                     (proviso-get proj :deployments)))
+          (message "No deployment chosen."))
+      (message "No deployments found to delete."))))
 (defvar proviso-deploy-mode-map
   (let ((map (make-sparse-keymap)))
     map)
