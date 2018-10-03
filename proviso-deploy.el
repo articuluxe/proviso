@@ -393,6 +393,23 @@ If ARG is non-nil, another project can be chosen."
          (plist-get spec :source)
          (plist-get spec :destination))
       (user-error "No deployment chosen"))))
+;;;###autoload
+(defun proviso-deploy-edit-deployed-file (&optional arg)
+  "Edit the deployed file.
+If ARG is non-nil, another project can be chosen."
+  (interactive "P")
+  (let* ((proj (if arg (proviso-choose-project)
+                 (proviso-current-project)))
+         (specs (proviso-get proj :deployments))
+         spec)
+    (if specs
+        (if (setq spec
+                  (proviso-deploy-choose-deploy
+                   specs
+                   "Choose deployed file to edit: "))
+            (find-file (plist-get spec :destination))
+          (user-error "No deployment chosen"))
+      (user-error "No deployments found to edit remote file"))))
 
 (defvar proviso-deploy-mode-map
   (let ((map (make-sparse-keymap)))
