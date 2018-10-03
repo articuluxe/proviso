@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-02 09:23:32 dharms>
+;; Modified Time-stamp: <2018-10-02 23:09:25 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -33,6 +33,8 @@
 (require 'seq)
 (require 'dash)
 (require 'ivy)
+(require 'diff)
+(require 'ediff-diff)
 
 (defvar-local proviso-deploy-buffer-name nil
   "Buffer name for `proviso-deploy' mode.")
