@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-03 08:44:51 dharms>
+;; Modified Time-stamp: <2018-10-03 08:49:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -410,13 +410,16 @@ If ARG is non-nil, another project can be chosen."
   (let* ((proj (if arg (proviso-choose-project)
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
-         spec)
+         spec file)
     (if specs
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
                    "Choose deployed file to edit: "))
-            (find-file (plist-get spec :destination))
+            (if (and (setq file (plist-get spec :destination))
+                     (file-exists-p file))
+                (find-file file)
+              (user-error "File '%s' does not exist" file))
           (user-error "No deployment chosen"))
       (user-error "No deployments found to edit remote file"))))
 
