@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-09-26 08:52:15 dharms>
+;; Modified Time-stamp: <2018-10-08 09:02:18 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 
@@ -30,13 +30,36 @@
 (load-file "test/proviso-test-common.el")
 (require 'proviso-deploy)
 
-(ert-deftest proviso-deploy-test-read-file ()
+(ert-deftest proviso-deploy-test-read-file-simple ()
   (let ((specs (proviso-deploy--read-from-str
-                "((\"one\" . \"two\")(\"three\" . \"four\"))")))
+                "((\"one\" . \"two\")(\"three\" . \"four\")\"pwd\")")))
     (should (equal specs
                    '((:source "one" :destination "two")
+                     (:source "three" :destination "four")
+                     (:command "pwd"))))))
+
+(ert-deftest proviso-deploy-test-read-file-complex ()
+  (let ((specs (proviso-deploy--read-from-str
+                "((deploy . ((\"one\" . \"two\") \"pwd\" (\"three\" . \"four\"))))")))
+    (should (equal specs
+                   '((:source "one" :destination "two")
+                     (:command "pwd")
                      (:source "three" :destination "four"))))))
 
+(ert-deftest proviso-deploy-test-write-file ()
+  (let ((specs '((:source "one" :destination "two")
+                 (:command "pwd")
+                 (:source "three" :destination "four"))))
+    (with-temp-buffer
+      (proviso-deploy--write-to-current-buffer specs)
+      (should (equal (buffer-string)
+                     "((deploy . (
+(\"one\" . \"two\")
+\"pwd\"
+(\"three\" . \"four\")
+)))
+"
+                     )))))
 
 (ert-run-tests-batch-and-exit (car argv))
 ;;; test_proviso-deploy.el ends here
