@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-08 09:01:36 dharms>
+;; Modified Time-stamp: <2018-10-09 08:45:28 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -395,9 +395,9 @@ If ARG is non-nil, another project can be chosen."
                       (if (ediff-same-file-contents src dst)
                           (message "Files are identical.")
                         (let
-                            ((choices '(?d ?e ?n))
+                            ((choices '(?d ?e ?q))
                              (prompt
-                              "Files are different; run diff?  Enter [d]iff, [e]diff or [n]o: ")
+                              "Files are different; run [d]iff, [e]diff or [q]uit: ")
                              ch)
                           (while (null ch)
                             (setq ch (read-char-choice prompt choices)))
