@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-08 09:02:18 dharms>
+;; Modified Time-stamp: <2018-10-10 08:58:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 
@@ -60,6 +60,17 @@
 )))
 "
                      )))))
+
+(ert-deftest proviso-deploy-test-conversion ()
+  (let ((specs '((:source "one" :destination "two")
+                 (:command "pwd")
+                 (:source "three" :destination "four")))
+        result)
+    (with-temp-buffer
+      (proviso-deploy--write-to-current-buffer specs)
+      (should (equal specs
+                     (proviso-deploy--read-from-str
+                      (buffer-string)))))))
 
 (ert-run-tests-batch-and-exit (car argv))
 ;;; test_proviso-deploy.el ends here
