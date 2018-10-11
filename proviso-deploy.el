@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-11 09:17:08 dharms>
+;; Modified Time-stamp: <2018-10-11 09:51:23 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -43,23 +43,6 @@
   "*%s-deploy*"
   "Buffer prefix string for `proviso-deploy'.
 This will be formatted with the project name.")
-
-(defun proviso-deploy--stringize-deployment (spec)
-  "Create a string based on SPEC suitable for display."
-  (list
-   (list :heading "Source"
-         :content (lambda ()
-                    (plist-get spec :source)))
-   (list :heading "Destination"
-         :content (lambda ()
-                    (plist-get spec :destination)))
-   ))
-
-(defun proviso-deploy--stringize-deployments (specs)
-  "Create a string representation of all deployments in SPECS.
-This will be used to display them to the user."
-  (-mapcat #'proviso-deploy--stringize-deployment
-           specs))
 
 (defun proviso-deploy-one (spec)
   "Execute a deployment represented by SPEC."
@@ -562,22 +545,52 @@ Optional argument ARG allows choosing a project."
   (interactive)
   (setq proviso-deploy-buffer-name
         (format proviso-deploy-buffer-name-prefix proj))
-  (let ((buffer (get-buffer-create proviso-deploy-buffer-name)))
+  (let ((buffer (get-buffer-create proviso-deploy-buffer-name))
+        (width (string-width "Destination"))
+        lst)
     (proviso-gui-init-buffer buffer proviso-deploy-mode-map)
     (with-current-buffer buffer
       (setq-local proviso-local-proj proj)
       (proviso-deploy-mode))
-    (proviso-gui-add-to-buffer
-     buffer
-     '((:heading "Project"
-                 :content
-                 (lambda ()
-                   (propertize
-                    (proviso-get proviso-local-proj :project-name)
-                    'face 'highlight)))))
-    (proviso-gui-add-to-buffer
-     buffer
-     (proviso-deploy--stringize-deployments))
+    (setq width
+          (proviso-gui-add-to-buffer
+           buffer
+           '((:heading "Project"
+                       :content (lambda ()
+                                  (propertize
+                                   (proviso-get proviso-local-proj :project-name)
+                                   'face 'highlight))
+                       :section post)
+             (:heading "File"
+                       :content (lambda ()
+                                  (let ((file (proviso-get proviso-local-proj :deploy-file)))
+                                    (cond ((and file (file-exists-p file))
+                                           (propertize file 'face '(bold)))
+                                          (file
+                                           (propertize file 'face '(shadow)))
+                                          (t
+                                           (propertize "None" 'face '(shadow)))))))
+             ) width))
+    (dolist (spec (proviso-get proj :deployments))
+      (lexical-let ((cmd (plist-get spec :command))
+                    (src (plist-get spec :source))
+                    (dst (plist-get spec :destination)))
+        (cond (cmd
+               (add-to-list 'lst
+                            (list
+                             :heading "Command"
+                             :content (lambda () cmd)) t))
+              ((and src dst)
+               (add-to-list 'lst
+                            (list
+                             :heading "Source"
+                             :content (lambda () src)
+                             :section 'pre) t)
+               (add-to-list 'lst
+                            (list
+                             :heading "Destination"
+                             :content (lambda () dst)) t)))))
+    (setq width (proviso-gui-add-to-buffer buffer lst width))
     (proviso-gui-finalize-buffer buffer)
     ))
 
