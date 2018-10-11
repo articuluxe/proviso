@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-09 08:45:28 dharms>
+;; Modified Time-stamp: <2018-10-11 09:17:08 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -310,7 +310,7 @@ If ARG is non-nil, another project can be chosen."
               (proviso-deploy-one spec)
               (proviso-put proj :last-deploy spec))
           (user-error "No deployment chosen"))
-      (user-error "No deployments found to run"))))
+      (user-error "No deployments"))))
 
 ;;;###autoload
 (defun proviso-deploy-run-all-deploys (&optional arg)
@@ -332,7 +332,7 @@ If ARG is non-nil, another project can be chosen."
          (spec (proviso-get proj :last-deploy)))
     (if spec
         (proviso-deploy-one spec)
-      (user-error "No last deployment to run"))))
+      (user-error "No prior deployment"))))
 
 ;;;###autoload
 (defun proviso-deploy-revert-file (&optional arg)
@@ -369,7 +369,7 @@ If ARG is non-nil, another project can be chosen."
              (delete spec
                      (proviso-get proj :deployments)))
           (user-error "No deployment chosen"))
-      (user-error "No deployments found to delete"))))
+      (user-error "No deployments"))))
 
 ;;;###autoload
 (defun proviso-deploy-check-file (&optional arg)
@@ -408,9 +408,9 @@ If ARG is non-nil, another project can be chosen."
                                 (t
                                  (message "Diff aborted.")))))
                     (user-error "One or more files do not exist"))
-                (user-error "Chosen deployment lacks files to compare")))
+                (user-error "No files to compare")))
           (user-error "No deployment chosen"))
-      (user-error "No deployments found to check"))))
+      (user-error "No deployments"))))
 
 ;;;###autoload
 (defun proviso-deploy-diff-file (&optional arg)
@@ -434,9 +434,9 @@ If ARG is non-nil, another project can be chosen."
                            (file-exists-p dst))
                       (diff src dst)
                     (user-error "One or more files do not exist"))
-                (user-error "Chosen deployment lacks 2 files to compare")))
+                (user-error "No files to compare")))
           (user-error "No deployment chosen"))
-      (user-error "No deployments found to diff"))))
+      (user-error "No deployments"))))
 
 ;;;###autoload
 (defun proviso-deploy-ediff-file (&optional arg)
@@ -460,9 +460,9 @@ If ARG is non-nil, another project can be chosen."
                            (file-exists-p dst))
                       (ediff-files src dst)
                     (user-error "One or more files do not exist"))
-                (user-error "Chosen deployment lacks 2 files to compare")))
+                (user-error "No files to compare")))
           (user-error "No deployment chosen"))
-      (user-error "No deployments found to ediff"))))
+      (user-error "No deployments"))))
 
 ;;;###autoload
 (defun proviso-deploy-edit-deploy (&optional arg)
@@ -490,7 +490,7 @@ If ARG is non-nil, another project can be chosen."
                              (call-interactively
                               'proviso-deploy-create)))))
           (user-error "No deployment chosen"))
-      (user-error "No deployments found to edit"))))
+      (user-error "No deployments"))))
 
 ;;;###autoload
 (defun proviso-deploy-find-file (&optional arg)
@@ -511,7 +511,7 @@ If ARG is non-nil, another project can be chosen."
                 (find-file file)
               (user-error "File '%s' does not exist" file))
           (user-error "No deployment chosen"))
-      (user-error "No deployments found to edit remote file"))))
+      (user-error "No deployments"))))
 
 ;;;###autoload
 (defun proviso-deploy-find-file-other-window (&optional arg)
@@ -532,7 +532,7 @@ If ARG is non-nil, another project can be chosen."
                 (find-file-other-window file)
               (user-error "File '%s' does not exist" file))
           (user-error "No deployment chosen"))
-      (user-error "No deployments found to edit remote file"))))
+      (user-error "No deployments"))))
 
 (defvar proviso-deploy-mode-map
   (let ((map (make-sparse-keymap)))
