@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, August 13, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-01 08:41:35 dharms>
+;; Modified Time-stamp: <2018-10-11 11:41:53 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -39,7 +39,7 @@
                    :transform (lambda (name)
                                 (concat name ".zip"))
                    :compress-cmd "zip %o -r --filesync %i"
-                   :uncompress-cmd "unzip -uo %i")
+                   :uncompress-cmd "unzip -p %i > %o")
     (:compress-exe "gzip"
                    :uncompress-exe "gunzip"
                    :transform (lambda (name)
