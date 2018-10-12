@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-11 09:37:17 dharms>
+;; Modified Time-stamp: <2018-10-12 08:34:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -133,7 +133,7 @@ MAXWIDTH allows specifying the minimum length of the headings."
       (dolist (entry lst)
         (setq pred (plist-get entry :content))
         (when (eq (plist-get entry :section) 'pre)
-          (insert "\f\n"))
+          (proviso-gui--insert-section-break))
         (insert (s-pad-left max-heading " " (plist-get entry :heading)))
         (insert ": ")
         (let ((map (make-sparse-keymap))
@@ -151,10 +151,14 @@ MAXWIDTH allows specifying the minimum length of the headings."
                        (cons marker map) t)
           (insert (funcall pred) "\n"))
         (when (eq (plist-get entry :section) 'post)
-          (insert "\f\n"))
+          (proviso-gui--insert-section-break))
         )
       )
     max-heading))
+
+(defun proviso-gui--insert-section-break ()
+  "Insert a section break into current buffer at point."
+  (insert "\f\n"))
 
 (defun proviso-gui--sort-markers (buffer)
   "Sort the markers used in BUFFER."
