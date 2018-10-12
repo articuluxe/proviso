@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-10 08:50:49 dharms>
+;; Modified Time-stamp: <2018-10-12 08:39:43 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -115,11 +115,12 @@ Optional ARG allows choosing a project."
                                           (if (and bmk (file-exists-p bmk))
                                               '(bold) '(shadow))))))
        (:heading "Deployments"
+                 :predicate (lambda () (proviso-get proviso-local-proj :deploy-file))
                  :content (lambda ()
-                            (let ((file (proviso-get proviso-local-proj :deploy-file)))
-                              (propertize file 'face
-                                          (if (and file (file-exists-p file))
-                                              '(bold) '(shadow))))))
+                            (propertize (proviso-get proviso-local-proj :deploy-file)
+                                        'face (if (file-exists-p
+                                                   (proviso-get proviso-local-proj :deploy-file))
+                                                  '(bold) '(shadow)))))
        (:heading "Clang format"
                  :content (lambda ()
                             (let ((clang (proviso-get proviso-local-proj :clang-format)))
