@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-11 09:51:23 dharms>
+;; Modified Time-stamp: <2018-10-12 08:46:30 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -547,6 +547,7 @@ Optional argument ARG allows choosing a project."
         (format proviso-deploy-buffer-name-prefix proj))
   (let ((buffer (get-buffer-create proviso-deploy-buffer-name))
         (width (string-width "Destination"))
+        (home (getenv "HOME"))
         lst)
     (proviso-gui-init-buffer buffer proviso-deploy-mode-map)
     (with-current-buffer buffer
@@ -565,9 +566,13 @@ Optional argument ARG allows choosing a project."
                        :content (lambda ()
                                   (let ((file (proviso-get proviso-local-proj :deploy-file)))
                                     (cond ((and file (file-exists-p file))
-                                           (propertize file 'face '(bold)))
+                                           (propertize
+                                            (replace-regexp-in-string home "~" file)
+                                            'face '(bold)))
                                           (file
-                                           (propertize file 'face '(shadow)))
+                                           (propertize
+                                            (replace-regexp-in-string home "~" file)
+                                            'face '(shadow)))
                                           (t
                                            (propertize "None" 'face '(shadow)))))))
              ) width))
@@ -584,12 +589,15 @@ Optional argument ARG allows choosing a project."
                (add-to-list 'lst
                             (list
                              :heading "Source"
-                             :content (lambda () src)
+                             :content (lambda ()
+                                        (replace-regexp-in-string home "~" src))
                              :section 'pre) t)
                (add-to-list 'lst
                             (list
                              :heading "Destination"
-                             :content (lambda () dst)) t)))))
+                             :content (lambda ()
+                                        (replace-regexp-in-string home "~" dst)))
+                            t)))))
     (setq width (proviso-gui-add-to-buffer buffer lst width))
     (proviso-gui-finalize-buffer buffer)
     ))
