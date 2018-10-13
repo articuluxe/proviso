@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-13 13:45:23 dharms>
+;; Modified Time-stamp: <2018-10-13 14:00:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -466,12 +466,22 @@ If ARG is non-nil, another project can be chosen."
                   (dst (plist-get spec :destination)))
               (cond (cmd
                      (setcar (member spec specs)
-                             (call-interactively
-                              'proviso-deploy-create-cmd)))
+                             (read-string "New command: "
+                                          cmd)))
                     ((and src dst)
                      (setcar (member spec specs)
-                             (call-interactively
-                              'proviso-deploy-create)))))
+                             (proviso-deploy-create
+                              (read-file-name
+                               "Source: "
+                               (file-name-directory src)
+                               nil nil
+                               (file-name-nondirectory src))
+                              (read-file-name
+                               "Destination: "
+                               (file-name-directory dst)
+                               nil nil
+                               (file-name-nondirectory dst))
+                              )))))
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
 
