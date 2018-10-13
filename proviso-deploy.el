@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-13 13:28:16 dharms>
+;; Modified Time-stamp: <2018-10-13 13:45:23 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -288,7 +288,7 @@ If ARG is non-nil, another project can be chosen."
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
-                   "Choose deployment to run: "))
+                   "Run deployment: "))
             (progn
               (proviso-deploy-one spec)
               (proviso-put proj :last-deploy spec))
@@ -346,7 +346,7 @@ If ARG is non-nil, another project can be chosen."
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
-                   "Choose deployment to delete: "))
+                   "Delete deployment: "))
             (proviso-put
              proj :deployments
              (delete spec
@@ -368,7 +368,7 @@ If ARG is non-nil, another project can be chosen."
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
-                   "Choose deployment to check for changes: "))
+                   "Check deployment: "))
             (progn
               (setq src (plist-get spec :source))
               (setq dst (plist-get spec :destination))
@@ -408,7 +408,7 @@ If ARG is non-nil, another project can be chosen."
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
-                   "Choose deployment to diff: "))
+                   "Diff deployment: "))
             (progn
               (setq src (plist-get spec :source))
               (setq dst (plist-get spec :destination))
@@ -434,7 +434,7 @@ If ARG is non-nil, another project can be chosen."
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
-                   "Choose deployment to ediff: "))
+                   "Ediff deployment: "))
             (progn
               (setq src (plist-get spec :source))
               (setq dst (plist-get spec :destination))
@@ -460,7 +460,7 @@ If ARG is non-nil, another project can be chosen."
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
-                   "Choose deployment command to edit: "))
+                   "Edit deployment: "))
             (let ((cmd (plist-get spec :command))
                   (src (plist-get spec :source))
                   (dst (plist-get spec :destination)))
@@ -488,7 +488,7 @@ If ARG is non-nil, another project can be chosen."
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
-                   "Choose deployed file to edit: "))
+                   "Find deployed file: "))
             (if (and (setq file (plist-get spec :destination))
                      (file-exists-p file))
                 (find-file file)
@@ -509,7 +509,7 @@ If ARG is non-nil, another project can be chosen."
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
-                   "Choose deployed file to edit: "))
+                   "Find deployed file in other window: "))
             (if (and (setq file (plist-get spec :destination))
                      (file-exists-p file))
                 (find-file-other-window file)
