@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-13 13:20:44 dharms>
+;; Modified Time-stamp: <2018-10-13 13:31:12 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -89,7 +89,8 @@ Optional ARG allows choosing a project."
      '((:heading "Project"
                  :content (lambda ()
                             (propertize (proviso-get proviso-local-proj :project-name)
-                                        'face 'highlight)))
+                                        'face 'highlight))
+                 :section post)
        (:heading "Root"
                  :content (lambda ()
                             (let ((file (proviso-get proviso-local-proj :root-dir)))
