@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-12 08:39:43 dharms>
+;; Modified Time-stamp: <2018-10-13 13:20:44 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -92,8 +92,10 @@ Optional ARG allows choosing a project."
                                         'face 'highlight)))
        (:heading "Root"
                  :content (lambda ()
-                            (propertize (proviso-get proviso-local-proj :root-dir)
-                                        'face '(bold)))
+                            (let ((file (proviso-get proviso-local-proj :root-dir)))
+                              (propertize (replace-regexp-in-string
+                                           (getenv "HOME") "~" file)
+                                          'face '(bold))))
                  :bindings (("d" . proviso-dashboard-goto-root)))
        (:heading "Remote host"
                  :predicate (lambda ()
@@ -111,22 +113,27 @@ Optional ARG allows choosing a project."
        (:heading "Bookmarks"
                  :content (lambda ()
                             (let ((bmk (proviso-get proviso-local-proj :bookmark-file)))
-                              (propertize bmk 'face
+                              (propertize (replace-regexp-in-string
+                                           (getenv "HOME") "~" bmk)
+                                          'face
                                           (if (and bmk (file-exists-p bmk))
                                               '(bold) '(shadow))))))
        (:heading "Deployments"
                  :predicate (lambda () (proviso-get proviso-local-proj :deploy-file))
                  :content (lambda ()
-                            (propertize (proviso-get proviso-local-proj :deploy-file)
-                                        'face (if (file-exists-p
-                                                   (proviso-get proviso-local-proj :deploy-file))
-                                                  '(bold) '(shadow)))))
+                            (let ((file (proviso-get proviso-local-proj :deploy-file)))
+                              (propertize (replace-regexp-in-string
+                                           (getenv "HOME") "~" file)
+                                          'face (if (file-exists-p file)
+                                                    '(bold) '(shadow))))))
        (:heading "Clang format"
                  :content (lambda ()
-                            (let ((clang (proviso-get proviso-local-proj :clang-format)))
+                            (let ((file (proviso-get proviso-local-proj :clang-format)))
                               (concat
-                               (propertize clang 'face
-                                           (if (and clang (file-exists-p clang))
+                               (propertize (replace-regexp-in-string
+                                            (getenv "HOME") "~" file)
+                                           'face
+                                           (if (and file (file-exists-p file))
                                                '(bold) '(shadow)))
                                " ["
                                (if proviso-clang-format-active-p
