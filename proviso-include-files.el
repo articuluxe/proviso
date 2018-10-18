@@ -1,9 +1,9 @@
 ;;; proviso-include-files.el --- setup proviso project include files
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017-2018  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-22 08:05:36 dharms>
+;; Modified Time-stamp: <2018-10-18 15:21:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -98,7 +98,10 @@
   "A file has been opened for project PROJ in mode MODE."
   (setq ff-search-directories (proviso-get proj :include-ff-files))
   (when (bound-and-true-p c-buffer-is-cc-mode)
-    (set (make-local-variable 'achead:include-directories)
+    (set (make-local-variable 'company-c-headers-path-system)
+         (proviso--gather-compiler-includes
+          (or (getenv "CXX") "g++")))
+    (set (make-local-variable 'company-c-headers-path-user)
          (proviso-get proj :include-files))
     ;; set flycheck for c++
     (when (eq major-mode 'c++-mode)
