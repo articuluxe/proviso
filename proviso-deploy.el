@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-13 14:00:56 dharms>
+;; Modified Time-stamp: <2018-10-22 16:19:52 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -149,7 +149,7 @@ PROMPT is an optional prompt."
   (let (specs obj)
     (dolist (spec (car (read-from-string str)))
       (cond ((and (consp spec)
-                 (eq (car spec) 'deploy))
+                  (eq (car spec) 'deploy))
              (dolist (elt (cdr spec))
                (and
                 (setq obj (proviso-deploy--read-elt elt))
@@ -499,10 +499,12 @@ If ARG is non-nil, another project can be chosen."
                   (proviso-deploy-choose-deploy
                    specs
                    "Find deployed file: "))
-            (if (and (setq file (plist-get spec :destination))
-                     (file-exists-p file))
-                (find-file file)
-              (user-error "File '%s' does not exist" file))
+            (let ((file (plist-get spec :destination)))
+              (if file
+                  (if (file-exists-p file)
+                      (find-file file)
+                    (user-error "File '%s' does not exist" file))
+                (user-error "No remote file to edit")))
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
 
@@ -612,7 +614,7 @@ Optional argument ARG allows choosing a project."
                                            (file-attributes
                                             src)))
                                          'face '(shadow))))
-                             t)
+                            t)
                (add-to-list 'lst
                             (list
                              :heading "Destination"
@@ -629,7 +631,7 @@ Optional argument ARG allows choosing a project."
                                            (file-attributes
                                             dst)))
                                          'face '(shadow))))
-                             t)
+                            t)
                ))))
     (setq width (proviso-gui-add-to-buffer buffer lst width))
     (proviso-gui-finalize-buffer buffer)
