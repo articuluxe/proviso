@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-01 08:46:50 dharms>
+;; Modified Time-stamp: <2018-10-29 08:50:27 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -34,6 +34,7 @@
 (require 'proviso-regexp)
 (require 'proviso-ag)
 (require 'proviso-rg)
+(require 'proviso-xref)
 (require 'proviso-clang-format)
 (require 'proviso-finder)
 (require 'proviso-dashboard)
