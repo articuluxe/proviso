@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, October 29, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-29 09:04:53 dharms>
+;; Modified Time-stamp: <2018-10-30 13:41:50 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -28,38 +28,42 @@
 
 ;;; Code:
 (require 'proviso-core)
-(require 'xref)
 (require 'etags)
 
-(defun proviso-xref-make-etags-location (tag-info file)
-  "Make an etags location for TAG-INFO and FILE.
+(when (> emacs-major-version 24)
+
+  (require 'xref)
+
+  (defun proviso-xref-make-etags-location (tag-info file)
+    "Make an etags location for TAG-INFO and FILE.
 Supplies the 'relative parameter such that the path returned is
 not absolute."
-  (make-instance 'xref-etags-location
-                 :tag-info tag-info
-                 :file (file-of-tag t)))
+    (make-instance 'xref-etags-location
+                   :tag-info tag-info
+                   :file (file-of-tag t)))
 
-(advice-add 'xref-make-etags-location
-            :override #'proviso-xref-make-etags-location)
+  (advice-add 'xref-make-etags-location
+              :override #'proviso-xref-make-etags-location)
 
-(cl-defmethod proviso-xref-location-marker ((l xref-etags-location))
-  "Execute `xref-location-marker'.
+  (cl-defmethod proviso-xref-location-marker ((l xref-etags-location))
+    "Execute `xref-location-marker'.
 Cognizant of possibly remote proviso projects."
-  (with-slots (tag-info file t) l
-    (let* ((file (if (and (featurep 'proviso)
-                          proviso-curr-proj)
-                     (concat
-                      (proviso-get proviso-curr-proj :remote-prefix)
-                      file)
-                   file))
-           (buffer (find-file-noselect file)))
-      (with-current-buffer buffer
-        (save-excursion
-          (etags-goto-tag-location tag-info)
-          (point-marker))))))
+    (with-slots (tag-info file t) l
+      (let* ((file (if (and (featurep 'proviso)
+                            proviso-curr-proj)
+                       (concat
+                        (proviso-get proviso-curr-proj :remote-prefix)
+                        file)
+                     file))
+             (buffer (find-file-noselect file)))
+        (with-current-buffer buffer
+          (save-excursion
+            (etags-goto-tag-location tag-info)
+            (point-marker))))))
 
-(advice-add 'xref-location-marker
-            :override #'proviso-xref-location-marker)
+  (advice-add 'xref-location-marker
+              :override #'proviso-xref-location-marker)
+  )
 
 (provide 'proviso-xref)
 ;;; proviso-xref.el ends here
