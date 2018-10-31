@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-18 15:21:09 dharms>
+;; Modified Time-stamp: <2018-10-31 15:09:33 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -98,11 +98,13 @@
   "A file has been opened for project PROJ in mode MODE."
   (setq ff-search-directories (proviso-get proj :include-ff-files))
   (when (bound-and-true-p c-buffer-is-cc-mode)
-    (set (make-local-variable 'company-c-headers-path-system)
-         (proviso--gather-compiler-includes
-          (or (getenv "CXX") "g++")))
     (set (make-local-variable 'company-c-headers-path-user)
          (proviso-get proj :include-files))
+    (set (make-local-variable 'company-c-headers-path-system)
+         (append
+          (proviso--gather-compiler-includes
+           (or (getenv "CXX") "g++"))
+          company-c-headers-path-user))
     ;; set flycheck for c++
     (when (eq major-mode 'c++-mode)
       ;; clang
