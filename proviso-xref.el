@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, October 29, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-30 13:41:50 dan.harms>
+;; Modified Time-stamp: <2018-10-31 11:45:10 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -45,9 +45,10 @@ not absolute."
   (advice-add 'xref-make-etags-location
               :override #'proviso-xref-make-etags-location)
 
-  (cl-defmethod proviso-xref-location-marker ((l xref-etags-location))
-    "Execute `xref-location-marker'.
-Cognizant of possibly remote proviso projects."
+  (cl-defmethod xref-location-marker ((l xref-etags-location))
+    "Execute `xref-location-marker' for `xref-etags-location'.
+Cognizant of possibly remote proviso projects.
+This should override the similar method from `etags.el'."
     (with-slots (tag-info file t) l
       (let* ((file (if (and (featurep 'proviso)
                             proviso-curr-proj)
@@ -60,9 +61,6 @@ Cognizant of possibly remote proviso projects."
           (save-excursion
             (etags-goto-tag-location tag-info)
             (point-marker))))))
-
-  (advice-add 'xref-location-marker
-              :override #'proviso-xref-location-marker)
   )
 
 (provide 'proviso-xref)
