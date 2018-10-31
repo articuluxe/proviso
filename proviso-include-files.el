@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-31 15:09:33 dan.harms>
+;; Modified Time-stamp: <2018-10-31 15:19:19 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -122,14 +122,14 @@
       ;; favor gcc over clang for now
       (add-to-list 'flycheck-disabled-checkers 'c/c++-clang)
       )
-    ;; set 'compiler-include-dirs for ac-clang
+    ;; set 'compiler-include-dirs for clang
     (when (executable-find "clang")
       (or (proviso-get proj :compiler-include-dirs)
           (proviso-put proj :compiler-include-dirs
                        (mapcar (lambda(x) (concat "-I" x))
                                (proviso--gather-compiler-includes
                                 (or (getenv "CXX") "g++")))))
-      (set (make-local-variable 'ac-clang-flags)
+      (set (make-local-variable 'company-clang-arguments)
            (append
             `(,(concat "-stdlib=" flycheck-clang-standard-library)
               ,(concat "-std=" flycheck-clang-language-standard)
