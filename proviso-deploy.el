@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-22 16:19:52 dan.harms>
+;; Modified Time-stamp: <2018-11-19 09:01:19 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -598,6 +598,9 @@ Optional argument ARG allows choosing a project."
                              :heading "Command"
                              :content (lambda () cmd)) t))
               ((and src dst)
+               (when (file-directory-p dst)
+                 (setq dst (expand-file-name
+                            (file-name-nondirectory src) dst)))
                (add-to-list 'lst
                             (list
                              :heading "Source"
@@ -625,11 +628,13 @@ Optional argument ARG allows choosing a project."
                             (list
                              :content (lambda ()
                                         (propertize
-                                         (format-time-string
-                                          "%F %r"
-                                          (file-attribute-modification-time
-                                           (file-attributes
-                                            dst)))
+                                         (if (file-exists-p dst)
+                                             (format-time-string
+                                              "%F %r"
+                                              (file-attribute-modification-time
+                                               (file-attributes
+                                                dst)))
+                                           "---------- --:--:-- --")
                                          'face '(shadow))))
                             t)
                ))))
