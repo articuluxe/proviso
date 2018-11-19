@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-11-19 09:01:19 dharms>
+;; Modified Time-stamp: <2018-11-19 09:04:49 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -372,6 +372,9 @@ If ARG is non-nil, another project can be chosen."
             (progn
               (setq src (plist-get spec :source))
               (setq dst (plist-get spec :destination))
+              (when (file-directory-p dst)
+                (setq dst (expand-file-name
+                           (file-name-nondirectory src) dst)))
               (if (and src dst)
                   (if (and (file-exists-p src)
                            (file-exists-p dst))
@@ -412,6 +415,9 @@ If ARG is non-nil, another project can be chosen."
             (progn
               (setq src (plist-get spec :source))
               (setq dst (plist-get spec :destination))
+              (when (file-directory-p dst)
+                (setq dst (expand-file-name
+                           (file-name-nondirectory src) dst)))
               (if (and src dst)
                   (if (and (file-exists-p src)
                            (file-exists-p dst))
@@ -438,6 +444,9 @@ If ARG is non-nil, another project can be chosen."
             (progn
               (setq src (plist-get spec :source))
               (setq dst (plist-get spec :destination))
+              (when (file-directory-p dst)
+                (setq dst (expand-file-name
+                           (file-name-nondirectory src) dst)))
               (if (and src dst)
                   (if (and (file-exists-p src)
                            (file-exists-p dst))
