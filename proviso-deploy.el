@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-11-19 09:04:49 dharms>
+;; Modified Time-stamp: <2018-11-20 05:42:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -28,7 +28,7 @@
 
 ;;; Code:
 (require 'proviso-core)
-(require 'proviso-transfer)
+(require 'xfer)
 (require 'proviso-gui)
 (require 'seq)
 (require 'dash)
@@ -52,7 +52,7 @@ This will be formatted with the project name.")
     (if cmd
         (shell-command cmd)
       (message "Deploying %s to %s..." src dst)
-      (proviso-transfer-file-async src dst))))
+      (xfer-transfer-file-async src dst))))
 
 (defun proviso-deploy-all (specs)
   "Execute all deployments contained in SPECS."
