@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-11-05 16:08:24 dan.harms>
+;; Modified Time-stamp: <2018-11-20 06:22:26 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -28,10 +28,8 @@
 
 ;;; Code:
 (require 'proviso-core)
-(require 'auto-complete-c-headers)
 (require 'find-file)
 (require 'flycheck)
-(require 'auto-complete-clang)
 (require 'cl-lib)
 (require 'f)
 
