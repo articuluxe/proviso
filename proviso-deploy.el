@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-11-20 05:42:03 dharms>
+;; Modified Time-stamp: <2018-11-21 15:00:39 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -35,6 +35,7 @@
 (require 'ivy)
 (require 'diff)
 (require 'ediff-diff)
+(require 'cl-lib)
 
 (defvar-local proviso-deploy-buffer-name nil
   "Buffer name for `proviso-deploy' mode.")
@@ -620,13 +621,19 @@ Optional argument ARG allows choosing a project."
                (add-to-list 'lst
                             (list
                              :content (lambda ()
-                                        (propertize
-                                         (format-time-string
-                                          "%F %r"
-                                          (file-attribute-modification-time
-                                           (file-attributes
-                                            src)))
-                                         'face '(shadow))))
+                                        (let ((attr (file-attributes src)))
+                                          (propertize
+                                           (if (file-exists-p src)
+                                               (concat
+                                                (format-time-string
+                                                 "%F %T"
+                                                 (file-attribute-modification-time attr))
+                                                (format "%10s"
+                                                        (proviso-deploy-human-readable-filesize
+                                                         (file-attribute-size attr)))
+                                                )
+                                             "---------- --:--:--        --")
+                                           'face '(shadow)))))
                             t)
                (add-to-list 'lst
                             (list
@@ -637,20 +644,39 @@ Optional argument ARG allows choosing a project."
                (add-to-list 'lst
                             (list
                              :content (lambda ()
-                                        (propertize
-                                         (if (file-exists-p dst)
-                                             (format-time-string
-                                              "%F %r"
-                                              (file-attribute-modification-time
-                                               (file-attributes
-                                                dst)))
-                                           "---------- --:--:-- --")
-                                         'face '(shadow))))
+                                        (let ((attr (file-attributes dst)))
+                                          (propertize
+                                           (if (file-exists-p dst)
+                                               (concat
+                                                (format-time-string
+                                                 "%F %T"
+                                                 (file-attribute-modification-time
+                                                  (file-attributes attr)))
+                                                (format "%10s"
+                                                        (proviso-deploy-human-readable-filesize
+                                                         (file-attribute-size attr))))
+                                             "---------- --:--:--        --")
+                                           'face '(shadow)))))
                             t)
                ))))
     (setq width (proviso-gui-add-to-buffer buffer lst width))
     (proviso-gui-finalize-buffer buffer)
     ))
+
+(defconst proviso-deploy-filesize-prefixes [" " "K" "M" "G" ]
+  "Prefix notations for different magnitudes of file sizes.")
+
+(defun proviso-deploy-human-readable-filesize (size)
+  "Return SIZE as human-readable string.
+From `http://mbork.pl/2018-03-26_Human-readable_filesizes'."
+  (let* ((order (1- (max 1 (ceiling (log (max size 1) 1024)))))
+         (prefix (elt proviso-deploy-filesize-prefixes
+                      (min order (length proviso-deploy-filesize-prefixes))))
+         (size-in-unit (/ size (expt 1024.0 order)))
+         (precision (max 3 (+ 2 (floor (log (max size-in-unit 1) 10)))))
+         (str (format (format "%%.%dg%%sB" precision)
+                      size-in-unit prefix)))
+    str))
 
 (provide 'proviso-deploy)
 ;;; proviso-deploy.el ends here
