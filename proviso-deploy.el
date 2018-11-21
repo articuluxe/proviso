@@ -605,7 +605,8 @@ Optional argument ARG allows choosing a project."
                (add-to-list 'lst
                             (list
                              :heading "Command"
-                             :content (lambda () cmd)) t))
+                             :content (lambda () cmd)
+                             :section 'pre) t))
               ((and src dst)
                (when (file-directory-p dst)
                  (setq dst (expand-file-name
