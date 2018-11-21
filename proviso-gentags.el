@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-08-29 13:27:41 dan.harms>
+;; Modified Time-stamp: <2018-11-21 08:33:44 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -207,8 +207,8 @@ BUFFER is an output buffer."
                    `(lambda ()
                       (setq inhibit-message t)
                       ,(async-inject-variables "load-path")
-                      (require 'proviso-transfer)
-                      (proviso-transfer-file ,src ,dst)
+                      (require 'xfer)
+                      (xfer-transfer-file ,src ,dst)
                       (current-time))
                    `(lambda (result)
                       (with-current-buffer ,buffer
