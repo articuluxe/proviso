@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-11-21 15:00:39 dharms>
+;; Modified Time-stamp: <2018-11-29 08:55:49 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -373,9 +373,10 @@ If ARG is non-nil, another project can be chosen."
             (progn
               (setq src (plist-get spec :source))
               (setq dst (plist-get spec :destination))
-              (when (file-directory-p dst)
-                (setq dst (expand-file-name
-                           (file-name-nondirectory src) dst)))
+              (and dst
+                   (file-directory-p dst)
+                   (setq dst (expand-file-name
+                              (file-name-nondirectory src) dst)))
               (if (and src dst)
                   (if (and (file-exists-p src)
                            (file-exists-p dst))
@@ -416,9 +417,10 @@ If ARG is non-nil, another project can be chosen."
             (progn
               (setq src (plist-get spec :source))
               (setq dst (plist-get spec :destination))
-              (when (file-directory-p dst)
-                (setq dst (expand-file-name
-                           (file-name-nondirectory src) dst)))
+              (and dst
+                   (file-directory-p dst)
+                   (setq dst (expand-file-name
+                              (file-name-nondirectory src) dst)))
               (if (and src dst)
                   (if (and (file-exists-p src)
                            (file-exists-p dst))
@@ -445,9 +447,10 @@ If ARG is non-nil, another project can be chosen."
             (progn
               (setq src (plist-get spec :source))
               (setq dst (plist-get spec :destination))
-              (when (file-directory-p dst)
-                (setq dst (expand-file-name
-                           (file-name-nondirectory src) dst)))
+              (and dst
+                   (file-directory-p dst)
+                   (setq dst (expand-file-name
+                              (file-name-nondirectory src) dst)))
               (if (and src dst)
                   (if (and (file-exists-p src)
                            (file-exists-p dst))
@@ -503,18 +506,23 @@ If ARG is non-nil, another project can be chosen."
   (let* ((proj (if arg (proviso-choose-project)
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
-         spec file)
+         spec)
     (if specs
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
                    "Find deployed file: "))
-            (let ((file (plist-get spec :destination)))
-              (if file
-                  (if (file-exists-p file)
-                      (find-file file)
-                    (user-error "File '%s' does not exist" file))
-                (user-error "No remote file to edit")))
+            (let ((src (plist-get spec :source))
+                  (dst (plist-get spec :destination)))
+              (if dst
+                  (progn
+                    (when (file-directory-p dst)
+                      (setq dst (expand-file-name
+                                 (file-name-nondirectory src) dst)))
+                    (if (file-exists-p dst)
+                        (find-file dst)
+                      (user-error "File '%s' does not exist" dst)))
+                (user-error "No deployed file to edit")))
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
 
@@ -526,16 +534,23 @@ If ARG is non-nil, another project can be chosen."
   (let* ((proj (if arg (proviso-choose-project)
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
-         spec file)
+         spec)
     (if specs
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
                    "Find deployed file in other window: "))
-            (if (and (setq file (plist-get spec :destination))
-                     (file-exists-p file))
-                (find-file-other-window file)
-              (user-error "File '%s' does not exist" file))
+            (let ((src (plist-get spec :source))
+                  (dst (plist-get spec :destination)))
+              (if dst
+                  (progn
+                    (when (file-directory-p dst)
+                      (setq dst (expand-file-name
+                                 (file-name-nondirectory src) dst)))
+                    (if (file-exists-p dst)
+                        (find-file-other-window dst)
+                      (user-error "File '%s' does not exist" dst)))
+                (user-error "No deployed file to edit")))
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
 
