@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-11-29 08:55:49 dharms>
+;; Modified Time-stamp: <2018-11-29 08:59:27 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -354,6 +354,15 @@ If ARG is non-nil, another project can be chosen."
                      (proviso-get proj :deployments)))
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
+
+;;;###autoload
+(defun proviso-deploy-delete-all-deploy (&optional arg)
+  "Delete all active deployments.
+If ARG is non-nil, another project can be chosen."
+  (interactive "P")
+  (let* ((proj (if arg (proviso-choose-project)
+                 (proviso-current-project))))
+    (proviso-put proj :deployments nil)))
 
 ;;;###autoload
 (defun proviso-deploy-check-file (&optional arg)
