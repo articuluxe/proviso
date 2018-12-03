@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-11-29 08:59:27 dharms>
+;; Modified Time-stamp: <2018-11-29 09:06:48 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -563,8 +563,14 @@ If ARG is non-nil, another project can be chosen."
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
 
+(defun proviso-deploy-revert-buffer ()
+  "Reverts (recreates) the deployment buffer."
+  (interactive)
+  (proviso-deploy-create-buffer (proviso-current-project)))
+
 (defvar proviso-deploy-mode-map
   (let ((map (make-sparse-keymap)))
+    (define-key map "g" #'proviso-deploy-revert-buffer)
     map)
   "Keymap for `proviso-deploy-mode'.")
 
