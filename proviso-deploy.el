@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-11-29 09:06:48 dharms>
+;; Modified Time-stamp: <2018-12-05 08:47:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -631,12 +631,15 @@ Optional argument ARG allows choosing a project."
     (dolist (spec (proviso-get proj :deployments))
       (lexical-let ((cmd (plist-get spec :command))
                     (src (plist-get spec :source))
-                    (dst (plist-get spec :destination)))
+                    (dst (plist-get spec :destination))
+                    (spec spec))
         (cond (cmd
                (add-to-list 'lst
                             (list
                              :heading "Command"
                              :content (lambda () cmd)
+                             :bindings `(("r" . (lambda()
+                                                 (proviso-deploy-one (quote ,spec)))))
                              :section 'pre) t))
               ((and src dst)
                (when (file-directory-p dst)
