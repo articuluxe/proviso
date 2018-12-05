@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-11-14 11:34:56 dan.harms>
+;; Modified Time-stamp: <2018-12-05 08:56:59 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -69,7 +69,6 @@ Optional ARG allows choosing a project."
 
 (defun proviso-dashboard-goto-root ()
   "Go to root dired of the current project."
-  (interactive)
   (let ((proj proviso-local-proj))
     (when proj
       (proviso-dired-open-project proj))))
@@ -97,7 +96,7 @@ Optional ARG allows choosing a project."
                               (propertize (replace-regexp-in-string
                                            (getenv "HOME") "~" file)
                                           'face '(bold))))
-                 :bindings (("d" . proviso-dashboard-goto-root)))
+                 :bindings (("d" . #'proviso-dashboard-goto-root)))
        (:heading "Remote host"
                  :predicate (lambda ()
                               (proviso-get proviso-local-proj :remote-host))
