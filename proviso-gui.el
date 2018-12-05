@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-12 08:57:39 dharms>
+;; Modified Time-stamp: <2018-12-05 08:53:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -103,16 +103,18 @@
         #'proviso-gui-move-next-marker)
       )))
 
-(defun proviso-gui-cb (cb create marker)
-  "Callback for callable CB.  Content is given by CREATE, position by MARKER."
+(defun proviso-gui-cb (cb create marker buffer)
+  "Callback for callable CB.  Content is given by CREATE, position by MARKER.
+BUFFER is the gui buffer whose content should be recreated."
   (interactive)
   (funcall cb)
-  (let ((inhibit-read-only t)
-        (pos (marker-position marker)))
-    (goto-char pos)
-    (delete-region pos (line-end-position))
-    (insert (funcall create))
-    (goto-char pos)))
+  (with-current-buffer buffer
+    (let ((inhibit-read-only t)
+          (pos (marker-position marker)))
+      (goto-char pos)
+      (delete-region pos (line-end-position))
+      (insert (funcall create))
+      (goto-char pos))))
 
 (defun proviso-gui-add-to-buffer (buffer lst &optional maxwidth)
   "Add GUI elements TO BUFFER based on LST.
@@ -147,10 +149,11 @@ MAXWIDTH allows specifying the minimum length of the headings."
           (dolist (binding (plist-get entry :bindings))
             (lexical-let ((cb (cdr binding))
                           (create (plist-get entry :content))
-                          (marker marker))
+                          (marker marker)
+                          (buffer buffer))
               (define-key map (car binding)
                 (lambda() (interactive)
-                  (proviso-gui-cb cb create marker)))))
+                  (proviso-gui-cb cb create marker buffer)))))
           (set-keymap-parent map proviso-gui--local-map)
           (add-to-list 'proviso-gui-markers
                        (cons marker map) t)
