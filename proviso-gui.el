@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-05 08:53:51 dharms>
+;; Modified Time-stamp: <2018-12-10 08:31:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -31,7 +31,7 @@
 (require 'seq)
 
 (defvar-local proviso-gui-markers nil
-  "List of markers in current buffer, for navigation.")
+  "Alist of markers in current buffer, for navigation.")
 
 (defvar-local proviso-gui--local-map nil
   "Local map.")
@@ -49,10 +49,12 @@
   (interactive)
   (let* ((pt (point))
          (next (seq-find (lambda (cell)
-                           (> (marker-position (car cell)) pt))
+                           (> (marker-position
+                               (cdr (assq 'pos cell)))
+                              pt))
                          proviso-gui-markers)))
     (when next
-      (goto-char (marker-position (car next)))
+      (goto-char (marker-position (cdr (assq 'pos next))))
       (proviso-gui-on-line))))
 
 (defun proviso-gui-move-prev-marker ()
@@ -60,10 +62,12 @@
   (interactive)
   (let* ((pt (point))
          (prev (seq-find (lambda (cell)
-                           (< (marker-position (car cell)) pt))
+                           (< (marker-position
+                               (cdr (assq 'pos cell)))
+                              pt))
                          (reverse proviso-gui-markers))))
     (when prev
-      (goto-char (marker-position (car prev)))
+      (goto-char (marker-position (cdr (assq 'pos prev))))
       (proviso-gui-on-line))))
 
 (defun proviso-gui--find-current-cell ()
@@ -71,8 +75,9 @@
   (let ((beg (line-beginning-position))
         (end (line-end-position))
         pos)
-    (seq-find (lambda (elt)
-                (setq pos (marker-position (car elt)))
+    (seq-find (lambda (cell)
+                (setq pos (marker-position
+                           (cdr (assq 'pos cell))))
                 (and (>= pos beg)
                      (<= pos end)))
               proviso-gui-markers)))
@@ -81,7 +86,7 @@
   "Examine the current line, set the current keymap if necessary."
   (let ((cell (proviso-gui--find-current-cell)))
     (when cell
-      (use-local-map (cdr cell)))))
+      (use-local-map (cdr (assq 'map cell))))))
 
 (defun proviso-gui-init-buffer (buffer keymap)
   "Initialize BUFFER for gui operations, with keymap KEYMAP."
@@ -103,18 +108,21 @@
         #'proviso-gui-move-next-marker)
       )))
 
-(defun proviso-gui-cb (cb create marker buffer)
-  "Callback for callable CB.  Content is given by CREATE, position by MARKER.
-BUFFER is the gui buffer whose content should be recreated."
+(defun proviso-gui-cb (cb cell)
+  "Execute callback CB for gui element corresponding to CELL.
+CELL is an alist of properties."
   (interactive)
-  (funcall cb)
-  (with-current-buffer buffer
-    (let ((inhibit-read-only t)
-          (pos (marker-position marker)))
-      (goto-char pos)
-      (delete-region pos (line-end-position))
-      (insert (funcall create))
-      (goto-char pos))))
+  (let ((buffer (cdr (assq 'buffer cell)))
+        (marker (cdr (assq 'pos cell)))
+        (create (cdr (assq 'create cell))))
+    (funcall cb)
+    (with-current-buffer buffer
+      (let ((inhibit-read-only t)
+            (pos (marker-position marker)))
+        (goto-char pos)
+        (delete-region pos (line-end-position))
+        (insert (funcall create))
+        (goto-char pos)))))
 
 (defun proviso-gui-add-to-buffer (buffer lst &optional maxwidth)
   "Add GUI elements TO BUFFER based on LST.
@@ -122,7 +130,7 @@ Returns a sorted list of markers in the buffer.
 MAXWIDTH allows specifying the minimum length of the headings."
   (let ((inhibit-read-only t)
         (max-heading (or maxwidth 0))
-        pred content)
+        pred heading)
     (with-current-buffer buffer
       (setq lst (seq-remove (lambda (elt)
                               (setq pred (plist-get elt :predicate))
@@ -136,27 +144,32 @@ MAXWIDTH allows specifying the minimum length of the headings."
                              0)
                            max-heading)))
       (dolist (entry lst)
+        (setq heading (plist-get entry :heading))
         (setq pred (plist-get entry :content))
         (when (eq (plist-get entry :section) 'pre)
           (proviso-gui--insert-section-break))
-        (insert (s-pad-left max-heading " " (plist-get entry :heading)))
-        (if (plist-get entry :heading)
-            (insert ": ")
-          (insert "  "))
-        (let ((map (make-sparse-keymap))
-              (marker (point-marker)))
+        (setq heading
+              (concat (s-pad-left max-heading " " heading)
+                      (if heading ": " "  ")))
+        (insert heading)
+        (lexical-let ((map (make-sparse-keymap))
+                      (marker (point-marker))
+                      (create (plist-get entry :content))
+                      cell)
           (set-marker-insertion-type marker nil)
+          (setq cell (list
+                      (cons 'pos marker)
+                      (cons 'create create)
+                      (cons 'buffer buffer)
+                      (cons 'heading heading)))
           (dolist (binding (plist-get entry :bindings))
-            (lexical-let ((cb (cdr binding))
-                          (create (plist-get entry :content))
-                          (marker marker)
-                          (buffer buffer))
+            (lexical-let ((cb (cdr binding)))
               (define-key map (car binding)
                 (lambda() (interactive)
-                  (proviso-gui-cb cb create marker buffer)))))
+                  (proviso-gui-cb cb cell)))))
+          (push (cons 'map map) cell)
           (set-keymap-parent map proviso-gui--local-map)
-          (add-to-list 'proviso-gui-markers
-                       (cons marker map) t)
+          (add-to-list 'proviso-gui-markers cell t)
           (insert (funcall pred) "\n"))
         (when (eq (plist-get entry :section) 'post)
           (proviso-gui--insert-section-break))
@@ -172,8 +185,10 @@ MAXWIDTH allows specifying the minimum length of the headings."
   "Sort the markers used in BUFFER."
   (setq proviso-gui-markers
         (sort proviso-gui-markers (lambda (lhs rhs)
-                                    (< (marker-position (car lhs))
-                                       (marker-position (car rhs)))))))
+                                    (< (marker-position
+                                        (cdr (assq 'pos lhs)))
+                                       (marker-position
+                                        (cdr (assq 'pos rhs))))))))
 
 (defun proviso-gui-finalize-buffer (buffer)
   "Finalize the GUI settings of BUFFER."
