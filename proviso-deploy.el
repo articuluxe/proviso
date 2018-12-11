@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-05 08:47:15 dharms>
+;; Modified Time-stamp: <2018-12-10 21:38:55 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -521,19 +521,23 @@ If ARG is non-nil, another project can be chosen."
                   (proviso-deploy-choose-deploy
                    specs
                    "Find deployed file: "))
-            (let ((src (plist-get spec :source))
-                  (dst (plist-get spec :destination)))
-              (if dst
-                  (progn
-                    (when (file-directory-p dst)
-                      (setq dst (expand-file-name
-                                 (file-name-nondirectory src) dst)))
-                    (if (file-exists-p dst)
-                        (find-file dst)
-                      (user-error "File '%s' does not exist" dst)))
-                (user-error "No deployed file to edit")))
+            (proviso-deploy-find-file--internal spec)
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
+
+(defun proviso-deploy-find-file--internal (spec)
+  "Edit the deployment SPEC."
+  (let ((src (plist-get spec :source))
+        (dst (plist-get spec :destination)))
+    (if dst
+        (progn
+          (when (file-directory-p dst)
+            (setq dst (expand-file-name
+                       (file-name-nondirectory src) dst)))
+          (if (file-exists-p dst)
+              (find-file dst)
+            (user-error "File '%s' does not exist" dst)))
+      (user-error "No deployed file to edit"))))
 
 ;;;###autoload
 (defun proviso-deploy-find-file-other-window (&optional arg)
@@ -639,7 +643,7 @@ Optional argument ARG allows choosing a project."
                              :heading "Command"
                              :content (lambda () cmd)
                              :bindings `(("r" . (lambda()
-                                                 (proviso-deploy-one (quote ,spec)))))
+                                                  (proviso-deploy-one (quote ,spec)))))
                              :section 'pre) t))
               ((and src dst)
                (when (file-directory-p dst)
@@ -650,6 +654,8 @@ Optional argument ARG allows choosing a project."
                              :heading "Source"
                              :content (lambda ()
                                         (replace-regexp-in-string home "~" src))
+                             :bindings `(("r" . (lambda()
+                                                  (proviso-deploy-one (quote ,spec)))))
                              :section 'pre) t)
                (add-to-list 'lst
                             (list
@@ -666,18 +672,27 @@ Optional argument ARG allows choosing a project."
                                                          (file-attribute-size attr)))
                                                 )
                                              "---------- --:--:--        --")
-                                           'face '(shadow)))))
+                                           'face '(shadow))))
+                             :bindings `(("r" . (lambda()
+                                                  (proviso-deploy-one (quote ,spec)))))
+                             )
                             t)
                (add-to-list 'lst
                             (list
                              :heading "Destination"
                              :content (lambda ()
-                                        (replace-regexp-in-string home "~" dst)))
+                                        (replace-regexp-in-string home "~" dst))
+                             :bindings `(("r" . (lambda()
+                                                  (proviso-deploy-one (quote ,spec))))
+                                         ("f" . (lambda()
+                                                  (proviso-deploy-find-file--internal
+                                                   (quote ,spec)))))
+                             )
                             t)
                (add-to-list 'lst
                             (list
                              :content (lambda ()
-                                        (let ((attr (file-attributes dst)))
+                                        (lexical-let ((attr (file-attributes dst)))
                                           (propertize
                                            (if (file-exists-p dst)
                                                (concat
@@ -689,7 +704,13 @@ Optional argument ARG allows choosing a project."
                                                         (proviso-deploy-human-readable-filesize
                                                          (file-attribute-size attr))))
                                              "---------- --:--:--        --")
-                                           'face '(shadow)))))
+                                           'face '(shadow))))
+                             :bindings `(("r" . (lambda()
+                                                  (proviso-deploy-one (quote ,spec))))
+                                         ("f" . (lambda()
+                                                  (proviso-deploy-find-file--internal
+                                                   (quote ,spec)))))
+                             )
                             t)
                ))))
     (setq width (proviso-gui-add-to-buffer buffer lst width))
