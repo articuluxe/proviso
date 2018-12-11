@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-11-26 10:58:19 dan.harms>
+;; Modified Time-stamp: <2018-12-10 21:27:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -31,6 +31,7 @@
 (require 'subr-x)
 (require 'find-file)
 (require 'async)
+(require 'xfer)
 
 ;; customization points
 (defun proviso-gentags-exe (remote)
@@ -200,8 +201,7 @@ BUFFER is an output buffer."
   (when (string-match-p "\\(finished\\|exited\\)" change)
     (let ((buffer (process-buffer proc)))
       (with-current-buffer buffer
-        (if-let ((entry (assoc proc proviso-gentags--procs))
-                 (start (current-time)))
+        (if-let ((entry (assoc proc proviso-gentags--procs)))
             (progn
               (setq proviso-gentags--procs (delete entry proviso-gentags--procs))
               (if-let ((copy (nth 1 entry))
@@ -212,16 +212,11 @@ BUFFER is an output buffer."
                       (setq inhibit-message t)
                       ,(async-inject-variables "load-path")
                       (require 'xfer)
-                      (xfer-transfer-file ,src ,dst)
-                      (current-time))
+                      (xfer-transfer-file ,src ,dst))
                    `(lambda (result)
                       (with-current-buffer ,buffer
                         (goto-char (point-max))
-                        (insert (format
-                                 "\n  cp %s %s (it took %.3f sec.)"
-                                 ,src ,dst
-                                 (float-time (time-subtract result
-                                                            (quote ,start))))))
+                        (insert (cdr result)))
                       (proviso-gentags--spawn-jobs ,buffer)))
                 (proviso-gentags--spawn-jobs buffer))))))))
 
