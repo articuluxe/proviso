@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-10 08:31:03 dharms>
+;; Modified Time-stamp: <2018-12-11 08:35:30 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -36,13 +36,28 @@
 (defvar-local proviso-gui--local-map nil
   "Local map.")
 
+(defvar-local proviso-gui--timers nil
+  "List of timers in effect.")
+
+(defun proviso-gui-close-window ()
+  "Close the gui window and kill the gui buffer.."
+  (interactive)
+  (kill-buffer)
+  (delete-window))
+
 (defvar proviso-gui-map
   (let ((map (make-sparse-keymap)))
     (define-key map "n" #'proviso-gui-move-next-marker)
     (define-key map "p" #'proviso-gui-move-prev-marker)
     (define-key map "t" #'ignore)
-    (define-key map "q" #'delete-window)
+    (define-key map "q" #'proviso-gui-close-window)
     map))
+
+(defun proviso-gui-on-buffer-kill ()
+  "Hook function run when a buffer is killed."
+  (dolist (timer proviso-gui--timers)
+    (cancel-timer timer))
+  (setq proviso-gui--timers nil))
 
 (defun proviso-gui-move-next-marker ()
   "Move to the next marker position in the dashboard buffer."
@@ -92,6 +107,8 @@
   "Initialize BUFFER for gui operations, with keymap KEYMAP."
   (let ((inhibit-read-only t))
     (with-current-buffer buffer
+      (unless (memq #'proviso-gui-on-buffer-kill kill-buffer-hook)
+        (add-hook 'kill-buffer-hook #'proviso-gui-on-buffer-kill nil t))
       (setq proviso-gui-markers nil)
       (put 'proviso-gui--local-map 'permanent-local t)
       (erase-buffer)
