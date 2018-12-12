@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-11 08:35:30 dharms>
+;; Modified Time-stamp: <2018-12-12 08:52:20 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -58,6 +58,15 @@
   (dolist (timer proviso-gui--timers)
     (cancel-timer timer))
   (setq proviso-gui--timers nil))
+
+(defun proviso-gui-on-timer (future cell)
+  "Timer callback to check FUTURE, regarding CELL."
+  (if (async-ready future)
+      (let ((buffer (cdr (assq 'buffer cell)))
+            (marker (cdr (assq 'pos cell)))
+            (create (cdr (assq 'create cell))))
+        (proviso-gui--draw-cell buffer marker create))
+    (run-at-time 1 nil #'proviso-gui-on-timer)))
 
 (defun proviso-gui-move-next-marker ()
   "Move to the next marker position in the dashboard buffer."
@@ -131,15 +140,21 @@ CELL is an alist of properties."
   (interactive)
   (let ((buffer (cdr (assq 'buffer cell)))
         (marker (cdr (assq 'pos cell)))
-        (create (cdr (assq 'create cell))))
-    (funcall cb)
-    (with-current-buffer buffer
-      (let ((inhibit-read-only t)
-            (pos (marker-position marker)))
-        (goto-char pos)
-        (delete-region pos (line-end-position))
-        (insert (funcall create))
-        (goto-char pos)))))
+        (create (cdr (assq 'create cell)))
+        (future (funcall cb)))
+    (and future (processp future)
+         (run-at-time 1 nil #'proviso-gui-on-timer future cell))
+    (proviso-gui--draw-cell buffer marker create)))
+
+(defun proviso-gui--draw-cell (buffer marker fun)
+  "In BUFFER, recreate content at MARKER with FUN."
+  (with-current-buffer buffer
+    (let ((inhibit-read-only t)
+          (pos (marker-position marker)))
+      (goto-char pos)
+      (delete-region pos (line-end-position))
+      (insert (funcall fun))
+      (goto-char pos))))
 
 (defun proviso-gui-add-to-buffer (buffer lst &optional maxwidth)
   "Add GUI elements TO BUFFER based on LST.
