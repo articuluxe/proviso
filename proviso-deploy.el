@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-10 21:38:55 dharms>
+;; Modified Time-stamp: <2018-12-12 08:57:59 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -603,7 +603,6 @@ Optional argument ARG allows choosing a project."
         (format proviso-deploy-buffer-name-prefix proj))
   (let ((buffer (get-buffer-create proviso-deploy-buffer-name))
         (width (string-width "Destination"))
-        (home (getenv "HOME"))
         lst)
     (proviso-gui-init-buffer buffer proviso-deploy-mode-map)
     (with-current-buffer buffer
@@ -623,11 +622,11 @@ Optional argument ARG allows choosing a project."
                                   (let ((file (proviso-get proviso-local-proj :deploy-file)))
                                     (cond ((and file (file-exists-p file))
                                            (propertize
-                                            (replace-regexp-in-string home "~" file)
+                                            (replace-regexp-in-string (getenv "HOME") "~" file)
                                             'face '(bold)))
                                           (file
                                            (propertize
-                                            (replace-regexp-in-string home "~" file)
+                                            (replace-regexp-in-string (getenv "HOME") "~" file)
                                             'face '(shadow)))
                                           (t
                                            (propertize "None" 'face '(shadow)))))))
@@ -653,7 +652,7 @@ Optional argument ARG allows choosing a project."
                             (list
                              :heading "Source"
                              :content (lambda ()
-                                        (replace-regexp-in-string home "~" src))
+                                        (replace-regexp-in-string (getenv "HOME") "~" src))
                              :bindings `(("r" . (lambda()
                                                   (proviso-deploy-one (quote ,spec)))))
                              :section 'pre) t)
@@ -681,7 +680,7 @@ Optional argument ARG allows choosing a project."
                             (list
                              :heading "Destination"
                              :content (lambda ()
-                                        (replace-regexp-in-string home "~" dst))
+                                        (replace-regexp-in-string (getenv "HOME") "~" dst))
                              :bindings `(("r" . (lambda()
                                                   (proviso-deploy-one (quote ,spec))))
                                          ("f" . (lambda()
