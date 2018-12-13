@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-12 08:57:59 dharms>
+;; Modified Time-stamp: <2018-12-13 08:30:23 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -372,42 +372,44 @@ If ARG is non-nil, another project can be chosen."
   (let* ((proj (if arg (proviso-choose-project)
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
-         spec
-         src dst)
+         spec)
     (if specs
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
                    "Check deployment: "))
-            (progn
-              (setq src (plist-get spec :source))
-              (setq dst (plist-get spec :destination))
-              (and dst
-                   (file-directory-p dst)
-                   (setq dst (expand-file-name
-                              (file-name-nondirectory src) dst)))
-              (if (and src dst)
-                  (if (and (file-exists-p src)
-                           (file-exists-p dst))
-                      (if (ediff-same-file-contents src dst)
-                          (message "Files are identical.")
-                        (let
-                            ((choices '(?d ?e ?q))
-                             (prompt
-                              "Files are different; run [d]iff, [e]diff or [q]uit: ")
-                             ch)
-                          (while (null ch)
-                            (setq ch (read-char-choice prompt choices)))
-                          (cond ((eq ch ?d)
-                                 (diff src dst))
-                                ((eq ch ?e)
-                                 (ediff src dst))
-                                (t
-                                 (message "Diff aborted.")))))
-                    (user-error "One or more files do not exist"))
-                (user-error "No files to compare")))
+            (proviso-deploy--check-file-spec spec)
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
+
+(defun proviso-deploy--check-file-spec (spec)
+  "Check the deployment SPEC."
+  (let ((src (plist-get spec :source))
+        (dst (plist-get spec :destination)))
+    (and dst
+         (file-directory-p dst)
+         (setq dst (expand-file-name
+                    (file-name-nondirectory src) dst)))
+    (if (and src dst)
+        (if (and (file-exists-p src)
+                 (file-exists-p dst))
+            (if (ediff-same-file-contents src dst)
+                (message "Files are identical.")
+              (let
+                  ((choices '(?d ?e ?q))
+                   (prompt
+                    "Files are different; run [d]iff, [e]diff or [q]uit: ")
+                   ch)
+                (while (null ch)
+                  (setq ch (read-char-choice prompt choices)))
+                (cond ((eq ch ?d)
+                       (diff src dst))
+                      ((eq ch ?e)
+                       (ediff src dst))
+                      (t
+                       (message "Diff aborted.")))))
+          (user-error "One or more files do not exist"))
+      (user-error "No files to compare"))))
 
 ;;;###autoload
 (defun proviso-deploy-diff-file (&optional arg)
@@ -417,27 +419,30 @@ If ARG is non-nil, another project can be chosen."
   (let* ((proj (if arg (proviso-choose-project)
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
-         spec src dst)
+         spec)
     (if specs
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
                    "Diff deployment: "))
-            (progn
-              (setq src (plist-get spec :source))
-              (setq dst (plist-get spec :destination))
-              (and dst
-                   (file-directory-p dst)
-                   (setq dst (expand-file-name
-                              (file-name-nondirectory src) dst)))
-              (if (and src dst)
-                  (if (and (file-exists-p src)
-                           (file-exists-p dst))
-                      (diff src dst)
-                    (user-error "One or more files do not exist"))
-                (user-error "No files to compare")))
+            (proviso-deploy--diff-file-spec spec)
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
+
+(defun proviso-deploy--diff-file-spec (spec)
+  "Diff the deployment SPEC."
+  (let ((src (plist-get spec :source))
+        (dst (plist-get spec :destination)))
+    (and dst
+         (file-directory-p dst)
+         (setq dst (expand-file-name
+                    (file-name-nondirectory src) dst)))
+    (if (and src dst)
+        (if (and (file-exists-p src)
+                 (file-exists-p dst))
+            (diff src dst)
+          (user-error "One or more files do not exist"))
+      (user-error "No files to compare"))))
 
 ;;;###autoload
 (defun proviso-deploy-ediff-file (&optional arg)
@@ -447,27 +452,30 @@ If ARG is non-nil, another project can be chosen."
   (let* ((proj (if arg (proviso-choose-project)
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
-         spec src dst)
+         spec)
     (if specs
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
                    "Ediff deployment: "))
-            (progn
-              (setq src (plist-get spec :source))
-              (setq dst (plist-get spec :destination))
-              (and dst
-                   (file-directory-p dst)
-                   (setq dst (expand-file-name
-                              (file-name-nondirectory src) dst)))
-              (if (and src dst)
-                  (if (and (file-exists-p src)
-                           (file-exists-p dst))
-                      (ediff-files src dst)
-                    (user-error "One or more files do not exist"))
-                (user-error "No files to compare")))
+            (proviso-deploy--ediff-file-spec spec)
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
+
+(defun proviso-deploy--ediff-file-spec (spec)
+  "Ediff the deployment SPEC."
+  (let ((src (plist-get spec :source))
+        (dst (plist-get spec :destination)))
+    (and dst
+         (file-directory-p dst)
+         (setq dst (expand-file-name
+                    (file-name-nondirectory src) dst)))
+    (if (and src dst)
+        (if (and (file-exists-p src)
+                 (file-exists-p dst))
+            (ediff-files src dst)
+          (user-error "One or more files do not exist"))
+      (user-error "No files to compare"))))
 
 ;;;###autoload
 (defun proviso-deploy-edit-deploy (&optional arg)
@@ -521,11 +529,11 @@ If ARG is non-nil, another project can be chosen."
                   (proviso-deploy-choose-deploy
                    specs
                    "Find deployed file: "))
-            (proviso-deploy-find-file--internal spec)
+            (proviso-deploy--find-file-spec spec)
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
 
-(defun proviso-deploy-find-file--internal (spec)
+(defun proviso-deploy--find-file-spec (spec)
   "Edit the deployment SPEC."
   (let ((src (plist-get spec :source))
         (dst (plist-get spec :destination)))
@@ -654,7 +662,17 @@ Optional argument ARG allows choosing a project."
                              :content (lambda ()
                                         (replace-regexp-in-string (getenv "HOME") "~" src))
                              :bindings `(("r" . (lambda()
-                                                  (proviso-deploy-one (quote ,spec)))))
+                                                  (proviso-deploy-one (quote ,spec))))
+                                         ("c" . (lambda()
+                                                  (proviso-deploy--check-file-spec
+                                                   (quote ,spec))))
+                                         ("d" . (lambda()
+                                                  (proviso-deploy--diff-file-spec
+                                                   (quote ,spec))))
+                                         ("e" . (lambda()
+                                                  (proviso-deploy--ediff-file-spec
+                                                   (quote ,spec))))
+                                         )
                              :section 'pre) t)
                (add-to-list 'lst
                             (list
@@ -673,7 +691,17 @@ Optional argument ARG allows choosing a project."
                                              "---------- --:--:--        --")
                                            'face '(shadow))))
                              :bindings `(("r" . (lambda()
-                                                  (proviso-deploy-one (quote ,spec)))))
+                                                  (proviso-deploy-one (quote ,spec))))
+                                         ("c" . (lambda()
+                                                  (proviso-deploy--check-file-spec
+                                                   (quote ,spec))))
+                                         ("d" . (lambda()
+                                                  (proviso-deploy--diff-file-spec
+                                                   (quote ,spec))))
+                                         ("e" . (lambda()
+                                                  (proviso-deploy--ediff-file-spec
+                                                   (quote ,spec))))
+                                         )
                              )
                             t)
                (add-to-list 'lst
@@ -684,8 +712,18 @@ Optional argument ARG allows choosing a project."
                              :bindings `(("r" . (lambda()
                                                   (proviso-deploy-one (quote ,spec))))
                                          ("f" . (lambda()
-                                                  (proviso-deploy-find-file--internal
-                                                   (quote ,spec)))))
+                                                  (proviso-deploy--find-file-spec
+                                                   (quote ,spec))))
+                                         ("c" . (lambda()
+                                                  (proviso-deploy--check-file-spec
+                                                   (quote ,spec))))
+                                         ("d" . (lambda()
+                                                  (proviso-deploy--diff-file-spec
+                                                   (quote ,spec))))
+                                         ("e" . (lambda()
+                                                  (proviso-deploy--ediff-file-spec
+                                                   (quote ,spec))))
+                                         )
                              )
                             t)
                (add-to-list 'lst
@@ -707,8 +745,18 @@ Optional argument ARG allows choosing a project."
                              :bindings `(("r" . (lambda()
                                                   (proviso-deploy-one (quote ,spec))))
                                          ("f" . (lambda()
-                                                  (proviso-deploy-find-file--internal
-                                                   (quote ,spec)))))
+                                                  (proviso-deploy--find-file-spec
+                                                   (quote ,spec))))
+                                         ("c" . (lambda()
+                                                  (proviso-deploy--check-file-spec
+                                                   (quote ,spec))))
+                                         ("d" . (lambda()
+                                                  (proviso-deploy--diff-file-spec
+                                                   (quote ,spec))))
+                                         ("e" . (lambda()
+                                                  (proviso-deploy--ediff-file-spec
+                                                   (quote ,spec))))
+                                         )
                              )
                             t)
                ))))
