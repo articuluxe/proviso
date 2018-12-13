@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-13 10:50:00 dan.harms>
+;; Modified Time-stamp: <2018-12-13 16:32:20 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -150,7 +150,6 @@ REMOTE is non-nil if the project is on a remote host."
         (define-key map "q" #'quit-window)
         (set-keymap-parent map (current-local-map))
         (use-local-map map))
-      (goto-char (point-max))
       (insert (format "TAGS generation started at %s\n\n"
                       (current-time-string start-time)))
       (setq proviso-gentags--start-time start-time))
@@ -186,15 +185,14 @@ BUFFER is an output buffer."
                    "sh" "-c"
                    cmd)))
     (with-current-buffer buffer
+      (insert (format "%s\n" cmd))
       (push (cons process
                   (list
                    (plist-get plist :copy-remote)
                    (plist-get plist :remote-src)
                    (plist-get plist :remote-dst)))
             proviso-gentags--procs)
-      (set-process-sentinel process #'proviso-gentags--sentinel)
-      (insert (format "%s\n" cmd)))
-    ))
+      (set-process-sentinel process #'proviso-gentags--sentinel))))
 
 (defun proviso-gentags--sentinel (proc change)
   "Process sentinel notifying that PROC underwent CHANGE."
@@ -215,7 +213,6 @@ BUFFER is an output buffer."
                       (xfer-transfer-file-silent ,src ,dst))
                    `(lambda (result)
                       (with-current-buffer ,buffer
-                        (goto-char (point-max))
                         (insert (cdr result) "\n"))
                       (proviso-gentags--spawn-jobs ,buffer)))
                 (proviso-gentags--spawn-jobs buffer))))))))
@@ -227,7 +224,6 @@ BUFFER is an output buffer."
            (nowstr (current-time-string))
            (elapsed (float-time (time-subtract
                                  now proviso-gentags--start-time))))
-      (goto-char (point-max))
       (insert (format "\nTAGS generation finished at %s (it took %.3f seconds).\n\n"
                       nowstr elapsed)))))
 
