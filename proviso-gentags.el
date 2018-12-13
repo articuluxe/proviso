@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-12 15:59:31 dan.harms>
+;; Modified Time-stamp: <2018-12-13 09:49:05 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -216,7 +216,7 @@ BUFFER is an output buffer."
                    `(lambda (result)
                       (with-current-buffer ,buffer
                         (goto-char (point-max))
-                        (insert (cdr result)))
+                        (insert (cdr result) "\n"))
                       (proviso-gentags--spawn-jobs ,buffer)))
                 (proviso-gentags--spawn-jobs buffer))))))))
 
