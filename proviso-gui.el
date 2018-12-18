@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-12 08:52:20 dharms>
+;; Modified Time-stamp: <2018-12-18 16:07:53 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -66,7 +66,7 @@
             (marker (cdr (assq 'pos cell)))
             (create (cdr (assq 'create cell))))
         (proviso-gui--draw-cell buffer marker create))
-    (run-at-time 1 nil #'proviso-gui-on-timer)))
+    (run-at-time 1 nil #'proviso-gui-on-timer future cell)))
 
 (defun proviso-gui-move-next-marker ()
   "Move to the next marker position in the dashboard buffer."
