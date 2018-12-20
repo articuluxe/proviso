@@ -582,6 +582,10 @@ If ARG is non-nil, another project can be chosen."
 
 (defvar proviso-deploy-mode-map
   (let ((map (make-sparse-keymap)))
+    (define-key map "o" #'proviso-deploy-open-file)
+    (define-key map "s" #'proviso-deploy-save-file)
+    (define-key map "S" #'proviso-deploy-save-file-as)
+    (define-key map "R" #'proviso-deploy-run-all-deploys)
     (define-key map "g" #'proviso-deploy-revert-buffer)
     map)
   "Keymap for `proviso-deploy-mode'.")
