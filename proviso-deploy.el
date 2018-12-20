@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-13 08:30:23 dharms>
+;; Modified Time-stamp: <2018-12-20 07:20:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -601,8 +601,11 @@ Optional argument ARG allows choosing a project."
   (interactive "P")
   (let ((proj (if arg (proviso-choose-project)
                 (proviso-current-project))))
-    (proviso-deploy-create-buffer proj)
-    (pop-to-buffer proviso-deploy-buffer-name)))
+    (if proj
+        (progn
+          (proviso-deploy-create-buffer proj)
+          (pop-to-buffer proviso-deploy-buffer-name))
+      (user-error "No current project"))))
 
 (defun proviso-deploy-create-buffer (proj)
   "Create a deployment buffer for project PROJ."

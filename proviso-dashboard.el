@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-05 08:56:59 dharms>
+;; Modified Time-stamp: <2018-12-20 07:19:20 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -64,8 +64,11 @@ Optional ARG allows choosing a project."
   (interactive "P")
   (let ((proj (if arg (proviso-choose-project)
                 (proviso-current-project))))
-    (proviso-dashboard-create proj)
-    (pop-to-buffer proviso-dashboard-buffer-name)))
+    (if proj
+        (progn
+          (proviso-dashboard-create proj)
+          (pop-to-buffer proviso-dashboard-buffer-name))
+      (user-error "No current project"))))
 
 (defun proviso-dashboard-goto-root ()
   "Go to root dired of the current project."
