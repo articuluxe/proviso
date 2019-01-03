@@ -1,13 +1,13 @@
 ;;; proviso-xref.el --- xref helper for proviso
-;; Copyright (C) 2018  Dan Harms (dharms)
+;; Copyright (C) 2018-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, October 29, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-31 11:45:10 dan.harms>
+;; Modified Time-stamp: <2019-01-03 08:19:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
-;; Package-Requires: ((emacs "24.4"))
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -61,7 +61,57 @@ This should override the similar method from `etags.el'."
           (save-excursion
             (etags-goto-tag-location tag-info)
             (point-marker))))))
-  )
+
+  (defun proviso-xref-make-peek-frame (fun &rest args)
+    "Make a new frame to peek at definition of FUN, with ARGS.
+Based off @tuhdo, cf. http://tuhdo.github.io/emacs-frame-peek.html
+and `smart-jump-peek', @see `smart-jump-make-peek-frame'."
+    (let* ((abs-pixel-pos
+            (save-excursion
+              (beginning-of-thing 'symbol)
+              (window-absolute-pixel-position)))
+           (x (car abs-pixel-pos))
+           (y (+ (cdr abs-pixel-pos)
+                 (frame-char-height)))
+           (frame (make-frame '((minibuffer . nil)
+                                (name . " *xref-peek*")
+                                (width . 80)
+                                (visibility . nil)
+                                (height . 15)
+                                (border-width . 0)
+                                (min-width . t)
+                                (min-height . t)
+                                (internal-border-width . 0)
+                                (vertical-scroll-bars . nil)
+                                (horizontal-scroll-bar . nil)
+                                (left-fringe . 0)
+                                (right-fringe . 0)
+                                (tool-bar-lines . 0)
+                                (line-spacing . 0)
+                                (unsplittable . t)
+                                (no-other-frame . t)
+                                (no-special-glyphs . t))))
+           summary)
+      ;; position new frame right under beginning of symbol
+      (set-frame-position frame x y)
+      ;; jump to symbol
+      (with-selected-frame frame
+        (apply fun args)
+        (read-only-mode)
+        (recenter-top-bottom 0))
+      (make-frame-visible frame)))
+
+  (defun proviso-xref-peek-definition ()
+    "Peek at definition at point."
+    (interactive)
+    (let ((func 'xref-find-definitions))
+      (proviso-xref-make-peek-frame
+       func
+       (xref--read-identifier "Find definitions of: ")
+       )))
+
+
+  )                                     ;end if emacs 25+
 
 (provide 'proviso-xref)
 ;;; proviso-xref.el ends here
