@@ -1,9 +1,9 @@
 ;;; proviso-deploy.el --- deploy artifacts to locations
-;; Copyright (C) 2018  Dan Harms (dharms)
+;; Copyright (C) 2018-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-20 07:20:32 dharms>
+;; Modified Time-stamp: <2019-01-03 13:49:45 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -62,6 +62,8 @@ This will be formatted with the project name.")
 (defun proviso-deploy-create (source dest)
   "Add a deployment from SOURCE to DEST."
   (interactive "FSource: \nFDestination: ")
+  (set-text-properties 0 (- (length source) 1) nil source)
+  (set-text-properties 0 (- (length dest) 1) nil dest)
   (list :source source :destination dest))
 
 (defun proviso-deploy-create-cmd (cmd)
