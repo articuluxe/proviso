@@ -1,9 +1,9 @@
 ;;; proviso-compile.el --- proviso compile
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-25 15:52:35 dan.harms>
+;; Modified Time-stamp: <2019-01-08 08:50:26 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -32,7 +32,7 @@
 (require 'dash)
 (require 'seq)
 
-(setq compilation-environment '("TERM=dumb"))
+(setq compilation-environment '("TERM=xterm-256color"))
 
 (defcustom proviso-compile-cmds-comint-filters nil
   "List of regexp to apply to compile commands.
