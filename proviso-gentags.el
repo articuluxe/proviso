@@ -1,9 +1,9 @@
 ;;; proviso-gentags.el --- Generate TAGS files
-;; Copyright (C) 2015-2018   (dan.harms)
+;; Copyright (C) 2015-2019   (dan.harms)
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-13 16:32:20 dan.harms>
+;; Modified Time-stamp: <2019-01-09 08:21:49 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -92,6 +92,12 @@ If COPY-REMOTE is non-nil, remote tags files will be copied to a
 local destination automatically."
   (let* ((tags-alist (proviso-get proj :proj-alist))
          (remote (proviso-get proj :remote-prefix))
+         (exe (if (and remote
+                       (string-match-p "\\s-" remote))
+                  (concat "\""
+                          (proviso-gentags-exe remote)
+                          "\"")
+                (proviso-gentags-exe remote)))
          (root (proviso-get proj :root-dir))
          (dest-dir (proviso-get proj :tags-dir))
          (remote-tags-dir (or (proviso-get proj :tags-subdir) ".tags/"))
@@ -114,9 +120,7 @@ local destination automatically."
              (remotefile (concat dest-dir subname)) ;only used for remote
              (arglist (plist-get elt :ctags-opts))
              (args (append
-                    (proviso-gentags-command
-                     (proviso-gentags-exe remote)
-                     arglist)
+                    (proviso-gentags-command exe arglist)
                     (list "-f" destfile
                           (directory-file-name dir-abs))))
              (cmd (mapconcat 'identity args " ")))
