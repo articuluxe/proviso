@@ -1,9 +1,9 @@
 ;;; proviso-dashboard.el --- a dashboard for proviso projects
-;; Copyright (C) 2018  Dan Harms (dharms)
+;; Copyright (C) 2018-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-20 07:19:20 dharms>
+;; Modified Time-stamp: <2019-01-10 08:17:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -99,7 +99,7 @@ Optional ARG allows choosing a project."
                               (propertize (replace-regexp-in-string
                                            (getenv "HOME") "~" file)
                                           'face '(bold))))
-                 :bindings (("d" . #'proviso-dashboard-goto-root)))
+                 :bindings (("d" . proviso-dashboard-goto-root)))
        (:heading "Remote host"
                  :predicate (lambda ()
                               (proviso-get proviso-local-proj :remote-host))
@@ -112,7 +112,7 @@ Optional ARG allows choosing a project."
                               (propertize (if gen (current-time-string gen)
                                             "")
                                           'face '(bold))))
-                 :bindings (("t" . #'proviso-gentags-generate-tags)))
+                 :bindings (("t" . proviso-gentags-generate-tags)))
        (:heading "Bookmarks"
                  :predicate (lambda ()
                               (proviso-get proviso-local-proj :bookmark-file))
