@@ -1,9 +1,9 @@
 ;;; proviso-gui.el --- gui gramework for proviso
-;; Copyright (C) 2018  Dan Harms (dharms)
+;; Copyright (C) 2018-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-12-18 16:07:53 dan.harms>
+;; Modified Time-stamp: <2019-01-10 08:12:39 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -34,7 +34,10 @@
   "Alist of markers in current buffer, for navigation.")
 
 (defvar-local proviso-gui--local-map nil
-  "Local map.")
+  "Local proviso gui key map.")
+
+(defvar-local proviso-gui--next-id 0
+  "Counter for next entry id.")
 
 (defvar-local proviso-gui--timers nil
   "List of timers in effect.")
@@ -134,6 +137,10 @@
         #'proviso-gui-move-next-marker)
       )))
 
+(defun proviso-gui-get-next-entry-id (buffer)
+  "Return the next id in BUFFER for identifying entries."
+  (incf proviso-gui--next-id))
+
 (defun proviso-gui-cb (cb cell)
   "Execute callback CB for gui element corresponding to CELL.
 CELL is an alist of properties."
@@ -162,7 +169,7 @@ Returns a sorted list of markers in the buffer.
 MAXWIDTH allows specifying the minimum length of the headings."
   (let ((inhibit-read-only t)
         (max-heading (or maxwidth 0))
-        pred heading)
+        pred heading id)
     (with-current-buffer buffer
       (setq lst (seq-remove (lambda (elt)
                               (setq pred (plist-get elt :predicate))
@@ -178,6 +185,8 @@ MAXWIDTH allows specifying the minimum length of the headings."
       (dolist (entry lst)
         (setq heading (plist-get entry :heading))
         (setq pred (plist-get entry :content))
+        (setq id (or (plist-get entry :id)
+                     (proviso-gui-get-next-entry-id buffer)))
         (when (eq (plist-get entry :section) 'pre)
           (proviso-gui--insert-section-break))
         (setq heading
