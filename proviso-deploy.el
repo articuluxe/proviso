@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-01-03 13:49:45 dan.harms>
+;; Modified Time-stamp: <2019-02-01 09:59:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -132,11 +132,11 @@ PROMPT is an optional prompt."
       (insert "\n")))
   (insert ")))\n"))
 
-(defun proviso-deploy-write-to-file (filename specs)
-  "Save a deployment specification SPECS to FILENAME."
+(defun proviso-deploy-write-to-file (specs)
+  "Return a string containing a deployment specification for SPECS."
   (with-temp-buffer
     (proviso-deploy--write-to-current-buffer specs)
-    (write-file filename)))
+    (buffer-string)))
 
 (defun proviso-deploy--read-elt (elt)
   "Read an element ELT."
@@ -176,21 +176,41 @@ PROMPT is an optional prompt."
 If ARG is non-nil, another project can be chosen."
   (interactive "P")
   (let* ((proj (if arg (proviso-choose-project)
-                 (proviso-current-project)))
-         (remote (proviso-get proj :remote-prefix))
-         (root (proviso-get proj :root-dir))
-         (store (proviso-get proj :deploy-file))
-         (defaultfile (concat (or (proviso-get proj :project-name)
-                                  "default")
-                              ".deploy"))
-         (lst (proviso-get proj :deployments)))
+                 (proviso-current-project))))
+    (if proj
+        (proviso-deploy--save-file proj)
+      (user-error "No project"))))
+
+(defun proviso-deploy-save-file-current-project ()
+  "Save deployments from current project to file."
+  (interactive)
+  (let ((proj proviso-local-proj))
+    (if proj
+        (proviso-deploy--save-file proj)
+      (user-error "No current project"))))
+
+(defun proviso-deploy--save-file (proj)
+  "Save deployments from PROJ to a file.
+This is an internal helper function."
+  (let ((remote (proviso-get proj :remote-prefix))
+        (root (proviso-get proj :root-dir))
+        (store (proviso-get proj :deploy-file))
+        (defaultfile (concat (or (proviso-get proj :project-name)
+                                 "default")
+                             ".deploy"))
+        (lst (proviso-get proj :deployments)))
     (unless store
       (setq store
             (read-file-name "Save deployments to: "
                             (concat remote root)
                             nil nil defaultfile))
       (proviso-put proj :deploy-file store))
-    (proviso-deploy-write-to-file store lst)))
+    (async-start
+     `(lambda ()
+        (setq inhibit-message t)
+        (with-temp-buffer
+          (insert ,(proviso-deploy-write-to-file lst))
+          (write-file ,store))))))
 
 ;;;###autoload
 (defun proviso-deploy-save-file-as (&optional arg)
@@ -585,7 +605,6 @@ If ARG is non-nil, another project can be chosen."
 (defvar proviso-deploy-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "o" #'proviso-deploy-open-file)
-    (define-key map "s" #'proviso-deploy-save-file)
     (define-key map "S" #'proviso-deploy-save-file-as)
     (define-key map "R" #'proviso-deploy-run-all-deploys)
     (define-key map "g" #'proviso-deploy-revert-buffer)
@@ -625,6 +644,9 @@ Optional argument ARG allows choosing a project."
     (with-current-buffer buffer
       (setq-local proviso-local-proj proj)
       (proviso-deploy-mode))
+    (proviso-gui-add-global-cb
+     buffer
+     '(("s" proviso-deploy-save-file-current-project file)))
     (setq width
           (proviso-gui-add-to-buffer
            buffer
