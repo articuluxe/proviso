@@ -658,8 +658,8 @@ Optional argument ARG allows choosing a project."
                             (list
                              :heading "Command"
                              :content (lambda () cmd)
-                             :bindings `(("r" . (lambda()
-                                                  (proviso-deploy-one (quote ,spec)))))
+                             :bindings `(("r" (lambda()
+                                                (proviso-deploy-one (quote ,spec)))))
                              :section 'pre) t))
               ((and src dst)
                (when (file-directory-p dst)
@@ -670,17 +670,17 @@ Optional argument ARG allows choosing a project."
                              :heading "Source"
                              :content (lambda ()
                                         (replace-regexp-in-string (getenv "HOME") "~" src))
-                             :bindings `(("r" . (lambda()
-                                                  (proviso-deploy-one (quote ,spec))))
-                                         ("c" . (lambda()
-                                                  (proviso-deploy--check-file-spec
-                                                   (quote ,spec))))
-                                         ("d" . (lambda()
-                                                  (proviso-deploy--diff-file-spec
-                                                   (quote ,spec))))
-                                         ("e" . (lambda()
-                                                  (proviso-deploy--ediff-file-spec
-                                                   (quote ,spec))))
+                             :bindings `(("r" (lambda()
+                                                (proviso-deploy-one (quote ,spec))))
+                                         ("c" (lambda()
+                                                (proviso-deploy--check-file-spec
+                                                 (quote ,spec))))
+                                         ("d" (lambda()
+                                                (proviso-deploy--diff-file-spec
+                                                 (quote ,spec))))
+                                         ("e" (lambda()
+                                                (proviso-deploy--ediff-file-spec
+                                                 (quote ,spec))))
                                          )
                              :section 'pre) t)
                (add-to-list 'lst
@@ -699,17 +699,17 @@ Optional argument ARG allows choosing a project."
                                                 )
                                              "---------- --:--:--        --")
                                            'face '(shadow))))
-                             :bindings `(("r" . (lambda()
-                                                  (proviso-deploy-one (quote ,spec))))
-                                         ("c" . (lambda()
-                                                  (proviso-deploy--check-file-spec
-                                                   (quote ,spec))))
-                                         ("d" . (lambda()
-                                                  (proviso-deploy--diff-file-spec
-                                                   (quote ,spec))))
-                                         ("e" . (lambda()
-                                                  (proviso-deploy--ediff-file-spec
-                                                   (quote ,spec))))
+                             :bindings `(("r" (lambda()
+                                                (proviso-deploy-one (quote ,spec))))
+                                         ("c" (lambda()
+                                                (proviso-deploy--check-file-spec
+                                                 (quote ,spec))))
+                                         ("d" (lambda()
+                                                (proviso-deploy--diff-file-spec
+                                                 (quote ,spec))))
+                                         ("e" (lambda()
+                                                (proviso-deploy--ediff-file-spec
+                                                 (quote ,spec))))
                                          )
                              )
                             t)
@@ -718,20 +718,20 @@ Optional argument ARG allows choosing a project."
                              :heading "Destination"
                              :content (lambda ()
                                         (replace-regexp-in-string (getenv "HOME") "~" dst))
-                             :bindings `(("r" . (lambda()
-                                                  (proviso-deploy-one (quote ,spec))))
-                                         ("f" . (lambda()
-                                                  (proviso-deploy--find-file-spec
-                                                   (quote ,spec))))
-                                         ("c" . (lambda()
-                                                  (proviso-deploy--check-file-spec
-                                                   (quote ,spec))))
-                                         ("d" . (lambda()
-                                                  (proviso-deploy--diff-file-spec
-                                                   (quote ,spec))))
-                                         ("e" . (lambda()
-                                                  (proviso-deploy--ediff-file-spec
-                                                   (quote ,spec))))
+                             :bindings `(("r" (lambda()
+                                                (proviso-deploy-one (quote ,spec))))
+                                         ("f" (lambda()
+                                                (proviso-deploy--find-file-spec
+                                                 (quote ,spec))))
+                                         ("c" (lambda()
+                                                (proviso-deploy--check-file-spec
+                                                 (quote ,spec))))
+                                         ("d" (lambda()
+                                                (proviso-deploy--diff-file-spec
+                                                 (quote ,spec))))
+                                         ("e" (lambda()
+                                                (proviso-deploy--ediff-file-spec
+                                                 (quote ,spec))))
                                          )
                              )
                             t)
@@ -751,20 +751,20 @@ Optional argument ARG allows choosing a project."
                                                          (file-attribute-size attr))))
                                              "---------- --:--:--        --")
                                            'face '(shadow))))
-                             :bindings `(("r" . (lambda()
-                                                  (proviso-deploy-one (quote ,spec))))
-                                         ("f" . (lambda()
-                                                  (proviso-deploy--find-file-spec
-                                                   (quote ,spec))))
-                                         ("c" . (lambda()
-                                                  (proviso-deploy--check-file-spec
-                                                   (quote ,spec))))
-                                         ("d" . (lambda()
-                                                  (proviso-deploy--diff-file-spec
-                                                   (quote ,spec))))
-                                         ("e" . (lambda()
-                                                  (proviso-deploy--ediff-file-spec
-                                                   (quote ,spec))))
+                             :bindings `(("r" (lambda()
+                                                (proviso-deploy-one (quote ,spec))))
+                                         ("f" (lambda()
+                                                (proviso-deploy--find-file-spec
+                                                 (quote ,spec))))
+                                         ("c" (lambda()
+                                                (proviso-deploy--check-file-spec
+                                                 (quote ,spec))))
+                                         ("d" (lambda()
+                                                (proviso-deploy--diff-file-spec
+                                                 (quote ,spec))))
+                                         ("e" (lambda()
+                                                (proviso-deploy--ediff-file-spec
+                                                 (quote ,spec))))
                                          )
                              )
                             t)
