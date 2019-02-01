@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-01-10 08:12:39 dharms>
+;; Modified Time-stamp: <2019-02-01 09:29:47 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -62,13 +62,14 @@
     (cancel-timer timer))
   (setq proviso-gui--timers nil))
 
-(defun proviso-gui-on-timer (future cell)
+(defun proviso-gui-on-timer (future &optional cell)
   "Timer callback to check FUTURE, regarding CELL."
   (if (async-ready future)
       (let ((buffer (cdr (assq 'buffer cell)))
             (marker (cdr (assq 'pos cell)))
             (create (cdr (assq 'create cell))))
-        (proviso-gui--draw-cell buffer marker create))
+        (when cell
+          (proviso-gui--draw-cell cell)))
     (run-at-time 1 nil #'proviso-gui-on-timer future cell)))
 
 (defun proviso-gui-move-next-marker ()
@@ -139,21 +140,39 @@
 
 (defun proviso-gui-get-next-entry-id (buffer)
   "Return the next id in BUFFER for identifying entries."
-  (incf proviso-gui--next-id))
+  (with-current-buffer buffer
+    (incf proviso-gui--next-id)))
 
-(defun proviso-gui-cb (cb cell)
-  "Execute callback CB for gui element corresponding to CELL.
-CELL is an alist of properties."
+(defun proviso-gui-lookup-category (symbol)
+  "Look up gui element corresponding to category SYMBOL."
+  (seq-find                             ;FIXME only finds 1 elt
+   (lambda (cell)
+     (equal symbol (cdr (assq 'category cell))))
+   proviso-gui-markers))
+
+(defun proviso-gui-cb (cb &optional where)
+  "Execute callback CB, for gui element corresponding to WHERE.
+CELL can be a symbol, an alist of properties, or nil."
   (interactive)
-  (let ((buffer (cdr (assq 'buffer cell)))
-        (marker (cdr (assq 'pos cell)))
-        (create (cdr (assq 'create cell)))
+  (let ((cell (cond ((listp where) where)
+                    ((not where) nil)
+                    ((symbolp where)
+                     (proviso-gui-lookup-category where))))
         (future (funcall cb)))
     (and future (processp future)
          (run-at-time 1 nil #'proviso-gui-on-timer future cell))
-    (proviso-gui--draw-cell buffer marker create)))
+    (when cell
+      (proviso-gui--draw-cell cell))))
 
-(defun proviso-gui--draw-cell (buffer marker fun)
+(defun proviso-gui--draw-cell (cell)
+  "Recreate content of CELL."
+  (let ((buffer (cdr (assq 'buffer cell)))
+        (marker (cdr (assq 'pos cell)))
+        (create (cdr (assq 'create cell))))
+    (and buffer marker create
+         (proviso-gui--draw-cell-internal buffer marker create))))
+
+(defun proviso-gui--draw-cell-internal (buffer marker fun)
   "In BUFFER, recreate content at MARKER with FUN."
   (with-current-buffer buffer
     (let ((inhibit-read-only t)
@@ -163,13 +182,24 @@ CELL is an alist of properties."
       (insert (funcall fun))
       (goto-char pos))))
 
+(defun proviso-gui-add-global-cb (buffer bindings)
+  "Add global callbacks in BUFFER for BINDINGS."
+  (with-current-buffer buffer
+    (dolist (binding bindings)
+      (lexical-let ((cb (nth 1 binding))
+                    (category (nth 2 binding)))
+        (define-key proviso-gui--local-map
+          (nth 0 binding)
+          (lambda() (interactive)
+            (proviso-gui-cb cb category)))))))
+
 (defun proviso-gui-add-to-buffer (buffer lst &optional maxwidth)
   "Add GUI elements TO BUFFER based on LST.
 Returns a sorted list of markers in the buffer.
 MAXWIDTH allows specifying the minimum length of the headings."
   (let ((inhibit-read-only t)
         (max-heading (or maxwidth 0))
-        pred heading id)
+        heading category pred id)
     (with-current-buffer buffer
       (setq lst (seq-remove (lambda (elt)
                               (setq pred (plist-get elt :predicate))
@@ -184,6 +214,7 @@ MAXWIDTH allows specifying the minimum length of the headings."
                            max-heading)))
       (dolist (entry lst)
         (setq heading (plist-get entry :heading))
+        (setq category (plist-get entry :category))
         (setq pred (plist-get entry :content))
         (setq id (or (plist-get entry :id)
                      (proviso-gui-get-next-entry-id buffer)))
@@ -203,9 +234,10 @@ MAXWIDTH allows specifying the minimum length of the headings."
                       (cons 'create create)
                       (cons 'buffer buffer)
                       (cons 'heading heading)))
+          (when category (push (cons 'category category) cell))
           (dolist (binding (plist-get entry :bindings))
-            (lexical-let ((cb (cdr binding)))
-              (define-key map (car binding)
+            (lexical-let ((cb (nth 1 binding)))
+              (define-key map (nth 0 binding)
                 (lambda() (interactive)
                   (proviso-gui-cb cb cell)))))
           (push (cons 'map map) cell)

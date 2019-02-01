@@ -651,12 +651,14 @@ Optional argument ARG allows choosing a project."
           (proviso-gui-add-to-buffer
            buffer
            '((:heading "Project"
+                       :category project
                        :content (lambda ()
                                   (propertize
                                    (proviso-get proviso-local-proj :project-name)
                                    'face 'highlight))
                        :section post)
              (:heading "File"
+                       :category file
                        :content (lambda ()
                                   (let ((file (proviso-get proviso-local-proj :deploy-file)))
                                     (cond ((and file (file-exists-p file))
@@ -679,6 +681,7 @@ Optional argument ARG allows choosing a project."
                (add-to-list 'lst
                             (list
                              :heading "Command"
+                             :category 'command
                              :content (lambda () cmd)
                              :bindings `(("r" (lambda()
                                                 (proviso-deploy-one (quote ,spec)))))
@@ -690,6 +693,7 @@ Optional argument ARG allows choosing a project."
                (add-to-list 'lst
                             (list
                              :heading "Source"
+                             :category 'deployment
                              :content (lambda ()
                                         (replace-regexp-in-string (getenv "HOME") "~" src))
                              :bindings `(("r" (lambda()
@@ -707,6 +711,7 @@ Optional argument ARG allows choosing a project."
                              :section 'pre) t)
                (add-to-list 'lst
                             (list
+                             :category 'deployment
                              :content (lambda ()
                                         (let ((attr (file-attributes src)))
                                           (propertize
@@ -738,6 +743,7 @@ Optional argument ARG allows choosing a project."
                (add-to-list 'lst
                             (list
                              :heading "Destination"
+                             :category 'deployment
                              :content (lambda ()
                                         (replace-regexp-in-string (getenv "HOME") "~" dst))
                              :bindings `(("r" (lambda()
@@ -759,6 +765,7 @@ Optional argument ARG allows choosing a project."
                             t)
                (add-to-list 'lst
                             (list
+                             :category 'deployment
                              :content (lambda ()
                                         (lexical-let ((attr (file-attributes dst)))
                                           (propertize
