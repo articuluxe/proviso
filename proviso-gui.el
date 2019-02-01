@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-01 09:29:47 dharms>
+;; Modified Time-stamp: <2019-02-01 17:29:46 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -144,21 +144,27 @@
     (incf proviso-gui--next-id)))
 
 (defun proviso-gui-lookup-category (symbol)
-  "Look up gui element corresponding to category SYMBOL."
-  (seq-find                             ;FIXME only finds 1 elt
+  "Return a list of GUI elements corresponding to category SYMBOL."
+  (seq-filter
    (lambda (cell)
      (equal symbol (cdr (assq 'category cell))))
    proviso-gui-markers))
 
 (defun proviso-gui-cb (cb &optional where)
   "Execute callback CB, for gui element corresponding to WHERE.
-CELL can be a symbol, an alist of properties, or nil."
+CELL can be a symbol representing a category, an alist of
+properties representing a particular cell or row, or nil."
   (interactive)
-  (let ((cell (cond ((listp where) where)
-                    ((not where) nil)
-                    ((symbolp where)
-                     (proviso-gui-lookup-category where))))
-        (future (funcall cb)))
+  (let ((cells (cond ((listp where) (list where))
+                     ((not where) nil)
+                     ((symbolp where)
+                      (proviso-gui-lookup-category where)))))
+    (dolist (cell cells)
+      (proviso-gui-cb--do cb cell))))
+
+(defun proviso-gui-cb--do (cb cell)
+  "Execute callback CB, for GUI element CELL."
+  (let ((future (funcall cb)))
     (and future (processp future)
          (run-at-time 1 nil #'proviso-gui-on-timer future cell))
     (when cell
@@ -227,6 +233,7 @@ MAXWIDTH allows specifying the minimum length of the headings."
         (lexical-let ((map (make-sparse-keymap))
                       (marker (point-marker))
                       (create (plist-get entry :content))
+                      (category category)
                       cell)
           (set-marker-insertion-type marker nil)
           (setq cell (list
@@ -239,7 +246,7 @@ MAXWIDTH allows specifying the minimum length of the headings."
             (lexical-let ((cb (nth 1 binding)))
               (define-key map (nth 0 binding)
                 (lambda() (interactive)
-                  (proviso-gui-cb cb cell)))))
+                  (proviso-gui-cb cb (or category cell))))))
           (push (cons 'map map) cell)
           (set-keymap-parent map proviso-gui--local-map)
           (add-to-list 'proviso-gui-markers cell t)
