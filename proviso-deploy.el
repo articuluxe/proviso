@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-01 09:59:03 dharms>
+;; Modified Time-stamp: <2019-02-04 08:49:06 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -212,14 +212,28 @@ This is an internal helper function."
           (insert ,(proviso-deploy-write-to-file lst))
           (write-file ,store))))))
 
+(defun proviso-deploy-save-file-as-current-project ()
+  "Save deployments from current project to new file."
+  (interactive)
+  (let ((proj proviso-local-proj))
+    (if proj
+        (proviso-deploy--save-file-as proj)
+      (user-error "No project"))))
+
 ;;;###autoload
 (defun proviso-deploy-save-file-as (&optional arg)
   "Save current deployments to a new file.
 If ARG is non-nil, another project can be chosen."
   (interactive "P")
-  (let* ((proj (if arg (proviso-choose-project)
-                 (proviso-current-project)))
-         (remote (proviso-get proj :remote-prefix))
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (if proj
+        (proviso-deploy--save-file-as proj)
+      (user-error "No current project"))))
+
+(defun proviso-deploy--save-file-as (proj)
+  "Save deployments from PROJ to a new file."
+  (let* ((remote (proviso-get proj :remote-prefix))
          (root (proviso-get proj :root-dir))
          (store (proviso-get proj :deploy-file))
          (defaultfile (or store
@@ -233,9 +247,11 @@ If ARG is non-nil, another project can be chosen."
                           (concat remote root)
                           nil nil defaultfile))
     (if file
-        (progn
-          (proviso-put proj :deploy-file file)
-          (proviso-deploy-write-to-file file lst))
+        `(lambda ()
+           (setq inhibit-message t)
+           (with-temp-buffer
+             (insert ,(proviso-deploy-write-to-file lst))
+             (write-file ,file)))
       (user-error "No file selected, not saving"))))
 
 (defun proviso-deploy--file-predicate (file)
@@ -605,7 +621,6 @@ If ARG is non-nil, another project can be chosen."
 (defvar proviso-deploy-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "o" #'proviso-deploy-open-file)
-    (define-key map "S" #'proviso-deploy-save-file-as)
     (define-key map "R" #'proviso-deploy-run-all-deploys)
     (define-key map "g" #'proviso-deploy-revert-buffer)
     map)
@@ -646,7 +661,9 @@ Optional argument ARG allows choosing a project."
       (proviso-deploy-mode))
     (proviso-gui-add-global-cb
      buffer
-     '(("s" proviso-deploy-save-file-current-project file)))
+     '(("s" proviso-deploy-save-file-current-project file)
+       ("S" proviso-deploy-save-file-as-current-project file)
+       ))
     (setq width
           (proviso-gui-add-to-buffer
            buffer
