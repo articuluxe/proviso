@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-05 08:17:28 dharms>
+;; Modified Time-stamp: <2019-02-05 08:32:29 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -132,7 +132,7 @@ PROMPT is an optional prompt."
       (insert "\n")))
   (insert ")))\n"))
 
-(defun proviso-deploy-write-to-file (specs)
+(defun proviso-deploy-write-to-string (specs)
   "Return a string containing a deployment specification for SPECS."
   (with-temp-buffer
     (proviso-deploy--write-to-current-buffer specs)
@@ -209,7 +209,7 @@ This is an internal helper function."
      `(lambda ()
         (setq inhibit-message t)
         (with-temp-buffer
-          (insert ,(proviso-deploy-write-to-file lst))
+          (insert ,(proviso-deploy-write-to-string lst))
           (write-file ,store))))))
 
 (defun proviso-deploy-save-file-as-current-project ()
@@ -253,7 +253,7 @@ If ARG is non-nil, another project can be chosen."
            `(lambda ()
               (setq inhibit-message t)
               (with-temp-buffer
-                (insert ,(proviso-deploy-write-to-file lst))
+                (insert ,(proviso-deploy-write-to-string lst))
                 (write-file ,file)))))
       (user-error "No file selected, not saving"))))
 
