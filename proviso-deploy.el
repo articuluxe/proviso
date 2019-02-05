@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-04 08:49:06 dharms>
+;; Modified Time-stamp: <2019-02-05 08:17:28 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -247,11 +247,14 @@ If ARG is non-nil, another project can be chosen."
                           (concat remote root)
                           nil nil defaultfile))
     (if file
-        `(lambda ()
-           (setq inhibit-message t)
-           (with-temp-buffer
-             (insert ,(proviso-deploy-write-to-file lst))
-             (write-file ,file)))
+        (progn
+          (proviso-put proj :deploy-file file)
+          (async-start
+           `(lambda ()
+              (setq inhibit-message t)
+              (with-temp-buffer
+                (insert ,(proviso-deploy-write-to-file lst))
+                (write-file ,file)))))
       (user-error "No file selected, not saving"))))
 
 (defun proviso-deploy--file-predicate (file)
