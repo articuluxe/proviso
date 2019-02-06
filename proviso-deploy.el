@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-05 08:32:29 dharms>
+;; Modified Time-stamp: <2019-02-06 08:01:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -45,19 +45,30 @@
   "Buffer prefix string for `proviso-deploy'.
 This will be formatted with the project name.")
 
-(defun proviso-deploy-one (spec)
-  "Execute a deployment represented by SPEC."
+(defun proviso-deploy-one (spec &optional synchronous)
+  "Execute a deployment represented by SPEC.
+Usually the deployment occurs asynchronously; if optional
+SYNCHRONOUS is non-nil, another process will not be spawned."
   (let ((cmd (plist-get spec :command))
         (src (plist-get spec :source))
         (dst (plist-get spec :destination)))
     (if cmd
         (shell-command cmd)
-      (message "Deploying %s to %s..." src dst)
-      (xfer-transfer-file-async src dst))))
+      (if (and src dst)
+          (progn
+            (message "Deploying %s to %s..." src dst)
+            (if synchronous
+                (xfer-transfer-file src dst)
+              (xfer-transfer-file-async src dst)))
+        (user-error "Ignoring invalid deployment '%s' --> '%s'"
+                    src dst)))))
 
 (defun proviso-deploy-all (specs)
   "Execute all deployments contained in SPECS."
-  (dolist (spec specs) #'proviso-deploy-one))
+  (mapc (lambda (spec)
+          (proviso-deploy-one spec t))  ;this always runs async,
+                                        ;don't need to spawn again
+        specs))
 
 (defun proviso-deploy-create (source dest)
   "Add a deployment from SOURCE to DEST."
@@ -342,10 +353,28 @@ If ARG is non-nil, another project can be chosen."
   "Run all deployments.
 If ARG is non-nil, another project can be chosen."
   (interactive "P")
-  (let* ((proj (if arg (proviso-choose-project)
-                 (proviso-current-project)))
-         (lst (proviso-get proj :deployments)))
-    (proviso-deploy-all lst)))
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (if proj
+        (proviso-deploy--run-all-deploys proj)
+      (user-error "No current project"))))
+
+(defun proviso-deploy--run-all-deploys (proj)
+  "Run all deployments from PROJ."
+  (let* ((lst (proviso-get proj :deployments)))
+    (async-start
+     `(lambda ()
+        (setq inhibit-message t)
+        ,(async-inject-variables "load-path")
+        (require 'proviso-deploy)
+        (proviso-deploy-all (quote ,lst))))))
+
+(defun proviso-deploy-run-all-deploys-current-project ()
+  "Run all deployments in current project."
+  (let ((proj proviso-local-proj))
+    (if proj
+        (proviso-deploy--run-all-deploys proj)
+      (user-error "No current project"))))
 
 ;;;###autoload
 (defun proviso-deploy-run-last (&optional arg)
@@ -624,7 +653,6 @@ If ARG is non-nil, another project can be chosen."
 (defvar proviso-deploy-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "o" #'proviso-deploy-open-file)
-    (define-key map "R" #'proviso-deploy-run-all-deploys)
     (define-key map "g" #'proviso-deploy-revert-buffer)
     map)
   "Keymap for `proviso-deploy-mode'.")
@@ -666,6 +694,7 @@ Optional argument ARG allows choosing a project."
      buffer
      '(("s" proviso-deploy-save-file-current-project file)
        ("S" proviso-deploy-save-file-as-current-project file)
+       ("R" proviso-deploy-run-all-deploys-current-project deployment)
        ))
     (setq width
           (proviso-gui-add-to-buffer
