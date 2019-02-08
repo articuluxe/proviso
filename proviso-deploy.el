@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-06 08:01:01 dharms>
+;; Modified Time-stamp: <2019-02-07 08:12:26 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -652,7 +652,6 @@ If ARG is non-nil, another project can be chosen."
 
 (defvar proviso-deploy-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "o" #'proviso-deploy-open-file)
     (define-key map "g" #'proviso-deploy-revert-buffer)
     map)
   "Keymap for `proviso-deploy-mode'.")
@@ -694,6 +693,7 @@ Optional argument ARG allows choosing a project."
      buffer
      '(("s" proviso-deploy-save-file-current-project file)
        ("S" proviso-deploy-save-file-as-current-project file)
+       ("o" proviso-deploy-open-file buffer)
        ("R" proviso-deploy-run-all-deploys-current-project deployment)
        ))
     (setq width

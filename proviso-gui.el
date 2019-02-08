@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-01 17:29:46 dharms>
+;; Modified Time-stamp: <2019-02-07 08:33:10 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -152,17 +152,22 @@
 
 (defun proviso-gui-cb (cb &optional where)
   "Execute callback CB, for gui element corresponding to WHERE.
-CELL can be a symbol representing a category, an alist of
+CELL can be a symbol representing a category, the special symbol 'buffer,
+ which will redraw the entire buffer after executing the callback, an alist of
 properties representing a particular cell or row, or nil."
   (interactive)
-  (let ((cells (cond ((listp where) (list where))
-                     ((not where) nil)
-                     ((symbolp where)
-                      (proviso-gui-lookup-category where)))))
-    (dolist (cell cells)
-      (proviso-gui-cb--do cb cell))))
+  (if (eq where 'buffer)
+      (progn
+        (proviso-gui-cb--cell cb nil)
+        (funcall (key-binding "g")))
+    (let ((cells (cond ((listp where) (list where))
+                       ((not where) nil)
+                       ((symbolp where)
+                        (proviso-gui-lookup-category where)))))
+      (dolist (cell cells)
+        (proviso-gui-cb--cell cb cell)))))
 
-(defun proviso-gui-cb--do (cb cell)
+(defun proviso-gui-cb--cell (cb cell)
   "Execute callback CB, for GUI element CELL."
   (let ((future (funcall cb)))
     (and future (processp future)
