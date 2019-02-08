@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-07 08:12:26 dharms>
+;; Modified Time-stamp: <2019-02-08 08:46:02 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -240,7 +240,7 @@ If ARG is non-nil, another project can be chosen."
                 (proviso-current-project))))
     (if proj
         (proviso-deploy--save-file-as proj)
-      (user-error "No current project"))))
+      (user-error "No project"))))
 
 (defun proviso-deploy--save-file-as (proj)
   "Save deployments from PROJ to a new file."
@@ -357,7 +357,7 @@ If ARG is non-nil, another project can be chosen."
                 (proviso-current-project))))
     (if proj
         (proviso-deploy--run-all-deploys proj)
-      (user-error "No current project"))))
+      (user-error "No project"))))
 
 (defun proviso-deploy--run-all-deploys (proj)
   "Run all deployments from PROJ."
@@ -381,12 +381,25 @@ If ARG is non-nil, another project can be chosen."
   "Rerun the last deployment, if any.
 If ARG is non-nil, another project can be chosen."
   (interactive "P")
-  (let* ((proj (if arg (proviso-choose-project)
-                 (proviso-current-project)))
-         (spec (proviso-get proj :last-deploy)))
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (if proj
+        (proviso-deploy--run-last proj)
+      (user-error "No project"))))
+
+(defun proviso-deploy--run-last (proj)
+  "Run last deployment, if any, from project PROJ."
+  (let ((spec (proviso-get proj :last-deploy)))
     (if spec
         (proviso-deploy-one spec)
       (user-error "No prior deployment"))))
+
+(defun proviso-deploy-run-last-current-project ()
+  "Run the last deployment in current project, if any."
+  (let ((proj proviso-local-proj))
+    (if proj
+        (proviso-deploy--run-last proj)
+      (user-error "No current project"))))
 
 ;;;###autoload
 (defun proviso-deploy-revert-file (&optional arg)
@@ -675,7 +688,7 @@ Optional argument ARG allows choosing a project."
         (progn
           (proviso-deploy-create-buffer proj)
           (pop-to-buffer proviso-deploy-buffer-name))
-      (user-error "No current project"))))
+      (user-error "No project"))))
 
 (defun proviso-deploy-create-buffer (proj)
   "Create a deployment buffer for project PROJ."
@@ -695,6 +708,7 @@ Optional argument ARG allows choosing a project."
        ("S" proviso-deploy-save-file-as-current-project file)
        ("o" proviso-deploy-open-file buffer)
        ("R" proviso-deploy-run-all-deploys-current-project deployment)
+       ("." proviso-deploy-run-last-current-project deployment)
        ))
     (setq width
           (proviso-gui-add-to-buffer
