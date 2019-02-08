@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-08 08:46:02 dharms>
+;; Modified Time-stamp: <2019-02-08 08:49:59 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -443,9 +443,22 @@ If ARG is non-nil, another project can be chosen."
   "Delete all active deployments.
 If ARG is non-nil, another project can be chosen."
   (interactive "P")
-  (let* ((proj (if arg (proviso-choose-project)
-                 (proviso-current-project))))
-    (proviso-put proj :deployments nil)))
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (if proj
+        (proviso-deploy--delete-all proj)
+      (user-error "No project"))))
+
+(defun proviso-deploy--delete-all (proj)
+  "Delete all deployments from project PROJ."
+  (proviso-put proj :deployments nil))
+
+(defun proviso-deploy-delete-all-current-project ()
+  "Delete all deployments from current project."
+  (let ((proj proviso-local-proj))
+    (if proj
+        (proviso-deploy--delete-all proj)
+      (user-error "No current project"))))
 
 ;;;###autoload
 (defun proviso-deploy-check-file (&optional arg)
@@ -709,6 +722,7 @@ Optional argument ARG allows choosing a project."
        ("o" proviso-deploy-open-file buffer)
        ("R" proviso-deploy-run-all-deploys-current-project deployment)
        ("." proviso-deploy-run-last-current-project deployment)
+       ("X" proviso-deploy-delete-all-current-project buffer)
        ))
     (setq width
           (proviso-gui-add-to-buffer
