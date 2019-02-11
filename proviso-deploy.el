@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-08 08:49:59 dharms>
+;; Modified Time-stamp: <2019-02-11 08:42:36 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -342,11 +342,14 @@ If ARG is non-nil, another project can be chosen."
                   (proviso-deploy-choose-deploy
                    specs
                    "Run deployment: "))
-            (progn
-              (proviso-deploy-one spec)
-              (proviso-put proj :last-deploy spec))
+            (proviso-deploy--run-deploy proj spec)
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
+
+(defun proviso-deploy--run-deploy (proj spec)
+  "Run deployment SPEC from project PROJ."
+  (proviso-put proj :last-deploy spec)
+  (proviso-deploy-one spec))
 
 ;;;###autoload
 (defun proviso-deploy-run-all-deploys (&optional arg)
@@ -761,7 +764,7 @@ Optional argument ARG allows choosing a project."
                              :category 'command
                              :content (lambda () cmd)
                              :bindings `(("r" (lambda()
-                                                (proviso-deploy-one (quote ,spec)))))
+                                                (proviso-deploy--run-deploy proviso-local-proj (quote ,spec)))))
                              :section 'pre) t))
               ((and src dst)
                (when (file-directory-p dst)
@@ -774,7 +777,7 @@ Optional argument ARG allows choosing a project."
                              :content (lambda ()
                                         (replace-regexp-in-string (getenv "HOME") "~" src))
                              :bindings `(("r" (lambda()
-                                                (proviso-deploy-one (quote ,spec))))
+                                                (proviso-deploy--run-deploy proviso-local-proj (quote ,spec))))
                                          ("c" (lambda()
                                                 (proviso-deploy--check-file-spec
                                                  (quote ,spec))))
@@ -804,7 +807,7 @@ Optional argument ARG allows choosing a project."
                                              "---------- --:--:--        --")
                                            'face '(shadow))))
                              :bindings `(("r" (lambda()
-                                                (proviso-deploy-one (quote ,spec))))
+                                                (proviso-deploy--run-deploy proviso-local-proj (quote ,spec))))
                                          ("c" (lambda()
                                                 (proviso-deploy--check-file-spec
                                                  (quote ,spec))))
@@ -824,7 +827,7 @@ Optional argument ARG allows choosing a project."
                              :content (lambda ()
                                         (replace-regexp-in-string (getenv "HOME") "~" dst))
                              :bindings `(("r" (lambda()
-                                                (proviso-deploy-one (quote ,spec))))
+                                                (proviso-deploy--run-deploy proviso-local-proj (quote ,spec))))
                                          ("f" (lambda()
                                                 (proviso-deploy--find-file-spec
                                                  (quote ,spec))))
@@ -858,7 +861,7 @@ Optional argument ARG allows choosing a project."
                                              "---------- --:--:--        --")
                                            'face '(shadow))))
                              :bindings `(("r" (lambda()
-                                                (proviso-deploy-one (quote ,spec))))
+                                                (proviso-deploy--run-deploy proviso-local-proj (quote ,spec))))
                                          ("f" (lambda()
                                                 (proviso-deploy--find-file-spec
                                                  (quote ,spec))))
