@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-11 08:42:36 dharms>
+;; Modified Time-stamp: <2019-02-18 07:15:35 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -301,7 +301,7 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
          (spec (call-interactively
-                'proviso-deploy-create)))
+                #'proviso-deploy-create)))
     (if spec
         (progn
           (if specs
@@ -319,7 +319,7 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
          (spec (call-interactively
-                'proviso-deploy-create-cmd)))
+                #'proviso-deploy-create-cmd)))
     (if spec
         (progn
           (if specs
@@ -584,35 +584,40 @@ If ARG is non-nil, another project can be chosen."
   (let* ((proj (if arg (proviso-choose-project)
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
-         spec src dst cmd)
+         spec)
     (if specs
         (if (setq spec
                   (proviso-deploy-choose-deploy
                    specs
                    "Edit deployment: "))
-            (let ((cmd (plist-get spec :command))
-                  (src (plist-get spec :source))
-                  (dst (plist-get spec :destination)))
-              (cond (cmd
-                     (setcar (member spec specs)
-                             (read-string "New command: "
-                                          cmd)))
-                    ((and src dst)
-                     (setcar (member spec specs)
-                             (proviso-deploy-create
-                              (read-file-name
-                               "Source: "
-                               (file-name-directory src)
-                               nil nil
-                               (file-name-nondirectory src))
-                              (read-file-name
-                               "Destination: "
-                               (file-name-directory dst)
-                               nil nil
-                               (file-name-nondirectory dst))
-                              )))))
+            (proviso-deploy--edit-deploy-spec specs spec)
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
+
+(defun proviso-deploy--edit-deploy-spec (specs spec)
+  "Edit the deployment SPEC, among all deployments SPECS."
+  (let ((cmd (plist-get spec :command))
+        (src (plist-get spec :source))
+        (dst (plist-get spec :destination)))
+    (cond (cmd
+           (setcar (member spec specs)
+                   (proviso-deploy-create-cmd
+                    (read-string "New command: "
+                                 cmd))))
+          ((and src dst)
+           (setcar (member spec specs)
+                   (proviso-deploy-create
+                    (read-file-name
+                     "New source: "
+                     (file-name-directory src)
+                     nil nil
+                     (file-name-nondirectory src))
+                    (read-file-name
+                     "New destination: "
+                     (file-name-directory dst)
+                     nil nil
+                     (file-name-nondirectory dst))
+                    ))))))
 
 ;;;###autoload
 (defun proviso-deploy-find-file (&optional arg)
@@ -633,7 +638,7 @@ If ARG is non-nil, another project can be chosen."
       (user-error "No deployments"))))
 
 (defun proviso-deploy--find-file-spec (spec)
-  "Edit the deployment SPEC."
+  "Visit the deployment SPEC."
   (let ((src (plist-get spec :source))
         (dst (plist-get spec :destination)))
     (if dst
@@ -648,7 +653,7 @@ If ARG is non-nil, another project can be chosen."
 
 ;;;###autoload
 (defun proviso-deploy-find-file-other-window (&optional arg)
-  "Edit the deployed file in another window.
+  "Visit the deployed file in another window.
 If ARG is non-nil, another project can be chosen."
   (interactive "P")
   (let* ((proj (if arg (proviso-choose-project)
@@ -756,6 +761,7 @@ Optional argument ARG allows choosing a project."
       (lexical-let ((cmd (plist-get spec :command))
                     (src (plist-get spec :source))
                     (dst (plist-get spec :destination))
+                    (specs (proviso-get proj :deployments))
                     (spec spec))
         (cond (cmd
                (add-to-list 'lst
@@ -775,6 +781,7 @@ Optional argument ARG allows choosing a project."
                              :heading "Source"
                              :category 'deployment
                              :content (lambda ()
+                                        (let ((spec (proviso-get proviso-local-proj :deployments ;TODO drh
                                         (replace-regexp-in-string (getenv "HOME") "~" src))
                              :bindings `(("r" (lambda()
                                                 (proviso-deploy--run-deploy proviso-local-proj (quote ,spec))))
@@ -787,6 +794,9 @@ Optional argument ARG allows choosing a project."
                                          ("e" (lambda()
                                                 (proviso-deploy--ediff-file-spec
                                                  (quote ,spec))))
+                                         ("t" (lambda()
+                                                (proviso-deploy--edit-deploy-spec
+                                                 (quote ,specs) (quote ,spec))))
                                          )
                              :section 'pre) t)
                (add-to-list 'lst
@@ -817,6 +827,9 @@ Optional argument ARG allows choosing a project."
                                          ("e" (lambda()
                                                 (proviso-deploy--ediff-file-spec
                                                  (quote ,spec))))
+                                         ("t" (lambda()
+                                                (proviso-deploy--edit-deploy-spec
+                                                 (quote ,specs) (quote ,spec))))
                                          )
                              )
                             t)
@@ -840,6 +853,9 @@ Optional argument ARG allows choosing a project."
                                          ("e" (lambda()
                                                 (proviso-deploy--ediff-file-spec
                                                  (quote ,spec))))
+                                         ("t" (lambda()
+                                                (proviso-deploy--edit-deploy-spec
+                                                 (quote ,specs) (quote ,spec))))
                                          )
                              )
                             t)
@@ -874,6 +890,9 @@ Optional argument ARG allows choosing a project."
                                          ("e" (lambda()
                                                 (proviso-deploy--ediff-file-spec
                                                  (quote ,spec))))
+                                         ("t" (lambda()
+                                                (proviso-deploy--edit-deploy-spec
+                                                 (quote ,specs) (quote ,spec))))
                                          )
                              )
                             t)
