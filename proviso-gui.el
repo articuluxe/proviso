@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-07 08:33:10 dharms>
+;; Modified Time-stamp: <2019-02-18 07:14:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -62,15 +62,13 @@
     (cancel-timer timer))
   (setq proviso-gui--timers nil))
 
-(defun proviso-gui-on-timer (future &optional cell)
-  "Timer callback to check FUTURE, regarding CELL."
+(defun proviso-gui-on-timer (future &optional id)
+  "Timer callback to check FUTURE, regarding GUI cell ID."
   (if (async-ready future)
-      (let ((buffer (cdr (assq 'buffer cell)))
-            (marker (cdr (assq 'pos cell)))
-            (create (cdr (assq 'create cell))))
+      (let ((cell (proviso-gui-lookup-id id)))
         (when cell
           (proviso-gui--draw-cell cell)))
-    (run-at-time 1 nil #'proviso-gui-on-timer future cell)))
+    (run-at-time 1 nil #'proviso-gui-on-timer future id)))
 
 (defun proviso-gui-move-next-marker ()
   "Move to the next marker position in the dashboard buffer."
@@ -144,34 +142,50 @@
     (incf proviso-gui--next-id)))
 
 (defun proviso-gui-lookup-category (symbol)
-  "Return a list of GUI elements corresponding to category SYMBOL."
-  (seq-filter
-   (lambda (cell)
-     (equal symbol (cdr (assq 'category cell))))
-   proviso-gui-markers))
+  "Return a list of IDs of GUI elements corresponding to category SYMBOL."
+  (let ((lst
+         (mapcar (lambda (cell)
+                   (if (eq symbol (cdr (assq 'category cell)))
+                       (cdr (assq 'id cell))
+                     nil))
+                 proviso-gui-markers)))
+    (remove nil (remove-duplicates lst))))
+
+(defun proviso-gui-lookup-id (id)
+  "Return the GUI element corresponding to ID."
+  (let ((cell))
+    (catch 'found
+      (dolist (elt proviso-gui-markers)
+        (when (eq id
+                  (cdr (assq 'id elt)))
+          (throw 'found elt)))
+      nil)))
 
 (defun proviso-gui-cb (cb &optional where)
   "Execute callback CB, for gui element corresponding to WHERE.
 CELL can be a symbol representing a category, the special symbol 'buffer,
- which will redraw the entire buffer after executing the callback, an alist of
+which will redraw the entire buffer after executing the callback, an alist of
 properties representing a particular cell or row, or nil."
   (interactive)
-  (if (eq where 'buffer)
-      (progn
-        (proviso-gui-cb--cell cb nil)
-        (funcall (key-binding "g")))
-    (let ((cells (cond ((listp where) (list where))
+  (let ((future (funcall cb)))
+    (if (eq where 'buffer)
+        (progn
+          (proviso-gui-cb--id future nil)
+          (funcall (key-binding "g")))
+      (let ((ids (cond ((listp where)
+                        (list (cdr (assq 'id where))))
                        ((not where) nil)
                        ((symbolp where)
                         (proviso-gui-lookup-category where)))))
-      (dolist (cell cells)
-        (proviso-gui-cb--cell cb cell)))))
+        (dolist (id ids)
+          (proviso-gui-cb--id future id))))))
 
-(defun proviso-gui-cb--cell (cb cell)
-  "Execute callback CB, for GUI element CELL."
-  (let ((future (funcall cb)))
+(defun proviso-gui-cb--id (future id)
+  "Redraw GUI element corresponding to ID, according to FUTURE.
+FUTURE may be nil, or a process sentinel to wait upon completion."
+  (let ((cell (proviso-gui-lookup-id id)))
     (and future (processp future)
-         (run-at-time 1 nil #'proviso-gui-on-timer future cell))
+         (run-at-time 1 nil #'proviso-gui-on-timer future id))
     (when cell
       (proviso-gui--draw-cell cell))))
 
@@ -239,19 +253,22 @@ MAXWIDTH allows specifying the minimum length of the headings."
                       (marker (point-marker))
                       (create (plist-get entry :content))
                       (category category)
+                      (id id)
                       cell)
           (set-marker-insertion-type marker nil)
           (setq cell (list
+                      (cons 'id id)
+                      (cons 'heading heading)
                       (cons 'pos marker)
                       (cons 'create create)
                       (cons 'buffer buffer)
-                      (cons 'heading heading)))
+                      ))
           (when category (push (cons 'category category) cell))
           (dolist (binding (plist-get entry :bindings))
             (lexical-let ((cb (nth 1 binding)))
               (define-key map (nth 0 binding)
                 (lambda() (interactive)
-                  (proviso-gui-cb cb (or category cell))))))
+                  (proviso-gui-cb cb (or category id))))))
           (push (cons 'map map) cell)
           (set-keymap-parent map proviso-gui--local-map)
           (add-to-list 'proviso-gui-markers cell t)
