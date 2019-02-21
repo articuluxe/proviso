@@ -1,9 +1,9 @@
 ;;; proviso-core.el --- proviso core functionality
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-04 11:05:29 dan.harms>
+;; Modified Time-stamp: <2019-02-19 08:46:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -89,7 +89,7 @@ TODO: the project may not actually exist yet."
 ;; :project-files :project-files-all
 ;; :project-dirs :project-dirs-all
 ;; :file-cache
-;; :deployments :deploy-file :last-deploy
+;; :deployments :deploy-file :last-deploy :deploy-id
 
 ;; hooks
 (defvar proviso-hook-on-project-pre-init '()

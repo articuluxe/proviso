@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-18 07:15:35 dharms>
+;; Modified Time-stamp: <2019-02-21 08:15:33 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -70,17 +70,19 @@ SYNCHRONOUS is non-nil, another process will not be spawned."
                                         ;don't need to spawn again
         specs))
 
-(defun proviso-deploy-create (source dest)
-  "Add a deployment from SOURCE to DEST."
+(defun proviso-deploy-create (source dest &optional id)
+  "Add a deployment from SOURCE to DEST.
+ID is an optional id."
   (interactive "FSource: \nFDestination: ")
   (set-text-properties 0 (- (length source) 1) nil source)
   (set-text-properties 0 (- (length dest) 1) nil dest)
-  (list :source source :destination dest))
+  (list :source source :destination dest :id id))
 
-(defun proviso-deploy-create-cmd (cmd)
-  "Add a deployment command CMD."
+(defun proviso-deploy-create-cmd (cmd &optional id)
+  "Add a deployment command CMD.
+ID is an optional id."
   (interactive "sCommand: ")
-  (list :command cmd))
+  (list :command cmd :id id))
 
 (defun proviso-deploy-choose-deploy (specs &optional prompt)
   "Let user select a deployment from SPECS.
@@ -158,28 +160,31 @@ PROMPT is an optional prompt."
          (list :command elt))
         (t nil)))
 
-(defun proviso-deploy--read-from-str (str)
-  "Read deployments from STR."
+(defun proviso-deploy--read-from-str (proj str)
+  "Read deployments from STR, destined for proj."
   (let (specs obj)
     (dolist (spec (car (read-from-string str)))
       (cond ((and (consp spec)
                   (eq (car spec) 'deploy))
              (dolist (elt (cdr spec))
-               (and
-                (setq obj (proviso-deploy--read-elt elt))
-                (add-to-list 'specs obj t))))
+               (when (setq obj (proviso-deploy--read-elt elt))
+                 (setq obj
+                       (append
+                        `(:id ,(proviso-deploy-get-next-id proj))
+                        obj))
+                 (add-to-list 'specs obj t))))
             (t
              (and
               (setq obj (proviso-deploy--read-elt spec))
               (add-to-list 'specs obj t)))))
     specs))
 
-(defun proviso-deploy-read-from-file (filename)
-  "Read a deployment specification from FILENAME."
+(defun proviso-deploy-read-from-file (proj filename)
+  "Read a deployment specification from FILENAME, intended for PROJ."
   (with-temp-buffer
     (insert-file-contents-literally filename)
-    (proviso-deploy--read-from-str
-     (buffer-string))))
+    (proviso-deploy--read-from-str proj
+                                   (buffer-string))))
 
 ;;;###autoload
 (defun proviso-deploy-save-file (&optional arg)
@@ -287,10 +292,25 @@ If ARG is non-nil, another project can be chosen."
                           (concat remote root)
                           nil t nil #'proviso-deploy--file-predicate))
     (if (and file
-             (setq specs (proviso-deploy-read-from-file file)))
+             (setq specs (proviso-deploy-read-from-file proj file)))
         (progn
           (proviso-put proj :deployments specs)
           (proviso-put proj :deploy-file file)))))
+
+(defun proviso-deploy-get-next-id (proj)
+  "Get the next :deploy-id from PROJ."
+  (let ((id (or (proviso-get proj :deploy-id) 0)))
+    (prog1
+        (incf id)
+      (proviso-put proj :deploy-id id))))
+
+(defun proviso-deploy-get-deploy-by-id (proj id)
+  "Fetch a deployment belonging to PROJ by ID."
+  (let ((specs (proviso-get proj :deployments)))
+    (catch 'found
+      (dolist (spec specs)
+        (when (eq id (plist-get spec :id))
+          (throw 'found spec))))))
 
 ;;;###autoload
 (defun proviso-deploy-add-deploy (&optional arg)
@@ -304,6 +324,9 @@ If ARG is non-nil, another project can be chosen."
                 #'proviso-deploy-create)))
     (if spec
         (progn
+          (setq spec
+                (append `(:id ,(proviso-deploy-get-next-id proj))
+                        spec))
           (if specs
               (add-to-list 'specs spec t)
             (setq specs (list spec)))
@@ -345,6 +368,11 @@ If ARG is non-nil, another project can be chosen."
             (proviso-deploy--run-deploy proj spec)
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
+
+(defun proviso-deploy--run-deploy-by-id (proj id)
+  "Run a deployment from project PROJ by ID."
+  (let ((spec (proviso-deploy-get-deploy-by-id proj id)))
+    (proviso-deploy--run-deploy proj spec)))
 
 (defun proviso-deploy--run-deploy (proj spec)
   "Run deployment SPEC from project PROJ."
@@ -415,7 +443,7 @@ If ARG is non-nil, another project can be chosen."
          (file (or store
                    (concat (proviso-get proj :project-name)
                            ".deploy")))
-         (lst (proviso-deploy-read-from-file file)))
+         (lst (proviso-deploy-read-from-file proj file)))
     (if lst
         (proviso-put proj :deployments lst)
       (user-error "No deployments read in from %s" file))))
@@ -590,34 +618,40 @@ If ARG is non-nil, another project can be chosen."
                   (proviso-deploy-choose-deploy
                    specs
                    "Edit deployment: "))
-            (proviso-deploy--edit-deploy-spec specs spec)
+            (proviso-deploy--edit-deploy-spec
+             proj
+             (plist-get spec :id))
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
 
-(defun proviso-deploy--edit-deploy-spec (specs spec)
-  "Edit the deployment SPEC, among all deployments SPECS."
-  (let ((cmd (plist-get spec :command))
-        (src (plist-get spec :source))
-        (dst (plist-get spec :destination)))
+(defun proviso-deploy--edit-deploy-spec (proj id)
+  "Edit the deployment with ID, belonging to project PROJ."
+  (let* ((specs (proviso-get proj :deployments))
+         (spec (proviso-deploy-get-deploy-by-id proj id))
+         (cmd (plist-get spec :command))
+         (src (plist-get spec :source))
+         (dst (plist-get spec :destination))
+         (n (seq-position specs id
+                          (lambda (lst elt)
+                            (eq elt (plist-get lst :id))))))
     (cond (cmd
-           (setcar (member spec specs)
+           (setcar (nthcdr n specs)
                    (proviso-deploy-create-cmd
                     (read-string "New command: "
-                                 cmd))))
+                                 cmd) id)))
           ((and src dst)
-           (setcar (member spec specs)
-                   (proviso-deploy-create
-                    (read-file-name
-                     "New source: "
-                     (file-name-directory src)
-                     nil nil
-                     (file-name-nondirectory src))
-                    (read-file-name
-                     "New destination: "
-                     (file-name-directory dst)
-                     nil nil
-                     (file-name-nondirectory dst))
-                    ))))))
+           (setq src (read-file-name
+                      "New source: "
+                      (file-name-directory src)
+                      nil nil
+                      (file-name-nondirectory src)))
+           (setq dst (read-file-name
+                      "New destination: "
+                      (file-name-directory dst)
+                      nil nil
+                      (file-name-nondirectory dst)))
+           (setcar (nthcdr n specs)
+                   (proviso-deploy-create src dst id))))))
 
 ;;;###autoload
 (defun proviso-deploy-find-file (&optional arg)
@@ -758,145 +792,155 @@ Optional argument ARG allows choosing a project."
                                            (propertize "None" 'face '(shadow)))))))
              ) width))
     (dolist (spec (proviso-get proj :deployments))
-      (lexical-let ((cmd (plist-get spec :command))
-                    (src (plist-get spec :source))
-                    (dst (plist-get spec :destination))
-                    (specs (proviso-get proj :deployments))
-                    (spec spec))
-        (cond (cmd
-               (add-to-list 'lst
-                            (list
-                             :heading "Command"
-                             :category 'command
-                             :content (lambda () cmd)
-                             :bindings `(("r" (lambda()
-                                                (proviso-deploy--run-deploy proviso-local-proj (quote ,spec)))))
-                             :section 'pre) t))
-              ((and src dst)
-               (when (file-directory-p dst)
-                 (setq dst (expand-file-name
-                            (file-name-nondirectory src) dst)))
-               (add-to-list 'lst
-                            (list
-                             :heading "Source"
-                             :category 'deployment
-                             :content (lambda ()
-                                        (let ((spec (proviso-get proviso-local-proj :deployments ;TODO drh
-                                        (replace-regexp-in-string (getenv "HOME") "~" src))
-                             :bindings `(("r" (lambda()
-                                                (proviso-deploy--run-deploy proviso-local-proj (quote ,spec))))
-                                         ("c" (lambda()
-                                                (proviso-deploy--check-file-spec
-                                                 (quote ,spec))))
-                                         ("d" (lambda()
-                                                (proviso-deploy--diff-file-spec
-                                                 (quote ,spec))))
-                                         ("e" (lambda()
-                                                (proviso-deploy--ediff-file-spec
-                                                 (quote ,spec))))
-                                         ("t" (lambda()
-                                                (proviso-deploy--edit-deploy-spec
-                                                 (quote ,specs) (quote ,spec))))
-                                         )
-                             :section 'pre) t)
-               (add-to-list 'lst
-                            (list
-                             :category 'deployment
-                             :content (lambda ()
-                                        (let ((attr (file-attributes src)))
-                                          (propertize
-                                           (if (file-exists-p src)
-                                               (concat
-                                                (format-time-string
-                                                 "%F %T"
-                                                 (file-attribute-modification-time attr))
-                                                (format "%10s"
-                                                        (proviso-deploy-human-readable-filesize
-                                                         (file-attribute-size attr)))
-                                                )
-                                             "---------- --:--:--        --")
-                                           'face '(shadow))))
-                             :bindings `(("r" (lambda()
-                                                (proviso-deploy--run-deploy proviso-local-proj (quote ,spec))))
-                                         ("c" (lambda()
-                                                (proviso-deploy--check-file-spec
-                                                 (quote ,spec))))
-                                         ("d" (lambda()
-                                                (proviso-deploy--diff-file-spec
-                                                 (quote ,spec))))
-                                         ("e" (lambda()
-                                                (proviso-deploy--ediff-file-spec
-                                                 (quote ,spec))))
-                                         ("t" (lambda()
-                                                (proviso-deploy--edit-deploy-spec
-                                                 (quote ,specs) (quote ,spec))))
-                                         )
-                             )
-                            t)
-               (add-to-list 'lst
-                            (list
-                             :heading "Destination"
-                             :category 'deployment
-                             :content (lambda ()
-                                        (replace-regexp-in-string (getenv "HOME") "~" dst))
-                             :bindings `(("r" (lambda()
-                                                (proviso-deploy--run-deploy proviso-local-proj (quote ,spec))))
-                                         ("f" (lambda()
-                                                (proviso-deploy--find-file-spec
-                                                 (quote ,spec))))
-                                         ("c" (lambda()
-                                                (proviso-deploy--check-file-spec
-                                                 (quote ,spec))))
-                                         ("d" (lambda()
-                                                (proviso-deploy--diff-file-spec
-                                                 (quote ,spec))))
-                                         ("e" (lambda()
-                                                (proviso-deploy--ediff-file-spec
-                                                 (quote ,spec))))
-                                         ("t" (lambda()
-                                                (proviso-deploy--edit-deploy-spec
-                                                 (quote ,specs) (quote ,spec))))
-                                         )
-                             )
-                            t)
-               (add-to-list 'lst
-                            (list
-                             :category 'deployment
-                             :content (lambda ()
-                                        (lexical-let ((attr (file-attributes dst)))
-                                          (propertize
-                                           (if (file-exists-p dst)
-                                               (concat
-                                                (format-time-string
-                                                 "%F %T"
-                                                 (file-attribute-modification-time
-                                                  (file-attributes attr)))
-                                                (format "%10s"
-                                                        (proviso-deploy-human-readable-filesize
-                                                         (file-attribute-size attr))))
-                                             "---------- --:--:--        --")
-                                           'face '(shadow))))
-                             :bindings `(("r" (lambda()
-                                                (proviso-deploy--run-deploy proviso-local-proj (quote ,spec))))
-                                         ("f" (lambda()
-                                                (proviso-deploy--find-file-spec
-                                                 (quote ,spec))))
-                                         ("c" (lambda()
-                                                (proviso-deploy--check-file-spec
-                                                 (quote ,spec))))
-                                         ("d" (lambda()
-                                                (proviso-deploy--diff-file-spec
-                                                 (quote ,spec))))
-                                         ("e" (lambda()
-                                                (proviso-deploy--ediff-file-spec
-                                                 (quote ,spec))))
-                                         ("t" (lambda()
-                                                (proviso-deploy--edit-deploy-spec
-                                                 (quote ,specs) (quote ,spec))))
-                                         )
-                             )
-                            t)
-               ))))
+      (let ((command (plist-get spec :command))
+            (source (plist-get spec :source))
+            (dest (plist-get spec :destination)))
+        (lexical-let ((id (plist-get spec :id)))
+          (cond (command
+                 (add-to-list 'lst
+                              (list
+                               :heading "Command"
+                               :category 'command
+                               :content (lambda ()
+                                          (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
+                                                 (cmd (plist-get spec :command)))
+                                            cmd))
+                               :bindings `(("r" (lambda ()
+                                                  (proviso-deploy--run-deploy-by-id proviso-local-proj id))))
+                               :section 'pre) t))
+                ((and source dest)
+                 (add-to-list 'lst
+                              (list
+                               :heading "Source"
+                               :category 'deployment
+                               :content (lambda ()
+                                          (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
+                                                 (src (plist-get spec :source)))
+                                            (replace-regexp-in-string (getenv "HOME") "~" src)))
+                               :bindings `(("r" (lambda ()
+                                                  (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
+                                           ("c" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--check-file-spec spec))))
+                                           ("d" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--diff-file-spec spec))))
+                                           ("e" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--ediff-file-spec spec))))
+                                           ("t" (lambda ()
+                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id)))
+                                           )
+                               :section 'pre) t)
+                 (add-to-list 'lst
+                              (list
+                               :category 'deployment
+                               :content (lambda ()
+                                          (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
+                                                 (src (plist-get spec :source))
+                                                 (attr (file-attributes src)))
+                                            (propertize
+                                             (if (file-exists-p src)
+                                                 (concat
+                                                  (format-time-string
+                                                   "%F %T"
+                                                   (file-attribute-modification-time attr))
+                                                  (format "%10s"
+                                                          (proviso-deploy-human-readable-filesize
+                                                           (file-attribute-size attr)))
+                                                  )
+                                               "---------- --:--:--        --")
+                                             'face '(shadow))))
+                               :bindings `(("r" (lambda ()
+                                                  (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
+                                           ("c" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--check-file-spec spec))))
+                                           ("d" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--diff-file-spec spec))))
+                                           ("e" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--ediff-file-spec spec))))
+                                           ("t" (lambda ()
+                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id)))
+                                           )
+                               )
+                              t)
+                 (add-to-list 'lst
+                              (list
+                               :heading "Destination"
+                               :category 'deployment
+                               :content (lambda ()
+                                          (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
+                                                 (src (plist-get spec :source))
+                                                 (dst (plist-get spec :destination)))
+                                            (when (file-directory-p dst)
+                                              (setq dst (expand-file-name
+                                                         (file-name-nondirectory src) dst)))
+                                            (replace-regexp-in-string (getenv "HOME") "~" dst)))
+                               :bindings `(("r" (lambda ()
+                                                  (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
+                                           ("c" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--check-file-spec spec))))
+                                           ("d" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--diff-file-spec spec))))
+                                           ("e" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--ediff-file-spec spec))))
+                                           ("t" (lambda ()
+                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id)))
+                                           ("f" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--find-file-spec spec))))
+                                           )
+                               )
+                              t)
+                 (add-to-list 'lst
+                              (list
+                               :category 'deployment
+                               :content (lambda ()
+                                          (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
+                                                 (src (plist-get spec :source))
+                                                 (dst (plist-get spec :destination))
+                                                 attr)
+                                            (when (file-directory-p dst)
+                                              (setq dst (expand-file-name
+                                                         (file-name-nondirectory src) dst)))
+                                            (setq attr (file-attributes dst))
+                                            (propertize
+                                             (if (file-exists-p dst)
+                                                 (concat
+                                                  (format-time-string
+                                                   "%F %T"
+                                                   (file-attribute-modification-time attr))
+                                                  (format "%10s"
+                                                          (proviso-deploy-human-readable-filesize
+                                                           (file-attribute-size attr))))
+                                               "---------- --:--:--        --")
+                                             'face '(shadow))))
+                               :bindings `(("r" (lambda ()
+                                                  (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
+                                           ("c" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--check-file-spec spec))))
+                                           ("d" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--diff-file-spec spec))))
+                                           ("e" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--ediff-file-spec spec))))
+                                           ("t" (lambda ()
+                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id)))
+                                           ("f" (lambda ()
+                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                    (proviso-deploy--find-file-spec spec))))
+                                           )
+                               )
+                              t)
+                 )))))
     (setq width (proviso-gui-add-to-buffer buffer lst width))
     (proviso-gui-finalize-buffer buffer)
     ))
