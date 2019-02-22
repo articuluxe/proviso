@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-18 07:14:51 dharms>
+;; Modified Time-stamp: <2019-02-22 09:01:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -38,6 +38,9 @@
 
 (defvar-local proviso-gui--next-id 0
   "Counter for next entry id.")
+
+(defvar-local proviso-gui--cursor nil
+  "ID of currently selected line.")
 
 (defvar-local proviso-gui--timers nil
   "List of timers in effect.")
@@ -81,7 +84,7 @@
                          proviso-gui-markers)))
     (when next
       (goto-char (marker-position (cdr (assq 'pos next))))
-      (proviso-gui-on-line))))
+      (proviso-gui-on-line next))))
 
 (defun proviso-gui-move-prev-marker ()
   "Move to the previous marker position in the dashboard buffer."
@@ -94,7 +97,7 @@
                          (reverse proviso-gui-markers))))
     (when prev
       (goto-char (marker-position (cdr (assq 'pos prev))))
-      (proviso-gui-on-line))))
+      (proviso-gui-on-line prev))))
 
 (defun proviso-gui--find-current-cell ()
   "Return the element of `proviso-gui-markers' near point, if any."
@@ -108,11 +111,14 @@
                      (<= pos end)))
               proviso-gui-markers)))
 
-(defun proviso-gui-on-line ()
-  "Examine the current line, set the current keymap if necessary."
-  (let ((cell (proviso-gui--find-current-cell)))
+(defun proviso-gui-on-line (&optional where)
+  "Examine the current line, set the current keymap if necessary.
+If WHERE is non-nil, it provides the current line."
+  (let ((cell (or where
+                  (proviso-gui--find-current-cell))))
     (when cell
-      (use-local-map (cdr (assq 'map cell))))))
+      (use-local-map (cdr (assq 'map cell)))
+      (setq proviso-gui--cursor (cdr (assq 'id cell))))))
 
 (defun proviso-gui-init-buffer (buffer keymap)
   "Initialize BUFFER for gui operations, with keymap KEYMAP."
@@ -195,17 +201,24 @@ FUTURE may be nil, or a process sentinel to wait upon completion."
         (marker (cdr (assq 'pos cell)))
         (create (cdr (assq 'create cell))))
     (and buffer marker create
-         (proviso-gui--draw-cell-internal buffer marker create))))
+         (proviso-gui--draw-cell-internal buffer marker create)
+         (proviso-gui--select-cell))))
 
 (defun proviso-gui--draw-cell-internal (buffer marker fun)
   "In BUFFER, recreate content at MARKER with FUN."
   (with-current-buffer buffer
     (let ((inhibit-read-only t)
           (pos (marker-position marker)))
-      (goto-char pos)
-      (delete-region pos (line-end-position))
-      (insert (funcall fun))
-      (goto-char pos))))
+      (save-excursion
+        (goto-char pos)
+        (delete-region pos (line-end-position))
+        (insert (funcall fun))))))
+
+(defun proviso-gui--select-cell ()
+  "Put cursor on last-selected line."
+  (let ((cell (proviso-gui-lookup-id proviso-gui--cursor)))
+    (when cell
+      (goto-char (marker-position (cdr (assq 'pos cell)))))))
 
 (defun proviso-gui-add-global-cb (buffer bindings)
   "Add global callbacks in BUFFER for BINDINGS."
