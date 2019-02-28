@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-22 09:01:32 dharms>
+;; Modified Time-stamp: <2019-02-28 08:29:25 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -41,6 +41,9 @@
 
 (defvar-local proviso-gui--cursor nil
   "ID of currently selected line.")
+
+(defvar-local proviso-gui--set-new-cursor nil
+  "Whether to select the next item.")
 
 (defvar-local proviso-gui--timers nil
   "List of timers in effect.")
@@ -128,6 +131,7 @@ If WHERE is non-nil, it provides the current line."
         (add-hook 'kill-buffer-hook #'proviso-gui-on-buffer-kill nil t))
       (setq proviso-gui-markers nil)
       (put 'proviso-gui--local-map 'permanent-local t)
+      (put 'proviso-gui--set-new-cursor 'permanent-local t)
       (erase-buffer)
       (setq proviso-gui--local-map (copy-keymap keymap))
       (set-keymap-parent proviso-gui-map (keymap-parent keymap))
@@ -225,10 +229,13 @@ FUTURE may be nil, or a process sentinel to wait upon completion."
   (with-current-buffer buffer
     (dolist (binding bindings)
       (lexical-let ((cb (nth 1 binding))
-                    (category (nth 2 binding)))
+                    (category (nth 2 binding))
+                    (set-new-cursor (nth 3 binding)))
         (define-key proviso-gui--local-map
           (nth 0 binding)
           (lambda() (interactive)
+            (when set-new-cursor
+              (setq proviso-gui--set-new-cursor t))
             (proviso-gui-cb cb category)))))))
 
 (defun proviso-gui-add-to-buffer (buffer lst &optional maxwidth)
@@ -277,6 +284,10 @@ MAXWIDTH allows specifying the minimum length of the headings."
                       (cons 'buffer buffer)
                       ))
           (when category (push (cons 'category category) cell))
+          (and proviso-gui--set-new-cursor
+               (or (not proviso-gui--cursor)
+                   (> id proviso-gui--cursor))
+               (setq proviso-gui--cursor id))
           (dolist (binding (plist-get entry :bindings))
             (lexical-let ((cb (nth 1 binding)))
               (define-key map (nth 0 binding)
@@ -309,7 +320,15 @@ MAXWIDTH allows specifying the minimum length of the headings."
   "Finalize the GUI settings of BUFFER."
   (with-current-buffer buffer
     (use-local-map proviso-gui--local-map)
-    (proviso-gui-on-line)))
+    (if proviso-gui--set-new-cursor
+        (progn
+          (setq proviso-gui--set-new-cursor nil)
+          (proviso-gui--select-cell)
+          (proviso-gui-on-line))
+      (goto-char (point-min))
+      (proviso-gui-on-line)
+      (proviso-gui--select-cell)
+      )))
 
 (provide 'proviso-gui)
 ;;; proviso-gui.el ends here
