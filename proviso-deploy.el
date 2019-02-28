@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-22 09:03:46 dharms>
+;; Modified Time-stamp: <2019-02-28 08:25:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -76,13 +76,17 @@ ID is an optional id."
   (interactive "FSource: \nFDestination: ")
   (set-text-properties 0 (- (length source) 1) nil source)
   (set-text-properties 0 (- (length dest) 1) nil dest)
-  (list :source source :destination dest :id id))
+  (if id
+      (list :source source :destination dest :id id)
+    (list :source source :destination dest)))
 
 (defun proviso-deploy-create-cmd (cmd &optional id)
   "Add a deployment command CMD.
 ID is an optional id."
   (interactive "sCommand: ")
-  (list :command cmd :id id))
+  (if id
+      (list :command cmd :id id)
+    (list :command cmd)))
 
 (defun proviso-deploy-choose-deploy (specs &optional prompt)
   "Let user select a deployment from SPECS.
@@ -161,7 +165,7 @@ PROMPT is an optional prompt."
         (t nil)))
 
 (defun proviso-deploy--read-from-str (proj str)
-  "Read deployments from STR, destined for proj."
+  "Read deployments from STR, destined for PROJ."
   (let (specs obj)
     (dolist (spec (car (read-from-string str)))
       (cond ((and (consp spec)
@@ -317,9 +321,20 @@ If ARG is non-nil, another project can be chosen."
   "Add a deployment.
 If ARG is non-nil, another project can be chosen."
   (interactive "P")
-  (let* ((proj (if arg (proviso-choose-project)
-                 (proviso-current-project)))
-         (specs (proviso-get proj :deployments))
+  (let ((proj (if arg (proviso-choose-project)
+                (proviso-current-project))))
+    (proviso-deploy--add-deploy proj)))
+
+(defun proviso-deploy-add-deploy-current-project ()
+  "Add a deployment to the current project."
+  (let ((proj proviso-local-proj))
+    (if proj
+        (proviso-deploy--add-deploy proj)
+      (user-error "No current project"))))
+
+(defun proviso-deploy--add-deploy (proj)
+  "Add a deployment to project PROJ."
+  (let* ((specs (proviso-get proj :deployments))
          (spec (call-interactively
                 #'proviso-deploy-create)))
     (if spec
@@ -339,12 +354,26 @@ If ARG is non-nil, another project can be chosen."
 If ARG is non-nil, another project can be chosen."
   (interactive "P")
   (let* ((proj (if arg (proviso-choose-project)
-                 (proviso-current-project)))
-         (specs (proviso-get proj :deployments))
+                 (proviso-current-project))))
+    (proviso-deploy--add-deploy-cmd proj)))
+
+(defun proviso-deploy-add-deploy-cmd-current-project ()
+  "Add a deployment command to the current project."
+  (let ((proj proviso-local-proj))
+    (if proj
+        (proviso-deploy--add-deploy-cmd proj)
+      (user-error "No current project"))))
+
+(defun proviso-deploy--add-deploy-cmd (proj)
+  "Add a deployment command to PROJ."
+  (let* ((specs (proviso-get proj :deployments))
          (spec (call-interactively
                 #'proviso-deploy-create-cmd)))
     (if spec
         (progn
+          (setq spec
+                (append `(:id ,(proviso-deploy-get-next-id proj))
+                        spec))
           (if specs
               (add-to-list 'specs spec t)
             (setq specs (list spec)))
@@ -765,6 +794,8 @@ Optional argument ARG allows choosing a project."
        ("R" proviso-deploy-run-all-deploys-current-project deployment)
        ("." proviso-deploy-run-last-current-project deployment)
        ("X" proviso-deploy-delete-all-current-project buffer)
+       ("+" proviso-deploy-add-deploy-current-project buffer t)
+       ("=" proviso-deploy-add-deploy-cmd-current-project buffer t)
        ))
     (setq width
           (proviso-gui-add-to-buffer
