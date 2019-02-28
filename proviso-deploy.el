@@ -987,7 +987,7 @@ From `http://mbork.pl/2018-03-26_Human-readable_filesizes'."
                       (min order (length proviso-deploy-filesize-prefixes))))
          (size-in-unit (/ size (expt 1024.0 order)))
          (precision (max 3 (+ 2 (floor (log (max size-in-unit 1) 10)))))
-         (str (format (format "%%.%dg%%sB" precision)
+         (str (format (format "%%.%dg% %sB" precision)
                       size-in-unit prefix)))
     str))
 
