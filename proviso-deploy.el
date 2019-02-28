@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-28 08:25:37 dharms>
+;; Modified Time-stamp: <2019-02-28 16:51:06 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -49,19 +49,21 @@ This will be formatted with the project name.")
   "Execute a deployment represented by SPEC.
 Usually the deployment occurs asynchronously; if optional
 SYNCHRONOUS is non-nil, another process will not be spawned."
-  (let ((cmd (plist-get spec :command))
-        (src (plist-get spec :source))
-        (dst (plist-get spec :destination)))
-    (if cmd
-        (shell-command cmd)
-      (if (and src dst)
-          (progn
-            (message "Deploying %s to %s..." src dst)
-            (if synchronous
-                (xfer-transfer-file src dst)
-              (xfer-transfer-file-async src dst)))
-        (user-error "Ignoring invalid deployment '%s' --> '%s'"
-                    src dst)))))
+  (let ((type (plist-get spec :type))
+        cmd src dst)
+    (cond ((eq type 'command)
+           (setq cmd (plist-get spec :command))
+           (shell-command cmd))
+          ((eq type 'deploy)
+           (setq src (plist-get spec :source))
+           (setq dst (plist-get spec :destination))
+           (message "Deploying %s to %s..." src dst)
+           (if synchronous
+               (xfer-transfer-file src dst)
+             (xfer-transfer-file-async src dst)))
+          (t
+           (user-error "Ignoring invalid deployment '%s' --> '%s'"
+                       src dst)))))
 
 (defun proviso-deploy-all (specs)
   "Execute all deployments contained in SPECS."
@@ -77,16 +79,16 @@ ID is an optional id."
   (set-text-properties 0 (- (length source) 1) nil source)
   (set-text-properties 0 (- (length dest) 1) nil dest)
   (if id
-      (list :source source :destination dest :id id)
-    (list :source source :destination dest)))
+      (list :source source :destination dest :type 'deploy :id id)
+    (list :source source :destination dest :type 'deploy)))
 
 (defun proviso-deploy-create-cmd (cmd &optional id)
   "Add a deployment command CMD.
 ID is an optional id."
   (interactive "sCommand: ")
   (if id
-      (list :command cmd :id id)
-    (list :command cmd)))
+      (list :command cmd :type 'command :id id)
+    (list :command cmd :type 'command)))
 
 (defun proviso-deploy-choose-deploy (specs &optional prompt)
   "Let user select a deployment from SPECS.
@@ -96,14 +98,15 @@ PROMPT is an optional prompt."
            (prompt (or prompt "Choose deployment: "))
            lst
            (max 0) len
-           cmd src dst)
+           type cmd src dst)
       (setq lst (mapcar (lambda (spec)
-                          (setq cmd (plist-get spec :command))
-                          (setq src (plist-get spec :source))
-                          (setq dst (plist-get spec :destination))
-                          (cond (cmd
+                          (setq type (plist-get spec :type))
+                          (cond ((eq type 'command)
+                                 (setq cmd (plist-get spec :command))
                                  (cons cmd spec))
-                                ((and src dst)
+                                ((eq type 'deploy)
+                                 (setq src (plist-get spec :source))
+                                 (setq dst (plist-get spec :destination))
                                  (cons
                                   (cons
                                    (replace-regexp-in-string home "~" src)
@@ -139,12 +142,14 @@ PROMPT is an optional prompt."
   "Write deployment specification SPECS to current buffer."
   (insert "((deploy . (\n")
   (dolist (spec specs)
-    (let ((cmd (plist-get spec :command))
-          (src (plist-get spec :source))
-          (dst (plist-get spec :destination)))
-      (cond (cmd
+    (let ((type (plist-get spec :type))
+          cmd src dst)
+      (cond ((eq type 'command)
+             (setq cmd (plist-get spec :command))
              (prin1 cmd (current-buffer)))
-            (t
+            ((eq type 'deploy)
+             (setq src (plist-get spec :source))
+             (setq dst (plist-get spec :destination))
              (prin1 (cons src dst) (current-buffer))))
       (insert "\n")))
   (insert ")))\n"))
@@ -159,9 +164,10 @@ PROMPT is an optional prompt."
   "Read an element ELT."
   (cond ((consp elt)
          (list :source (car elt)
-               :destination (cdr elt)))
+               :destination (cdr elt)
+               :type 'deploy))
         ((stringp elt)
-         (list :command elt))
+         (list :command elt :type 'command))
         (t nil)))
 
 (defun proviso-deploy--read-from-str (proj str)
@@ -540,13 +546,13 @@ If ARG is non-nil, another project can be chosen."
 
 (defun proviso-deploy--check-file-spec (spec)
   "Check the deployment SPEC."
-  (let ((src (plist-get spec :source))
-        (dst (plist-get spec :destination)))
-    (and dst
-         (file-directory-p dst)
-         (setq dst (expand-file-name
-                    (file-name-nondirectory src) dst)))
-    (if (and src dst)
+  (if (eq (plist-get spec :type) 'deploy)
+      (let ((src (plist-get spec :source))
+            (dst (plist-get spec :destination)))
+        (and dst
+             (file-directory-p dst)
+             (setq dst (expand-file-name
+                        (file-name-nondirectory src) dst)))
         (if (and (file-exists-p src)
                  (file-exists-p dst))
             (if (ediff-same-file-contents src dst)
@@ -564,8 +570,8 @@ If ARG is non-nil, another project can be chosen."
                        (ediff src dst))
                       (t
                        (message "Diff aborted.")))))
-          (user-error "One or more files do not exist"))
-      (user-error "No files to compare"))))
+          (user-error "One or more files do not exist")))
+    (user-error "No files to compare")))
 
 ;;;###autoload
 (defun proviso-deploy-diff-file (&optional arg)
@@ -587,18 +593,18 @@ If ARG is non-nil, another project can be chosen."
 
 (defun proviso-deploy--diff-file-spec (spec)
   "Diff the deployment SPEC."
-  (let ((src (plist-get spec :source))
-        (dst (plist-get spec :destination)))
-    (and dst
-         (file-directory-p dst)
-         (setq dst (expand-file-name
-                    (file-name-nondirectory src) dst)))
-    (if (and src dst)
+  (if (eq (plist-get spec :type) 'deploy)
+      (let ((src (plist-get spec :source))
+            (dst (plist-get spec :destination)))
+        (and dst
+             (file-directory-p dst)
+             (setq dst (expand-file-name
+                        (file-name-nondirectory src) dst)))
         (if (and (file-exists-p src)
                  (file-exists-p dst))
             (diff src dst)
-          (user-error "One or more files do not exist"))
-      (user-error "No files to compare"))))
+          (user-error "One or more files do not exist")))
+    (user-error "No files to compare")))
 
 ;;;###autoload
 (defun proviso-deploy-ediff-file (&optional arg)
@@ -620,18 +626,18 @@ If ARG is non-nil, another project can be chosen."
 
 (defun proviso-deploy--ediff-file-spec (spec)
   "Ediff the deployment SPEC."
-  (let ((src (plist-get spec :source))
-        (dst (plist-get spec :destination)))
-    (and dst
-         (file-directory-p dst)
-         (setq dst (expand-file-name
-                    (file-name-nondirectory src) dst)))
-    (if (and src dst)
+  (if (eq (plist-get spec :type) 'deploy)
+      (let ((src (plist-get spec :source))
+            (dst (plist-get spec :destination)))
+        (and dst
+             (file-directory-p dst)
+             (setq dst (expand-file-name
+                        (file-name-nondirectory src) dst)))
         (if (and (file-exists-p src)
                  (file-exists-p dst))
             (ediff-files src dst)
-          (user-error "One or more files do not exist"))
-      (user-error "No files to compare"))))
+          (user-error "One or more files do not exist")))
+    (user-error "No files to compare")))
 
 ;;;###autoload
 (defun proviso-deploy-edit-deploy (&optional arg)
@@ -657,18 +663,20 @@ If ARG is non-nil, another project can be chosen."
   "Edit the deployment with ID, belonging to project PROJ."
   (let* ((specs (proviso-get proj :deployments))
          (spec (proviso-deploy-get-deploy-by-id proj id))
-         (cmd (plist-get spec :command))
-         (src (plist-get spec :source))
-         (dst (plist-get spec :destination))
+         (type (plist-get spec :type))
+         cmd src dst
          (n (seq-position specs id
                           (lambda (lst elt)
                             (eq elt (plist-get lst :id))))))
-    (cond (cmd
+    (cond ((eq type 'command)
+           (setq cmd (plist-get spec :command))
            (setcar (nthcdr n specs)
                    (proviso-deploy-create-cmd
                     (read-string "New command: "
                                  cmd) id)))
-          ((and src dst)
+          ((eq type 'deploy)
+           (setq src (plist-get spec :source))
+           (setq dst (plist-get spec :destination))
            (setq src (read-file-name
                       "New source: "
                       (file-name-directory src)
@@ -702,17 +710,19 @@ If ARG is non-nil, another project can be chosen."
 
 (defun proviso-deploy--find-file-spec (spec)
   "Visit the deployment SPEC."
-  (let ((src (plist-get spec :source))
-        (dst (plist-get spec :destination)))
-    (if dst
-        (progn
-          (when (file-directory-p dst)
-            (setq dst (expand-file-name
-                       (file-name-nondirectory src) dst)))
-          (if (file-exists-p dst)
-              (find-file dst)
-            (user-error "File '%s' does not exist" dst)))
-      (user-error "No deployed file to edit"))))
+  (if (eq (plist-get spec :type) 'deploy)
+      (let ((src (plist-get spec :source))
+            (dst (plist-get spec :destination)))
+        (if dst
+            (progn
+              (when (file-directory-p dst)
+                (setq dst (expand-file-name
+                           (file-name-nondirectory src) dst)))
+              (if (file-exists-p dst)
+                  (find-file dst)
+                (user-error "File '%s' does not exist" dst)))
+          (user-error "No deployed file to edit")))
+    (user-error "Not a deployment")))
 
 ;;;###autoload
 (defun proviso-deploy-find-file-other-window (&optional arg)
@@ -728,17 +738,19 @@ If ARG is non-nil, another project can be chosen."
                   (proviso-deploy-choose-deploy
                    specs
                    "Find deployed file in other window: "))
-            (let ((src (plist-get spec :source))
-                  (dst (plist-get spec :destination)))
-              (if dst
-                  (progn
-                    (when (file-directory-p dst)
-                      (setq dst (expand-file-name
-                                 (file-name-nondirectory src) dst)))
-                    (if (file-exists-p dst)
-                        (find-file-other-window dst)
-                      (user-error "File '%s' does not exist" dst)))
-                (user-error "No deployed file to edit")))
+            (if (eq (plist-get spec :type) 'deploy)
+                (let ((src (plist-get spec :source))
+                      (dst (plist-get spec :destination)))
+                  (if dst
+                      (progn
+                        (when (file-directory-p dst)
+                          (setq dst (expand-file-name
+                                     (file-name-nondirectory src) dst)))
+                        (if (file-exists-p dst)
+                            (find-file-other-window dst)
+                          (user-error "File '%s' does not exist" dst)))
+                    (user-error "No deployed file to edit")))
+              (user-error "Not a deployment"))
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
 
@@ -823,11 +835,11 @@ Optional argument ARG allows choosing a project."
                                            (propertize "None" 'face '(shadow)))))))
              ) width))
     (dolist (spec (proviso-get proj :deployments))
-      (let ((command (plist-get spec :command))
-            (source (plist-get spec :source))
-            (dest (plist-get spec :destination)))
+      (let ((type (plist-get spec :type))
+            command source dest)
         (lexical-let ((id (plist-get spec :id)))
-          (cond (command
+          (cond ((eq type 'command)
+                 (setq command (plist-get spec :command))
                  (add-to-list 'lst
                               (list
                                :heading "Command"
@@ -839,7 +851,9 @@ Optional argument ARG allows choosing a project."
                                :bindings `(("r" (lambda ()
                                                   (proviso-deploy--run-deploy-by-id proviso-local-proj ,id))))
                                :section 'pre) t))
-                ((and source dest)
+                ((eq type 'deploy)
+                 (setq source (plist-get spec :source))
+                 (setq dest (plist-get spec :destination))
                  (add-to-list 'lst
                               (list
                                :heading "Source"
