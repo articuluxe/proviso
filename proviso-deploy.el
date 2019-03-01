@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-28 16:51:06 dharms>
+;; Modified Time-stamp: <2019-03-01 07:53:58 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -170,18 +170,20 @@ PROMPT is an optional prompt."
          (list :command elt :type 'command))
         (t nil)))
 
-(defun proviso-deploy--read-from-str (proj str)
-  "Read deployments from STR, destined for PROJ."
+(defun proviso-deploy--read-from-str (str &optional proj)
+  "Read deployments from STR, destined for PROJ.
+If PROJ is not supplied, no `:id' parameter will be present."
   (let (specs obj)
     (dolist (spec (car (read-from-string str)))
       (cond ((and (consp spec)
                   (eq (car spec) 'deploy))
              (dolist (elt (cdr spec))
                (when (setq obj (proviso-deploy--read-elt elt))
-                 (setq obj
-                       (append
-                        `(:id ,(proviso-deploy-get-next-id proj))
-                        obj))
+                 (when proj
+                   (setq obj
+                         (append
+                          `(:id ,(proviso-deploy-get-next-id proj))
+                          obj)))
                  (add-to-list 'specs obj t))))
             (t
              (and
@@ -193,8 +195,7 @@ PROMPT is an optional prompt."
   "Read a deployment specification from FILENAME, intended for PROJ."
   (with-temp-buffer
     (insert-file-contents-literally filename)
-    (proviso-deploy--read-from-str proj
-                                   (buffer-string))))
+    (proviso-deploy--read-from-str (buffer-string) proj)))
 
 ;;;###autoload
 (defun proviso-deploy-save-file (&optional arg)

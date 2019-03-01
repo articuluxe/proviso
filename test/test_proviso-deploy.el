@@ -1,11 +1,11 @@
 #!/bin/sh
 ":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-deploy.el --- test deploy utilities
-;; Copyright (C) 2018  Dan Harms (dharms)
+;; Copyright (C) 2018-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-10 08:58:15 dharms>
+;; Modified Time-stamp: <2019-03-01 08:03:48 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 
@@ -34,22 +34,22 @@
   (let ((specs (proviso-deploy--read-from-str
                 "((\"one\" . \"two\")(\"three\" . \"four\")\"pwd\")")))
     (should (equal specs
-                   '((:source "one" :destination "two")
-                     (:source "three" :destination "four")
-                     (:command "pwd"))))))
+                   '((:source "one" :destination "two" :type deploy)
+                     (:source "three" :destination "four" :type deploy)
+                     (:command "pwd" :type command))))))
 
 (ert-deftest proviso-deploy-test-read-file-complex ()
   (let ((specs (proviso-deploy--read-from-str
                 "((deploy . ((\"one\" . \"two\") \"pwd\" (\"three\" . \"four\"))))")))
     (should (equal specs
-                   '((:source "one" :destination "two")
-                     (:command "pwd")
-                     (:source "three" :destination "four"))))))
+                   '((:source "one" :destination "two" :type deploy)
+                     (:command "pwd" :type command)
+                     (:source "three" :destination "four" :type deploy))))))
 
 (ert-deftest proviso-deploy-test-write-file ()
-  (let ((specs '((:source "one" :destination "two")
-                 (:command "pwd")
-                 (:source "three" :destination "four"))))
+  (let ((specs '((:source "one" :destination "two" :type deploy)
+                 (:command "pwd" :type command)
+                 (:source "three" :destination "four" :type deploy))))
     (with-temp-buffer
       (proviso-deploy--write-to-current-buffer specs)
       (should (equal (buffer-string)
@@ -62,9 +62,9 @@
                      )))))
 
 (ert-deftest proviso-deploy-test-conversion ()
-  (let ((specs '((:source "one" :destination "two")
-                 (:command "pwd")
-                 (:source "three" :destination "four")))
+  (let ((specs '((:source "one" :destination "two" :type deploy)
+                 (:command "pwd" :type command)
+                 (:source "three" :destination "four" :type deploy)))
         result)
     (with-temp-buffer
       (proviso-deploy--write-to-current-buffer specs)
