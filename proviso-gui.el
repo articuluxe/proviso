@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-28 08:29:25 dharms>
+;; Modified Time-stamp: <2019-03-02 10:26:52 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -204,9 +204,9 @@ FUTURE may be nil, or a process sentinel to wait upon completion."
   (let ((buffer (cdr (assq 'buffer cell)))
         (marker (cdr (assq 'pos cell)))
         (create (cdr (assq 'create cell))))
-    (and buffer marker create
-         (proviso-gui--draw-cell-internal buffer marker create)
-         (proviso-gui--select-cell))))
+    (when (and buffer marker create)
+      (proviso-gui--draw-cell-internal buffer marker create)
+      (proviso-gui--select-cell))))
 
 (defun proviso-gui--draw-cell-internal (buffer marker fun)
   "In BUFFER, recreate content at MARKER with FUN."
