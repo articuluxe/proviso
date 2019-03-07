@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-03-01 07:53:58 dharms>
+;; Modified Time-stamp: <2019-03-07 08:24:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -108,9 +108,11 @@ PROMPT is an optional prompt."
                                  (setq src (plist-get spec :source))
                                  (setq dst (plist-get spec :destination))
                                  (cons
-                                  (cons
-                                   (replace-regexp-in-string home "~" src)
-                                   (replace-regexp-in-string home "~" dst))
+                                  (if (string-empty-p home)
+                                      (cons src dst)
+                                    (cons
+                                     (replace-regexp-in-string home "~" src)
+                                     (replace-regexp-in-string home "~" dst)))
                                   spec))))
                         specs))
       (dolist (elt lst)
