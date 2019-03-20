@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-03-02 10:26:52 dharms>
+;; Modified Time-stamp: <2019-03-20 08:54:40 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -27,8 +27,10 @@
 ;;
 
 ;;; Code:
+(require 'cl-lib)
 (require 's)
 (require 'seq)
+(require 'async)
 
 (defvar-local proviso-gui-markers nil
   "Alist of markers in current buffer, for navigation.")
@@ -42,8 +44,14 @@
 (defvar-local proviso-gui--cursor nil
   "ID of currently selected line.")
 
-(defvar-local proviso-gui--set-new-cursor nil
-  "Whether to select the next item.")
+(defvar-local proviso-gui--cursor-policy nil
+  "An optional policy directing how to select the cursor.
+Possible values:
+ - new: will select a newly-created row
+ - id : will maintain selection based on 'parent-id
+ - nil: first row will be selected if buffer is redrawn
+
+Otherwise the current row is usually maintained.")
 
 (defvar-local proviso-gui--timers nil
   "List of timers in effect.")
@@ -71,7 +79,7 @@
 (defun proviso-gui-on-timer (future &optional id)
   "Timer callback to check FUTURE, regarding GUI cell ID."
   (if (async-ready future)
-      (let ((cell (proviso-gui-lookup-id id)))
+      (let ((cell (proviso-gui-lookup-by-id id)))
         (when cell
           (proviso-gui--draw-cell cell)))
     (run-at-time 1 nil #'proviso-gui-on-timer future id)))
@@ -87,7 +95,8 @@
                          proviso-gui-markers)))
     (when next
       (goto-char (marker-position (cdr (assq 'pos next))))
-      (proviso-gui-on-line next))))
+      (proviso-gui-select-line next))
+    next))
 
 (defun proviso-gui-move-prev-marker ()
   "Move to the previous marker position in the dashboard buffer."
@@ -100,9 +109,10 @@
                          (reverse proviso-gui-markers))))
     (when prev
       (goto-char (marker-position (cdr (assq 'pos prev))))
-      (proviso-gui-on-line prev))))
+      (proviso-gui-select-line prev))
+    prev))
 
-(defun proviso-gui--find-current-cell ()
+(defun proviso-gui-find-current-cell ()
   "Return the element of `proviso-gui-markers' near point, if any."
   (let ((beg (line-beginning-position))
         (end (line-end-position))
@@ -114,14 +124,15 @@
                      (<= pos end)))
               proviso-gui-markers)))
 
-(defun proviso-gui-on-line (&optional where)
+(defun proviso-gui-select-line (&optional where)
   "Examine the current line, set the current keymap if necessary.
 If WHERE is non-nil, it provides the current line."
   (let ((cell (or where
-                  (proviso-gui--find-current-cell))))
+                  (proviso-gui-find-current-cell))))
     (when cell
       (use-local-map (cdr (assq 'map cell)))
-      (setq proviso-gui--cursor (cdr (assq 'id cell))))))
+      (setq proviso-gui--cursor (cdr (assq 'id cell))))
+    cell))
 
 (defun proviso-gui-init-buffer (buffer keymap)
   "Initialize BUFFER for gui operations, with keymap KEYMAP."
@@ -131,7 +142,8 @@ If WHERE is non-nil, it provides the current line."
         (add-hook 'kill-buffer-hook #'proviso-gui-on-buffer-kill nil t))
       (setq proviso-gui-markers nil)
       (put 'proviso-gui--local-map 'permanent-local t)
-      (put 'proviso-gui--set-new-cursor 'permanent-local t)
+      (put 'proviso-gui--cursor-policy 'permanent-local t)
+      (put 'proviso-gui--cursor 'permanent-local t)
       (erase-buffer)
       (setq proviso-gui--local-map (copy-keymap keymap))
       (set-keymap-parent proviso-gui-map (keymap-parent keymap))
@@ -151,7 +163,7 @@ If WHERE is non-nil, it provides the current line."
   (with-current-buffer buffer
     (incf proviso-gui--next-id)))
 
-(defun proviso-gui-lookup-category (symbol)
+(defun proviso-gui-lookup-by-category (symbol)
   "Return a list of IDs of GUI elements corresponding to category SYMBOL."
   (let ((lst
          (mapcar (lambda (cell)
@@ -161,13 +173,22 @@ If WHERE is non-nil, it provides the current line."
                  proviso-gui-markers)))
     (remove nil (remove-duplicates lst))))
 
-(defun proviso-gui-lookup-id (id)
+(defun proviso-gui-lookup-by-id (id)
   "Return the GUI element corresponding to ID."
   (let ((cell))
     (catch 'found
       (dolist (elt proviso-gui-markers)
         (when (eq id
                   (cdr (assq 'id elt)))
+          (throw 'found elt)))
+      nil)))
+
+(defun proviso-gui-lookup-by-parent-id (id)
+  "Return the GUI element corresponding to parent id ID."
+  (let ((cell))
+    (catch 'found
+      (dolist (elt proviso-gui-markers)
+        (when (eq id (cdr (assq 'parent-id elt)))
           (throw 'found elt)))
       nil)))
 
@@ -181,19 +202,20 @@ properties representing a particular cell or row, or nil."
     (if (eq where 'buffer)
         (progn
           (proviso-gui-cb--id future nil)
-          (funcall (key-binding "g")))
+          (funcall (key-binding "g"))
+          (proviso-gui--goto-cursor))
       (let ((ids (cond ((listp where)
                         (list (cdr (assq 'id where))))
                        ((not where) nil)
                        ((symbolp where)
-                        (proviso-gui-lookup-category where)))))
+                        (proviso-gui-lookup-by-category where)))))
         (dolist (id ids)
           (proviso-gui-cb--id future id))))))
 
 (defun proviso-gui-cb--id (future id)
   "Redraw GUI element corresponding to ID, according to FUTURE.
 FUTURE may be nil, or a process sentinel to wait upon completion."
-  (let ((cell (proviso-gui-lookup-id id)))
+  (let ((cell (proviso-gui-lookup-by-id id)))
     (and future (processp future)
          (run-at-time 1 nil #'proviso-gui-on-timer future id))
     (when cell
@@ -206,7 +228,7 @@ FUTURE may be nil, or a process sentinel to wait upon completion."
         (create (cdr (assq 'create cell))))
     (when (and buffer marker create)
       (proviso-gui--draw-cell-internal buffer marker create)
-      (proviso-gui--select-cell))))
+      (proviso-gui--goto-cursor))))
 
 (defun proviso-gui--draw-cell-internal (buffer marker fun)
   "In BUFFER, recreate content at MARKER with FUN."
@@ -218,11 +240,12 @@ FUTURE may be nil, or a process sentinel to wait upon completion."
         (delete-region pos (line-end-position))
         (insert (funcall fun))))))
 
-(defun proviso-gui--select-cell ()
+(defun proviso-gui--goto-cursor ()
   "Put cursor on last-selected line."
-  (let ((cell (proviso-gui-lookup-id proviso-gui--cursor)))
+  (let ((cell (proviso-gui-lookup-by-id proviso-gui--cursor)))
     (when cell
-      (goto-char (marker-position (cdr (assq 'pos cell)))))))
+      (goto-char (marker-position (cdr (assq 'pos cell)))))
+    cell))
 
 (defun proviso-gui-add-global-cb (buffer bindings)
   "Add global callbacks in BUFFER for BINDINGS."
@@ -230,12 +253,15 @@ FUTURE may be nil, or a process sentinel to wait upon completion."
     (dolist (binding bindings)
       (lexical-let ((cb (nth 1 binding))
                     (category (nth 2 binding))
-                    (set-new-cursor (nth 3 binding)))
+                    (policy (nth 3 binding)))
         (define-key proviso-gui--local-map
           (nth 0 binding)
           (lambda() (interactive)
-            (when set-new-cursor
-              (setq proviso-gui--set-new-cursor t))
+            (if (eq policy 'id)
+                (if-let* ((cell (proviso-gui-lookup-by-id proviso-gui--cursor))
+                          (id (cdr (assq 'parent-id cell))))
+                    (setq proviso-gui--cursor-policy id))
+              (setq proviso-gui--cursor-policy policy))
             (proviso-gui-cb cb category)))))))
 
 (defun proviso-gui-add-to-buffer (buffer lst &optional maxwidth)
@@ -244,7 +270,7 @@ Returns a sorted list of markers in the buffer.
 MAXWIDTH allows specifying the minimum length of the headings."
   (let ((inhibit-read-only t)
         (max-heading (or maxwidth 0))
-        heading category pred id)
+        heading category pred id parent-id)
     (with-current-buffer buffer
       (setq lst (seq-remove (lambda (elt)
                               (setq pred (plist-get elt :predicate))
@@ -263,6 +289,7 @@ MAXWIDTH allows specifying the minimum length of the headings."
         (setq pred (plist-get entry :content))
         (setq id (or (plist-get entry :id)
                      (proviso-gui-get-next-entry-id buffer)))
+        (setq parent-id (plist-get entry :parent-id))
         (when (eq (plist-get entry :section) 'pre)
           (proviso-gui--insert-section-break))
         (setq heading
@@ -282,9 +309,10 @@ MAXWIDTH allows specifying the minimum length of the headings."
                       (cons 'pos marker)
                       (cons 'create create)
                       (cons 'buffer buffer)
+                      (cons 'parent-id parent-id)
                       ))
           (when category (push (cons 'category category) cell))
-          (and proviso-gui--set-new-cursor
+          (and (eq proviso-gui--cursor-policy 'new)
                (or (not proviso-gui--cursor)
                    (> id proviso-gui--cursor))
                (setq proviso-gui--cursor id))
@@ -320,15 +348,22 @@ MAXWIDTH allows specifying the minimum length of the headings."
   "Finalize the GUI settings of BUFFER."
   (with-current-buffer buffer
     (use-local-map proviso-gui--local-map)
-    (if proviso-gui--set-new-cursor
-        (progn
-          (setq proviso-gui--set-new-cursor nil)
-          (proviso-gui--select-cell)
-          (proviso-gui-on-line))
-      (goto-char (point-min))
-      (proviso-gui-on-line)
-      (proviso-gui--select-cell)
-      )))
+    (let ((cell (proviso-gui--goto-cursor)))
+      (if cell
+          (progn
+            (if-let ((integerp proviso-gui--cursor-policy)
+                     (cell2 (proviso-gui-lookup-by-parent-id
+                             proviso-gui--cursor-policy))
+                     (id (cdr (assq 'id cell2))))
+                (progn
+                  (setq proviso-gui--cursor id)
+                  (setq cell (proviso-gui--goto-cursor))
+                  (proviso-gui-select-line))
+              (proviso-gui-select-line))
+            (setq proviso-gui--cursor-policy nil))
+        (goto-char (point-min))
+        (proviso-gui-select-line)
+        (proviso-gui--goto-cursor)))))
 
 (provide 'proviso-gui)
 ;;; proviso-gui.el ends here

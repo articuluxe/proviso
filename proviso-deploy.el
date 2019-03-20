@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-03-07 08:24:51 dharms>
+;; Modified Time-stamp: <2019-03-19 08:41:48 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -789,6 +789,42 @@ Optional argument ARG allows choosing a project."
           (pop-to-buffer proviso-deploy-buffer-name))
       (user-error "No project"))))
 
+(defun proviso-deploy-move-deployment-up ()
+  "Move the selected deployment up in the list, if possible."
+  (if-let* ((cell (proviso-gui-find-current-cell))
+            (id (cdr (assq 'parent-id cell)))
+            (proj proviso-local-proj)
+            (specs (proviso-get proj :deployments))
+            (n (seq-position specs id
+                             (lambda (lst elt)
+                               (eq elt (plist-get lst :id)))))
+            (p (if (> n 0) (1- n) n)))
+      (progn
+        (unless (eq n p)
+          (setcar (nthcdr p specs)
+                  (prog1
+                      (nth n specs)
+                    (setcar (nthcdr n specs)
+                            (nth p specs))))))))
+
+(defun proviso-deploy-move-deployment-down ()
+  "Move the selected deployment down in the list, if possible."
+  (if-let* ((cell (proviso-gui-find-current-cell))
+            (id (cdr (assq 'parent-id cell)))
+            (proj proviso-local-proj)
+            (specs (proviso-get proj :deployments))
+            (n (seq-position specs id
+                             (lambda (lst elt)
+                               (eq elt (plist-get lst :id)))))
+            (o (if (< n (1- (length specs))) (1+ n) n)))
+      (progn
+        (unless (eq n o)
+          (setcar (nthcdr o specs)
+                  (prog1
+                      (nth n specs)
+                    (setcar (nthcdr n specs)
+                            (nth o specs))))))))
+
 (defun proviso-deploy-create-buffer (proj)
   "Create a deployment buffer for project PROJ."
   (interactive)
@@ -809,8 +845,10 @@ Optional argument ARG allows choosing a project."
        ("R" proviso-deploy-run-all-deploys-current-project deployment)
        ("." proviso-deploy-run-last-current-project deployment)
        ("X" proviso-deploy-delete-all-current-project buffer)
-       ("+" proviso-deploy-add-deploy-current-project buffer t)
-       ("=" proviso-deploy-add-deploy-cmd-current-project buffer t)
+       ("+" proviso-deploy-add-deploy-current-project buffer new)
+       ("=" proviso-deploy-add-deploy-cmd-current-project buffer new)
+       ("\M-p" proviso-deploy-move-deployment-up buffer id)
+       ("\M-n" proviso-deploy-move-deployment-down buffer id)
        ))
     (setq width
           (proviso-gui-add-to-buffer
@@ -847,6 +885,7 @@ Optional argument ARG allows choosing a project."
                               (list
                                :heading "Command"
                                :category 'command
+                               :parent-id id
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                  (cmd (plist-get spec :command)))
@@ -861,10 +900,14 @@ Optional argument ARG allows choosing a project."
                               (list
                                :heading "Source"
                                :category 'deployment
+                               :parent-id id
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
-                                                 (src (plist-get spec :source)))
-                                            (replace-regexp-in-string (getenv "HOME") "~" src)))
+                                                 (src (plist-get spec :source))
+                                                 (home (getenv "HOME")))
+                                            (if home
+                                                (replace-regexp-in-string home "~" src)
+                                              src)))
                                :bindings `(("r" (lambda ()
                                                   (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
                                            ("c" (lambda ()
@@ -883,6 +926,7 @@ Optional argument ARG allows choosing a project."
                  (add-to-list 'lst
                               (list
                                :category 'deployment
+                               :parent-id id
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                  (src (plist-get spec :source))
@@ -919,6 +963,7 @@ Optional argument ARG allows choosing a project."
                               (list
                                :heading "Destination"
                                :category 'deployment
+                               :parent-id id
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                  (src (plist-get spec :source))
@@ -949,6 +994,7 @@ Optional argument ARG allows choosing a project."
                  (add-to-list 'lst
                               (list
                                :category 'deployment
+                               :parent-id id
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                  (src (plist-get spec :source))
