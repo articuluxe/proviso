@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-03-01 08:03:48 dharms>
+;; Modified Time-stamp: <2019-04-02 08:41:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 
@@ -71,6 +71,27 @@
       (should (equal specs
                      (proviso-deploy--read-from-str
                       (buffer-string)))))))
+
+(ert-deftest proviso-deploy-test-env ()
+  (let ((specs '((:source "one" :destination "two" :type deploy)
+                 (:command "pwd" :type command)
+                 (:env "FOO=BAR" :type env)
+                 (:source "three" :destination "four" :type deploy)))
+        result)
+    (with-temp-buffer
+      (proviso-deploy--write-to-current-buffer specs)
+      (should (equal (buffer-string)
+                     "((env . (
+\"FOO=BAR\"
+))
+(deploy . (
+(\"one\" . \"two\")
+\"pwd\"
+(\"three\" . \"four\")
+)))
+"
+                     )))))
+
 
 (ert-run-tests-batch-and-exit (car argv))
 ;;; test_proviso-deploy.el ends here

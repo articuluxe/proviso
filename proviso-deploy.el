@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-03-19 08:41:48 dharms>
+;; Modified Time-stamp: <2019-04-04 08:20:31 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -61,9 +61,7 @@ SYNCHRONOUS is non-nil, another process will not be spawned."
            (if synchronous
                (xfer-transfer-file src dst)
              (xfer-transfer-file-async src dst)))
-          (t
-           (user-error "Ignoring invalid deployment '%s' --> '%s'"
-                       src dst)))))
+          (t nil))))
 
 (defun proviso-deploy-all (specs)
   "Execute all deployments contained in SPECS."
@@ -90,6 +88,14 @@ ID is an optional id."
       (list :command cmd :type 'command :id id)
     (list :command cmd :type 'command)))
 
+(defun proviso-deploy-create-env (cmd &optional id)
+  "Add an environment directive CMD.
+ID is an optional id."
+  (interactive "sEnvironment export: ")
+  (if id
+      (list :env cmd :type 'env :id id)
+    (list :env cmd :type 'env)))
+
 (defun proviso-deploy-choose-deploy (specs &optional prompt)
   "Let user select a deployment from SPECS.
 PROMPT is an optional prompt."
@@ -103,6 +109,9 @@ PROMPT is an optional prompt."
                           (setq type (plist-get spec :type))
                           (cond ((eq type 'command)
                                  (setq cmd (plist-get spec :command))
+                                 (cons cmd spec))
+                                ((eq type 'env)
+                                 (setq cmd (plist-get spec :env))
                                  (cons cmd spec))
                                 ((eq type 'deploy)
                                  (setq src (plist-get spec :source))
@@ -142,19 +151,44 @@ PROMPT is an optional prompt."
 
 (defun proviso-deploy--write-to-current-buffer (specs)
   "Write deployment specification SPECS to current buffer."
-  (insert "((deploy . (\n")
-  (dolist (spec specs)
-    (let ((type (plist-get spec :type))
-          cmd src dst)
+  (let (deploys envs type)
+    (dolist (spec specs)
+      (setq type (plist-get spec :type))
       (cond ((eq type 'command)
-             (setq cmd (plist-get spec :command))
-             (prin1 cmd (current-buffer)))
+             (setq deploys t))
             ((eq type 'deploy)
-             (setq src (plist-get spec :source))
-             (setq dst (plist-get spec :destination))
-             (prin1 (cons src dst) (current-buffer))))
-      (insert "\n")))
-  (insert ")))\n"))
+             (setq deploys t))
+            ((eq type 'env)
+             (setq envs t))))
+    (insert "(")
+    (when envs
+      (insert "(env . (\n")
+      (dolist (spec specs)
+        (let ((type (plist-get spec :type))
+              cmd)
+          (when (eq type 'env)
+            (setq cmd (plist-get spec :env))
+            (prin1 cmd (current-buffer))
+            (insert "\n"))))
+      (insert "))"))
+    (when deploys
+      (when envs
+        (insert "\n"))
+      (insert "(deploy . (\n")
+      (dolist (spec specs)
+        (let ((type (plist-get spec :type))
+              cmd src dst)
+          (cond ((eq type 'command)
+                 (setq cmd (plist-get spec :command))
+                 (prin1 cmd (current-buffer))
+                 (insert "\n"))
+                ((eq type 'deploy)
+                 (setq src (plist-get spec :source))
+                 (setq dst (plist-get spec :destination))
+                 (prin1 (cons src dst) (current-buffer))
+                 (insert "\n")))))
+      (insert "))"))
+    (insert ")\n")))
 
 (defun proviso-deploy-write-to-string (specs)
   "Return a string containing a deployment specification for SPECS."
@@ -162,14 +196,16 @@ PROMPT is an optional prompt."
     (proviso-deploy--write-to-current-buffer specs)
     (buffer-string)))
 
-(defun proviso-deploy--read-elt (elt)
-  "Read an element ELT."
+(defun proviso-deploy--read-elt (elt &optional type)
+  "Read an element ELT of type TYPE."
   (cond ((consp elt)
          (list :source (car elt)
                :destination (cdr elt)
                :type 'deploy))
         ((stringp elt)
-         (list :command elt :type 'command))
+         (if (eq type 'env)
+             (list :env elt :type 'env)
+           (list :command elt :type (or type 'command))))
         (t nil)))
 
 (defun proviso-deploy--read-from-str (str &optional proj)
@@ -178,6 +214,16 @@ If PROJ is not supplied, no `:id' parameter will be present."
   (let (specs obj)
     (dolist (spec (car (read-from-string str)))
       (cond ((and (consp spec)
+                  (eq (car spec) 'env))
+             (dolist (elt (cdr spec))
+               (when (setq obj (proviso-deploy--read-elt elt 'env))
+                 (when proj
+                   (setq obj
+                         (append
+                          `(:id ,(proviso-deploy-get-next-id proj))
+                          obj)))
+                 (add-to-list 'specs obj t))))
+            ((and (consp spec)
                   (eq (car spec) 'deploy))
              (dolist (elt (cdr spec))
                (when (setq obj (proviso-deploy--read-elt elt))
@@ -189,7 +235,7 @@ If PROJ is not supplied, no `:id' parameter will be present."
                  (add-to-list 'specs obj t))))
             (t
              (and
-              (setq obj (proviso-deploy--read-elt spec))
+              (setq obj (proviso-deploy--read-elt spec 'command))
               (add-to-list 'specs obj t)))))
     specs))
 
@@ -388,6 +434,38 @@ If ARG is non-nil, another project can be chosen."
             (setq specs (list spec)))
           (proviso-put proj :deployments specs))
       (user-error "No deployment command added"))))
+
+;;;###autoload
+(defun proviso-deploy-add-deploy-env (&optional arg)
+  "Add an environment directive.
+If ARG is non-nil, another project can be chosen."
+  (interactive "P")
+  (let* ((proj (if arg (proviso-choose-project)
+                 (proviso-current-project))))
+    (proviso-deploy--add-deploy-env proj)))
+
+(defun proviso-deploy-add-deploy-env-current-project ()
+  "Add an environment directive to the current project."
+  (let ((proj proviso-local-proj))
+    (if proj
+        (proviso-deploy--add-deploy-env proj)
+      (user-error "No current project"))))
+
+(defun proviso-deploy--add-deploy-env (proj)
+  "Add an environment directive to PROJ."
+  (let* ((specs (proviso-get proj :deployments))
+         (spec (call-interactively
+                #'proviso-deploy-create-env)))
+    (if spec
+        (progn
+          (setq spec
+                (append `(:id ,(proviso-deploy-get-next-id proj))
+                        spec))
+          (if specs
+              (add-to-list 'specs spec t)
+            (setq specs (list spec)))
+          (proviso-put proj :deployments specs))
+      (user-error "No deployment environment directive added"))))
 
 ;;;###autoload
 (defun proviso-deploy-run-deploy (&optional arg)
@@ -677,6 +755,12 @@ If ARG is non-nil, another project can be chosen."
                    (proviso-deploy-create-cmd
                     (read-string "New command: "
                                  cmd) id)))
+          ((eq type 'env)
+           (setq cmd (plist-get spec :env))
+           (setcar (nthcdr n specs)
+                   (proviso-deploy-create-env
+                    (read-string "New environment directive: "
+                                 cmd) id)))
           ((eq type 'deploy)
            (setq src (plist-get spec :source))
            (setq dst (plist-get spec :destination))
@@ -847,6 +931,7 @@ Optional argument ARG allows choosing a project."
        ("X" proviso-deploy-delete-all-current-project buffer)
        ("+" proviso-deploy-add-deploy-current-project buffer new)
        ("=" proviso-deploy-add-deploy-cmd-current-project buffer new)
+       ("-" proviso-deploy-add-deploy-env-current-project buffer new)
        ("\M-p" proviso-deploy-move-deployment-up buffer id)
        ("\M-n" proviso-deploy-move-deployment-down buffer id)
        ))
@@ -892,6 +977,18 @@ Optional argument ARG allows choosing a project."
                                             cmd))
                                :bindings `(("r" (lambda ()
                                                   (proviso-deploy--run-deploy-by-id proviso-local-proj ,id))))
+                               :section 'pre) t))
+                ((eq type 'env)
+                 (setq command (plist-get spec :env))
+                 (add-to-list 'lst
+                              (list
+                               :heading "Environment"
+                               :category 'env
+                               :parent-id id
+                               :content (lambda ()
+                                          (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
+                                                 (cmd (plist-get spec :env)))
+                                            cmd))
                                :section 'pre) t))
                 ((eq type 'deploy)
                  (setq source (plist-get spec :source))
