@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-04 08:20:31 dharms>
+;; Modified Time-stamp: <2019-04-05 08:53:22 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -976,7 +976,9 @@ Optional argument ARG allows choosing a project."
                                                  (cmd (plist-get spec :command)))
                                             cmd))
                                :bindings `(("r" (lambda ()
-                                                  (proviso-deploy--run-deploy-by-id proviso-local-proj ,id))))
+                                                  (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
+                                           ("t" (lambda ()
+                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
                                :section 'pre) t))
                 ((eq type 'env)
                  (setq command (plist-get spec :env))
@@ -989,6 +991,8 @@ Optional argument ARG allows choosing a project."
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                  (cmd (plist-get spec :env)))
                                             cmd))
+                               :bindings `(("t" (lambda ()
+                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
                                :section 'pre) t))
                 ((eq type 'deploy)
                  (setq source (plist-get spec :source))
