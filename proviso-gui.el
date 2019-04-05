@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-03-20 08:54:40 dharms>
+;; Modified Time-stamp: <2019-04-04 08:12:21 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -234,11 +234,13 @@ FUTURE may be nil, or a process sentinel to wait upon completion."
   "In BUFFER, recreate content at MARKER with FUN."
   (with-current-buffer buffer
     (let ((inhibit-read-only t)
-          (pos (marker-position marker)))
+          (pos (marker-position marker))
+          content)
       (save-excursion
         (goto-char pos)
         (delete-region pos (line-end-position))
-        (insert (funcall fun))))))
+        (when (setq content (funcall fun))
+          (insert content))))))
 
 (defun proviso-gui--goto-cursor ()
   "Put cursor on last-selected line."
@@ -270,7 +272,7 @@ Returns a sorted list of markers in the buffer.
 MAXWIDTH allows specifying the minimum length of the headings."
   (let ((inhibit-read-only t)
         (max-heading (or maxwidth 0))
-        heading category pred id parent-id)
+        heading category pred id parent-id content)
     (with-current-buffer buffer
       (setq lst (seq-remove (lambda (elt)
                               (setq pred (plist-get elt :predicate))
@@ -324,7 +326,9 @@ MAXWIDTH allows specifying the minimum length of the headings."
           (push (cons 'map map) cell)
           (set-keymap-parent map proviso-gui--local-map)
           (add-to-list 'proviso-gui-markers cell t)
-          (insert (funcall pred) "\n"))
+          (when (setq content (funcall pred))
+            (insert content))
+          (insert "\n"))
         (when (eq (plist-get entry :section) 'post)
           (proviso-gui--insert-section-break))
         )
