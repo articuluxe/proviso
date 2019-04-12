@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-12 08:46:13 dharms>
+;; Modified Time-stamp: <2019-04-12 08:57:31 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -782,16 +782,22 @@ If ARG is non-nil, another project can be chosen."
           ((eq type 'deploy)
            (setq src (plist-get spec :source))
            (setq dst (plist-get spec :destination))
-           (setq src (read-file-name
-                      "New source: "
-                      (file-name-directory src)
-                      nil nil
-                      (file-name-nondirectory src)))
-           (setq dst (read-file-name
-                      "New destination: "
-                      (file-name-directory dst)
-                      nil nil
-                      (file-name-nondirectory dst)))
+           (setq src
+                 (if (string-match-p "\\$" src)
+                     (read-string "New source: " src)
+                   (read-file-name
+                    "New source: "
+                    (file-name-directory src)
+                    nil nil
+                    (file-name-nondirectory src))))
+           (setq dst
+                 (if (string-match-p "\\$" dst)
+                     (read-string "New destination: " dst)
+                   (read-file-name
+                    "New destination: "
+                    (file-name-directory dst)
+                    nil nil
+                    (file-name-nondirectory dst))))
            (setcar (nthcdr n specs)
                    (proviso-deploy-create src dst id))))))
 
