@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-05 08:53:22 dharms>
+;; Modified Time-stamp: <2019-04-11 08:40:34 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -109,13 +109,13 @@ PROMPT is an optional prompt."
                           (setq type (plist-get spec :type))
                           (cond ((eq type 'command)
                                  (setq cmd (plist-get spec :command))
-                                 (cons cmd spec))
+                                 (cons (substitute-env-vars cmd t) spec))
                                 ((eq type 'env)
                                  (setq cmd (plist-get spec :env))
-                                 (cons cmd spec))
+                                 (cons (substitute-env-vars cmd t) spec))
                                 ((eq type 'deploy)
-                                 (setq src (plist-get spec :source))
-                                 (setq dst (plist-get spec :destination))
+                                 (setq src (substitute-env-vars (plist-get spec :source) t))
+                                 (setq dst (substitute-env-vars (plist-get spec :destination) t))
                                  (cons
                                   (if (string-empty-p home)
                                       (cons src dst)
@@ -141,7 +141,7 @@ PROMPT is an optional prompt."
                               (car (car elt))
                               (cdr (car elt))))
                             ((stringp (car elt))
-                             (car elt)))
+                             (substitute-env-vars (car elt) t)))
                       (cdr elt)))
                    lst)
                   :action (lambda (x)
@@ -370,6 +370,13 @@ If ARG is non-nil, another project can be chosen."
       (dolist (spec specs)
         (when (eq id (plist-get spec :id))
           (throw 'found spec))))))
+
+(defun proviso-deploy--process-env (proj)
+  "Process environment variable directives from PROJ."
+  (let ((specs (proviso-get proj :deployments)))
+    (dolist (spec specs)
+      (when (eq (plist-get spec :type) 'env)
+        (push (plist-get spec :env) process-environment)))))
 
 ;;;###autoload
 (defun proviso-deploy-add-deploy (&optional arg)
@@ -628,8 +635,8 @@ If ARG is non-nil, another project can be chosen."
 (defun proviso-deploy--check-file-spec (spec)
   "Check the deployment SPEC."
   (if (eq (plist-get spec :type) 'deploy)
-      (let ((src (plist-get spec :source))
-            (dst (plist-get spec :destination)))
+      (let ((src (substitute-env-vars (plist-get spec :source) t))
+            (dst (substitute-env-vars (plist-get spec :destination) t)))
         (and dst
              (file-directory-p dst)
              (setq dst (expand-file-name
@@ -675,8 +682,8 @@ If ARG is non-nil, another project can be chosen."
 (defun proviso-deploy--diff-file-spec (spec)
   "Diff the deployment SPEC."
   (if (eq (plist-get spec :type) 'deploy)
-      (let ((src (plist-get spec :source))
-            (dst (plist-get spec :destination)))
+      (let ((src (substitute-env-vars (plist-get spec :source) t))
+            (dst (substitute-env-vars (plist-get spec :destination) t)))
         (and dst
              (file-directory-p dst)
              (setq dst (expand-file-name
@@ -708,8 +715,8 @@ If ARG is non-nil, another project can be chosen."
 (defun proviso-deploy--ediff-file-spec (spec)
   "Ediff the deployment SPEC."
   (if (eq (plist-get spec :type) 'deploy)
-      (let ((src (plist-get spec :source))
-            (dst (plist-get spec :destination)))
+      (let ((src (substitute-env-vars (plist-get spec :source) t))
+            (dst (substitute-env-vars (plist-get spec :destination) t)))
         (and dst
              (file-directory-p dst)
              (setq dst (expand-file-name
@@ -798,8 +805,8 @@ If ARG is non-nil, another project can be chosen."
 (defun proviso-deploy--find-file-spec (spec)
   "Visit the deployment SPEC."
   (if (eq (plist-get spec :type) 'deploy)
-      (let ((src (plist-get spec :source))
-            (dst (plist-get spec :destination)))
+      (let ((src (substitute-env-vars (plist-get spec :source) t))
+            (dst (substitute-env-vars (plist-get spec :destination) t)))
         (if dst
             (progn
               (when (file-directory-p dst)
@@ -826,8 +833,8 @@ If ARG is non-nil, another project can be chosen."
                    specs
                    "Find deployed file in other window: "))
             (if (eq (plist-get spec :type) 'deploy)
-                (let ((src (plist-get spec :source))
-                      (dst (plist-get spec :destination)))
+                (let ((src (substitute-env-vars (plist-get spec :source) t))
+                      (dst (substitute-env-vars (plist-get spec :destination) t)))
                   (if dst
                       (progn
                         (when (file-directory-p dst)
@@ -920,7 +927,10 @@ Optional argument ARG allows choosing a project."
     (proviso-gui-init-buffer buffer proviso-deploy-mode-map)
     (with-current-buffer buffer
       (setq-local proviso-local-proj proj)
-      (proviso-deploy-mode))
+      (kill-local-variable 'process-environment)
+      (proviso-deploy-mode)
+      (make-local-variable 'process-environment)
+      (proviso-deploy--process-env proj))
     (proviso-gui-add-global-cb
      buffer
      '(("s" proviso-deploy-save-file-current-project file)
@@ -974,7 +984,7 @@ Optional argument ARG allows choosing a project."
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                  (cmd (plist-get spec :command)))
-                                            cmd))
+                                            (substitute-env-vars cmd t)))
                                :bindings `(("r" (lambda ()
                                                   (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
                                            ("t" (lambda ()
@@ -985,12 +995,12 @@ Optional argument ARG allows choosing a project."
                  (add-to-list 'lst
                               (list
                                :heading "Environment"
-                               :category 'env
+                               :category 'buffer
                                :parent-id id
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                  (cmd (plist-get spec :env)))
-                                            cmd))
+                                            (substitute-env-vars cmd t)))
                                :bindings `(("t" (lambda ()
                                                   (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
                                :section 'pre) t))
@@ -1004,7 +1014,7 @@ Optional argument ARG allows choosing a project."
                                :parent-id id
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
-                                                 (src (plist-get spec :source))
+                                                 (src (substitute-env-vars (plist-get spec :source) t))
                                                  (home (getenv "HOME")))
                                             (if home
                                                 (replace-regexp-in-string home "~" src)
@@ -1030,7 +1040,7 @@ Optional argument ARG allows choosing a project."
                                :parent-id id
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
-                                                 (src (plist-get spec :source))
+                                                 (src (substitute-env-vars (plist-get spec :source) t))
                                                  (attr (file-attributes src)))
                                             (propertize
                                              (if (file-exists-p src)
@@ -1067,8 +1077,8 @@ Optional argument ARG allows choosing a project."
                                :parent-id id
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
-                                                 (src (plist-get spec :source))
-                                                 (dst (plist-get spec :destination)))
+                                                 (src (substitute-env-vars (plist-get spec :source) t))
+                                                 (dst (substitute-env-vars (plist-get spec :destination) t)))
                                             (when (file-directory-p dst)
                                               (setq dst (expand-file-name
                                                          (file-name-nondirectory src) dst)))
@@ -1098,8 +1108,8 @@ Optional argument ARG allows choosing a project."
                                :parent-id id
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
-                                                 (src (plist-get spec :source))
-                                                 (dst (plist-get spec :destination))
+                                                 (src (substitute-env-vars (plist-get spec :source) t))
+                                                 (dst (substitute-env-vars (plist-get spec :destination) t))
                                                  attr)
                                             (when (file-directory-p dst)
                                               (setq dst (expand-file-name
