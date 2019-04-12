@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-11 08:40:34 dharms>
+;; Modified Time-stamp: <2019-04-12 08:46:13 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -52,11 +52,14 @@ SYNCHRONOUS is non-nil, another process will not be spawned."
   (let ((type (plist-get spec :type))
         cmd src dst)
     (cond ((eq type 'command)
-           (setq cmd (plist-get spec :command))
+           (setq cmd (substitute-env-vars
+                      (plist-get spec :command) t))
            (shell-command cmd))
           ((eq type 'deploy)
-           (setq src (plist-get spec :source))
-           (setq dst (plist-get spec :destination))
+           (setq src (substitute-env-vars
+                      (plist-get spec :source) t))
+           (setq dst (substitute-env-vars
+                      (plist-get spec :destination) t))
            (message "Deploying %s to %s..." src dst)
            (if synchronous
                (xfer-transfer-file src dst)
@@ -68,7 +71,15 @@ SYNCHRONOUS is non-nil, another process will not be spawned."
   (mapc (lambda (spec)
           (proviso-deploy-one spec t))  ;this always runs async,
                                         ;don't need to spawn again
-        specs))
+        (mapcar (lambda (rule)
+                  (let ((src (substitute-env-vars
+                              (plist-get rule :source) t))
+                        (dst (substitute-env-vars
+                              (plist-get rule :destination) t)))
+                    (list :type 'deploy :source src :destination dst)))
+                (seq-filter
+                 (lambda (rule) (eq (plist-get rule :type) 'deploy))
+                 specs))))
 
 (defun proviso-deploy-create (source dest &optional id)
   "Add a deployment from SOURCE to DEST.
