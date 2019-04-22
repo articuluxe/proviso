@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-01-16 08:48:18 dharms>
+;; Modified Time-stamp: <2019-04-19 08:43:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -99,7 +99,7 @@ Optional ARG allows choosing a project."
                               (propertize (replace-regexp-in-string
                                            (getenv "HOME") "~" file)
                                           'face '(bold))))
-                 :bindings (("d" proviso-dashboard-goto-root)))
+                 :bindings (("d" "Goto Root" proviso-dashboard-goto-root)))
        (:heading "Remote host"
                  :predicate (lambda ()
                               (proviso-get proviso-local-proj :remote-host))
@@ -112,7 +112,7 @@ Optional ARG allows choosing a project."
                               (propertize (if gen (current-time-string gen)
                                             "")
                                           'face '(bold))))
-                 :bindings (("t" proviso-gentags-generate-tags)))
+                 :bindings (("t" "Generate Tags" proviso-gentags-generate-tags)))
        (:heading "Bookmarks"
                  :predicate (lambda ()
                               (proviso-get proviso-local-proj :bookmark-file))
@@ -146,8 +146,8 @@ Optional ARG allows choosing a project."
                                  (propertize "inactive" 'face '(shadow)))
                                "]"
                                )))
-                 :bindings (("t" proviso-clang-format-toggle-active)
-                            ("f" #'proviso-clang-format-buffer-or-region)
+                 :bindings (("t" "Toggle Active" proviso-clang-format-toggle-active)
+                            ("f" "Format" proviso-clang-format-buffer-or-region)
                             ))
        ))
     (proviso-gui-finalize-buffer buffer)

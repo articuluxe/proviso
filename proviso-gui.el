@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-04 08:12:21 dharms>
+;; Modified Time-stamp: <2019-04-22 08:43:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -53,6 +53,9 @@ Possible values:
 
 Otherwise the current row is usually maintained.")
 
+(defvar-local proviso-gui--global-hints
+  "Key press hints not associated with a specific line.")
+
 (defvar-local proviso-gui--timers nil
   "List of timers in effect.")
 
@@ -68,6 +71,7 @@ Otherwise the current row is usually maintained.")
     (define-key map "p" #'proviso-gui-move-prev-marker)
     (define-key map "t" #'ignore)
     (define-key map "q" #'proviso-gui-close-window)
+    (define-key map "?" #'proviso-gui-show-help)
     map))
 
 (defun proviso-gui-on-buffer-kill ()
@@ -95,7 +99,8 @@ Otherwise the current row is usually maintained.")
                          proviso-gui-markers)))
     (when next
       (goto-char (marker-position (cdr (assq 'pos next))))
-      (proviso-gui-select-line next))
+      (proviso-gui-select-line next)
+      (proviso-gui-show-help))
     next))
 
 (defun proviso-gui-move-prev-marker ()
@@ -109,7 +114,8 @@ Otherwise the current row is usually maintained.")
                          (reverse proviso-gui-markers))))
     (when prev
       (goto-char (marker-position (cdr (assq 'pos prev))))
-      (proviso-gui-select-line prev))
+      (proviso-gui-select-line prev)
+      (proviso-gui-show-help))
     prev))
 
 (defun proviso-gui-find-current-cell ()
@@ -123,6 +129,41 @@ Otherwise the current row is usually maintained.")
                 (and (>= pos beg)
                      (<= pos end)))
               proviso-gui-markers)))
+
+;;;###autoload
+(defun proviso-gui-show-help (&optional where)
+  "Print contextual hints about the currently selected line.
+If WHERE is non-nil, it specifies the current line."
+  (interactive)
+  (if-let ((msg (proviso-gui-get-help-text where)))
+      (message msg)))
+
+(defun proviso-gui-get-help-text (&optional where)
+  "Fetch contextual hints about the currently selected line.
+If WHERE is non-nil, it specifies the current line."
+  (if-let* ((cell (or where (proviso-gui-find-current-cell)))
+            (hints (cdr (assq 'hints cell)))
+            (local (mapconcat (lambda (elt)
+                              (concat
+                               (propertize
+                                (key-description (car elt))
+                                'face 'button)
+                               ":"
+                               (propertize
+                                (cdr elt)
+                                'face 'bold)))
+                              hints " "))
+            (global (mapconcat (lambda (elt)
+                                 (concat
+                                  (propertize
+                                   (key-description (car elt))
+                                   'face 'button)
+                                  ":"
+                                  (propertize
+                                   (cdr elt)
+                                   'face 'bold)))
+                               proviso-gui--global-hints " ")))
+      (concat local " " global)))
 
 (defun proviso-gui-select-line (&optional where)
   "Examine the current line, set the current keymap if necessary.
@@ -252,10 +293,15 @@ FUTURE may be nil, or a process sentinel to wait upon completion."
 (defun proviso-gui-add-global-cb (buffer bindings)
   "Add global callbacks in BUFFER for BINDINGS."
   (with-current-buffer buffer
+    (setq proviso-gui--global-hints nil)
     (dolist (binding bindings)
-      (lexical-let ((cb (nth 1 binding))
-                    (category (nth 2 binding))
-                    (policy (nth 3 binding)))
+      (push (cons
+             (nth 0 binding)
+             (nth 1 binding))
+            proviso-gui--global-hints)
+      (lexical-let ((cb (nth 2 binding))
+                    (category (nth 3 binding))
+                    (policy (nth 4 binding)))
         (define-key proviso-gui--local-map
           (nth 0 binding)
           (lambda() (interactive)
@@ -303,7 +349,7 @@ MAXWIDTH allows specifying the minimum length of the headings."
                       (create (plist-get entry :content))
                       (category category)
                       (id id)
-                      cell)
+                      cell hints)
           (set-marker-insertion-type marker nil)
           (setq cell (list
                       (cons 'id id)
@@ -319,11 +365,13 @@ MAXWIDTH allows specifying the minimum length of the headings."
                    (> id proviso-gui--cursor))
                (setq proviso-gui--cursor id))
           (dolist (binding (plist-get entry :bindings))
-            (lexical-let ((cb (nth 1 binding)))
+            (lexical-let ((cb (nth 2 binding)))
               (define-key map (nth 0 binding)
                 (lambda() (interactive)
-                  (proviso-gui-cb cb (or category id))))))
+                  (proviso-gui-cb cb (or category id))))
+              (push (cons (nth 0 binding) (nth 1 binding)) hints)))
           (push (cons 'map map) cell)
+          (push (cons 'hints hints) cell)
           (set-keymap-parent map proviso-gui--local-map)
           (add-to-list 'proviso-gui-markers cell t)
           (when (setq content (funcall pred))

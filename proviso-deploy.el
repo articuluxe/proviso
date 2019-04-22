@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-12 08:57:31 dharms>
+;; Modified Time-stamp: <2019-04-17 08:37:54 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -950,17 +950,17 @@ Optional argument ARG allows choosing a project."
       (proviso-deploy--process-env proj))
     (proviso-gui-add-global-cb
      buffer
-     '(("s" proviso-deploy-save-file-current-project file)
-       ("S" proviso-deploy-save-file-as-current-project file)
-       ("o" proviso-deploy-open-file buffer)
-       ("R" proviso-deploy-run-all-deploys-current-project deployment)
-       ("." proviso-deploy-run-last-current-project deployment)
-       ("X" proviso-deploy-delete-all-current-project buffer)
-       ("+" proviso-deploy-add-deploy-current-project buffer new)
-       ("=" proviso-deploy-add-deploy-cmd-current-project buffer new)
-       ("-" proviso-deploy-add-deploy-env-current-project buffer new)
-       ("\M-p" proviso-deploy-move-deployment-up buffer id)
-       ("\M-n" proviso-deploy-move-deployment-down buffer id)
+     '(("s" "Save" proviso-deploy-save-file-current-project file)
+       ("S" "Save as" proviso-deploy-save-file-as-current-project file)
+       ("o" "Open file" proviso-deploy-open-file buffer)
+       ("R" "Run all" proviso-deploy-run-all-deploys-current-project deployment)
+       ("." "Run last" proviso-deploy-run-last-current-project deployment)
+       ("X" "Delete all" proviso-deploy-delete-all-current-project buffer)
+       ("+" "Add deployment" proviso-deploy-add-deploy-current-project buffer new)
+       ("=" "Add command" proviso-deploy-add-deploy-cmd-current-project buffer new)
+       ("-" "Add env" proviso-deploy-add-deploy-env-current-project buffer new)
+       ("\M-p" "Move up" proviso-deploy-move-deployment-up buffer id)
+       ("\M-n" "Move down" proviso-deploy-move-deployment-down buffer id)
        ))
     (setq width
           (proviso-gui-add-to-buffer
@@ -1002,10 +1002,12 @@ Optional argument ARG allows choosing a project."
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                  (cmd (plist-get spec :command)))
                                             (substitute-env-vars cmd t)))
-                               :bindings `(("r" (lambda ()
-                                                  (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
-                                           ("t" (lambda ()
-                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
+                               :bindings `(("r" "Run"
+                                            (lambda ()
+                                              (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
+                                           ("t" "Edit"
+                                            (lambda ()
+                                              (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
                                :section 'pre) t))
                 ((eq type 'env)
                  (setq command (plist-get spec :env))
@@ -1018,8 +1020,9 @@ Optional argument ARG allows choosing a project."
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                  (cmd (plist-get spec :env)))
                                             (substitute-env-vars cmd t)))
-                               :bindings `(("t" (lambda ()
-                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
+                               :bindings `(("t" "Edit"
+                                            (lambda ()
+                                              (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
                                :section 'pre) t))
                 ((eq type 'deploy)
                  (setq source (plist-get spec :source))
@@ -1036,19 +1039,24 @@ Optional argument ARG allows choosing a project."
                                             (if home
                                                 (replace-regexp-in-string home "~" src)
                                               src)))
-                               :bindings `(("r" (lambda ()
-                                                  (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
-                                           ("c" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--check-file-spec spec))))
-                                           ("d" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--diff-file-spec spec))))
-                                           ("e" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--ediff-file-spec spec))))
-                                           ("t" (lambda ()
-                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id)))
+                               :bindings `(("r" "Run"
+                                            (lambda ()
+                                              (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
+                                           ("c" "Check"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--check-file-spec spec))))
+                                           ("d" "Diff"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--diff-file-spec spec))))
+                                           ("e" "Ediff"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--ediff-file-spec spec))))
+                                           ("t" "Edit"
+                                            (lambda ()
+                                              (proviso-deploy--edit-deploy-spec proviso-local-proj ,id)))
                                            )
                                :section 'pre) t)
                  (add-to-list 'lst
@@ -1071,19 +1079,24 @@ Optional argument ARG allows choosing a project."
                                                   )
                                                "---------- --:--:--        --")
                                              'face '(shadow))))
-                               :bindings `(("r" (lambda ()
-                                                  (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
-                                           ("c" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--check-file-spec spec))))
-                                           ("d" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--diff-file-spec spec))))
-                                           ("e" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--ediff-file-spec spec))))
-                                           ("t" (lambda ()
-                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id)))
+                               :bindings `(("r" "Run"
+                                            (lambda ()
+                                              (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
+                                           ("c" "Check"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--check-file-spec spec))))
+                                           ("d" "Diff"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--diff-file-spec spec))))
+                                           ("e" "Ediff"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--ediff-file-spec spec))))
+                                           ("t" "Edit"
+                                            (lambda ()
+                                              (proviso-deploy--edit-deploy-spec proviso-local-proj ,id)))
                                            )
                                )
                               t)
@@ -1100,22 +1113,28 @@ Optional argument ARG allows choosing a project."
                                               (setq dst (expand-file-name
                                                          (file-name-nondirectory src) dst)))
                                             (replace-regexp-in-string (getenv "HOME") "~" dst)))
-                               :bindings `(("r" (lambda ()
-                                                  (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
-                                           ("c" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--check-file-spec spec))))
-                                           ("d" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--diff-file-spec spec))))
-                                           ("e" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--ediff-file-spec spec))))
-                                           ("t" (lambda ()
-                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id)))
-                                           ("f" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--find-file-spec spec))))
+                               :bindings `(("r" "Run"
+                                            (lambda ()
+                                              (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
+                                           ("c" "Check"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--check-file-spec spec))))
+                                           ("d" "Diff"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--diff-file-spec spec))))
+                                           ("e" "Ediff"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--ediff-file-spec spec))))
+                                           ("t" "Edit"
+                                            (lambda ()
+                                              (proviso-deploy--edit-deploy-spec proviso-local-proj ,id)))
+                                           ("f" "find file"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--find-file-spec spec))))
                                            )
                                )
                               t)
@@ -1143,22 +1162,28 @@ Optional argument ARG allows choosing a project."
                                                            (file-attribute-size attr))))
                                                "---------- --:--:--        --")
                                              'face '(shadow))))
-                               :bindings `(("r" (lambda ()
-                                                  (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
-                                           ("c" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--check-file-spec spec))))
-                                           ("d" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--diff-file-spec spec))))
-                                           ("e" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--ediff-file-spec spec))))
-                                           ("t" (lambda ()
-                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id)))
-                                           ("f" (lambda ()
-                                                  (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
-                                                    (proviso-deploy--find-file-spec spec))))
+                               :bindings `(("r" "Run"
+                                            (lambda ()
+                                              (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
+                                           ("c" "Check"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--check-file-spec spec))))
+                                           ("d" "Diff"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--diff-file-spec spec))))
+                                           ("e" "Ediff"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--ediff-file-spec spec))))
+                                           ("t" "Edit"
+                                            (lambda ()
+                                              (proviso-deploy--edit-deploy-spec proviso-local-proj ,id)))
+                                           ("f" "find file"
+                                            (lambda ()
+                                              (let ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj ,id)))
+                                                (proviso-deploy--find-file-spec spec))))
                                            )
                                )
                               t)
