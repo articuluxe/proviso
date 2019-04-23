@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-17 08:37:54 dharms>
+;; Modified Time-stamp: <2019-04-23 08:19:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -1036,9 +1036,10 @@ Optional argument ARG allows choosing a project."
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                  (src (substitute-env-vars (plist-get spec :source) t))
                                                  (home (getenv "HOME")))
-                                            (if home
-                                                (replace-regexp-in-string home "~" src)
-                                              src)))
+                                            (propertize
+                                             (if home
+                                                 (replace-regexp-in-string home "~" src)
+                                               src) 'help-echo (plist-get spec :source))))
                                :bindings `(("r" "Run"
                                             (lambda ()
                                               (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
@@ -1112,7 +1113,9 @@ Optional argument ARG allows choosing a project."
                                             (when (file-directory-p dst)
                                               (setq dst (expand-file-name
                                                          (file-name-nondirectory src) dst)))
-                                            (replace-regexp-in-string (getenv "HOME") "~" dst)))
+                                            (propertize
+                                             (replace-regexp-in-string (getenv "HOME") "~" dst)
+                                             'help-echo (plist-get spec :destination))))
                                :bindings `(("r" "Run"
                                             (lambda ()
                                               (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
