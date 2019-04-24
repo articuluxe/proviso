@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-22 08:43:56 dharms>
+;; Modified Time-stamp: <2019-04-24 08:04:19 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -99,8 +99,7 @@ Otherwise the current row is usually maintained.")
                          proviso-gui-markers)))
     (when next
       (goto-char (marker-position (cdr (assq 'pos next))))
-      (proviso-gui-select-line next)
-      (proviso-gui-show-help))
+      (proviso-gui-select-line next))
     next))
 
 (defun proviso-gui-move-prev-marker ()
@@ -114,8 +113,7 @@ Otherwise the current row is usually maintained.")
                          (reverse proviso-gui-markers))))
     (when prev
       (goto-char (marker-position (cdr (assq 'pos prev))))
-      (proviso-gui-select-line prev)
-      (proviso-gui-show-help))
+      (proviso-gui-select-line prev))
     prev))
 
 (defun proviso-gui-find-current-cell ()
@@ -135,15 +133,30 @@ Otherwise the current row is usually maintained.")
   "Print contextual hints about the currently selected line.
 If WHERE is non-nil, it specifies the current line."
   (interactive)
-  (if-let ((msg (proviso-gui-get-help-text where)))
-      (message msg)))
+  (let* ((cell (or where (proviso-gui-find-current-cell)))
+         (msg (cdr (assq 'help-msg cell))))
+    (if (and msg (not (string-empty-p msg)))
+        (message msg)
+      (when (setq msg (proviso-gui-get-help-text where))
+        (add-to-list 'cell (cons 'help-msg msg) t)
+        (message msg)))))
 
 (defun proviso-gui-get-help-text (&optional where)
   "Fetch contextual hints about the currently selected line.
 If WHERE is non-nil, it specifies the current line."
-  (if-let* ((cell (or where (proviso-gui-find-current-cell)))
-            (hints (cdr (assq 'hints cell)))
-            (local (mapconcat (lambda (elt)
+  (let* ((cell (or where (proviso-gui-find-current-cell)))
+         (hints (cdr (assq 'hints cell)))
+         (local (mapconcat (lambda (elt)
+                             (concat
+                              (propertize
+                               (key-description (car elt))
+                               'face 'button)
+                              ":"
+                              (propertize
+                               (cdr elt)
+                               'face 'bold)))
+                           hints " "))
+         (global (mapconcat (lambda (elt)
                               (concat
                                (propertize
                                 (key-description (car elt))
@@ -152,18 +165,10 @@ If WHERE is non-nil, it specifies the current line."
                                (propertize
                                 (cdr elt)
                                 'face 'bold)))
-                              hints " "))
-            (global (mapconcat (lambda (elt)
-                                 (concat
-                                  (propertize
-                                   (key-description (car elt))
-                                   'face 'button)
-                                  ":"
-                                  (propertize
-                                   (cdr elt)
-                                   'face 'bold)))
-                               proviso-gui--global-hints " ")))
-      (concat local " " global)))
+                            proviso-gui--global-hints " ")))
+    (if hints
+        (concat local " " global)
+      global)))
 
 (defun proviso-gui-select-line (&optional where)
   "Examine the current line, set the current keymap if necessary.
@@ -172,7 +177,8 @@ If WHERE is non-nil, it provides the current line."
                   (proviso-gui-find-current-cell))))
     (when cell
       (use-local-map (cdr (assq 'map cell)))
-      (setq proviso-gui--cursor (cdr (assq 'id cell))))
+      (setq proviso-gui--cursor (cdr (assq 'id cell)))
+      (proviso-gui-show-help))
     cell))
 
 (defun proviso-gui-init-buffer (buffer keymap)
