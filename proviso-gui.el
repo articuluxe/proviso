@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-24 08:04:19 dharms>
+;; Modified Time-stamp: <2019-04-24 08:50:13 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -53,7 +53,7 @@ Possible values:
 
 Otherwise the current row is usually maintained.")
 
-(defvar-local proviso-gui--global-hints
+(defvar-local proviso-gui--global-hints nil
   "Key press hints not associated with a specific line.")
 
 (defvar-local proviso-gui--timers nil
