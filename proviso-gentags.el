@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-01-09 08:21:49 dharms>
+;; Modified Time-stamp: <2019-04-26 08:37:24 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -44,7 +44,7 @@ The remote settings, if any, are described by REMOTE."
         (funcall func "ctags")
         "ctags")))
 
-(defvar proviso-gentags-ctags-cpp-kinds "+lN"
+(defvar proviso-gentags-ctags-cpp-kinds "+l"
   "Default ctags cpp-kinds options.
 l: local variables
 p: function prototypes
