@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-26 08:37:24 dharms>
+;; Modified Time-stamp: <2019-05-08 09:39:46 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -67,10 +67,12 @@ REST, if not nil, is appended."
   "Maximum allowed concurrently spawned processes for remote projects.")
 (defvar-local proviso-gentags--max-jobs proviso-gentags-max-jobs-local
   "Maximum number of spawned processes allowed at once.")
-(defvar-local proviso-gentags--jobs nil
+(defvar-local proviso-gentags--waiting-jobs nil
   "List of commands that will be spawned to generate tags.")
 (defvar-local proviso-gentags--procs nil
   "Spawned processes to generate tags.")
+(defvar-local proviso-gentags--num-working-jobs 0
+  "Number of spawned processes currently working.")
 (defvar-local proviso-gentags--start-time nil
   "Per-process start time that tags generation began.")
 
@@ -146,7 +148,9 @@ REMOTE is non-nil if the project is on a remote host."
     (pop-to-buffer buffer)
     (with-current-buffer buffer
       (setq-local window-point-insertion-type t)
-      (setq proviso-gentags--jobs lst)
+      (setq proviso-gentags--waiting-jobs lst)
+      (setq proviso-gentags--procs nil)
+      (setq proviso-gentags--num-working-jobs 0)
       (setq proviso-gentags--max-jobs
             (if remote proviso-gentags-max-jobs-remote
               proviso-gentags-max-jobs-local))
@@ -162,17 +166,18 @@ REMOTE is non-nil if the project is on a remote host."
 (defun proviso-gentags--spawn-jobs (buffer)
   "Spawn as many jobs as appropriate, with buffer BUFFER."
   (with-current-buffer buffer
-    (let ((pnd (length proviso-gentags--jobs))
-          (wrk (length proviso-gentags--procs)))
+    (let ((pnd (length proviso-gentags--waiting-jobs))
+          (wrk proviso-gentags--num-working-jobs))
       (cond ((eq pnd 0)
-             (if (seq-empty-p proviso-gentags--procs)
+             (if (eq wrk 0)
                  (proviso-gentags--done buffer)))
             ((>= wrk proviso-gentags--max-jobs)
              nil)
             (t (dotimes (i (- proviso-gentags--max-jobs wrk) t)
-                 (unless (seq-empty-p proviso-gentags--jobs)
+                 (unless (seq-empty-p proviso-gentags--waiting-jobs)
+                   (incf proviso-gentags--num-working-jobs)
                    (proviso-gentags--spawn
-                    (pop proviso-gentags--jobs)
+                    (pop proviso-gentags--waiting-jobs)
                     buffer))))))))
 
 (defun proviso-gentags--spawn (plist buffer)
@@ -217,7 +222,8 @@ BUFFER is an output buffer."
                       (xfer-transfer-file-silent ,src ,dst))
                    `(lambda (result)
                       (with-current-buffer ,buffer
-                        (insert (cdr result) "\n"))
+                        (insert "  " (cdr result) "\n")
+                        (decf proviso-gentags--num-working-jobs))
                       (proviso-gentags--spawn-jobs ,buffer)))
                 (proviso-gentags--spawn-jobs buffer))))))))
 
