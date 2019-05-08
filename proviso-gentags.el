@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-05-08 09:39:46 dan.harms>
+;; Modified Time-stamp: <2019-05-08 10:16:08 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -225,6 +225,7 @@ BUFFER is an output buffer."
                         (insert "  " (cdr result) "\n")
                         (decf proviso-gentags--num-working-jobs))
                       (proviso-gentags--spawn-jobs ,buffer)))
+                (decf proviso-gentags--num-working-jobs)
                 (proviso-gentags--spawn-jobs buffer))))))))
 
 (defun proviso-gentags--done (buffer)
