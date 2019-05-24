@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-05-08 10:16:08 dharms>
+;; Modified Time-stamp: <2019-05-24 08:57:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -235,8 +235,9 @@ BUFFER is an output buffer."
            (nowstr (current-time-string))
            (elapsed (float-time (time-subtract
                                  now proviso-gentags--start-time))))
-      (insert (format "\nTAGS generation finished at %s (it took %.3f seconds).\n\n"
-                      nowstr elapsed)))))
+      (insert (format "\nTAGS generation finished at %s (it took %s).\n\n"
+                      nowstr
+                      (format-seconds "%H, %M and %Z%S" elapsed))))))
 
 (provide 'proviso-gentags)
 ;;; proviso-gentags.el ends here
