@@ -1,9 +1,9 @@
 ;;; proviso-gud.el --- proviso gud utilities
-;; Copyright (C) 2018  Dan Harms (dharms)
+;; Copyright (C) 2018-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-06-06 20:56:40 dharms>
+;; Modified Time-stamp: <2019-06-14 08:58:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools gdb proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -49,6 +49,26 @@
   "Return non-nil if EXE is an executable that can be debugged."
   (and exe (file-executable-p exe)
        (not (file-directory-p exe))))
+
+(defun proviso-gud--script-suitable-p (script)
+  "Return non-nil if SCRIPT is a valid script to be debugged."
+  (and script (string-match-p "\\.py$" script)))
+
+(defun proviso-gud-get-debug-script (&optional arg)
+  "Fetch a script to be debugged according to the current project.
+ARG allows customizing the location to look in."
+  (let ((cands (proviso-gud-gather-debug-dirs (proviso-current-project)))
+        (dir-prompt "Find script in: ")
+        (script-prompt "Debug script: ")
+        dir script)
+    (setq dir (cond ((and arg (eq (prefix-numeric-value arg) 16))
+                     (read-file-name dir-prompt default-directory nil t))
+                    ((and cands arg (eq (prefix-numeric-value arg) 4))
+                     (read-file-name dir-prompt
+                                     (completing-read dir-prompt cands) nil t))
+                    (t (or (proviso-current-project-root) default-directory))))
+    (setq script (read-file-name script-prompt dir nil t nil))
+    script))
 
 (defun proviso-gud-gather-debug-dirs (proj)
   "Gather all debug dirs for project PROJ."
@@ -112,6 +132,16 @@ ARG allows customizing the directory to look in for executables."
     (if exe
         (realgud:gdb (concat "gdb " exe))
       (message "No executable found."))))
+
+;;;###autoload
+(defun proviso-gud-open-pdb (&optional arg)
+  "Open pdb according to the current project.
+ARG allows customizing the directory to look in for scripts."
+  (interactive "P")
+  (let ((script (proviso-gud-get-debug-script arg)))
+    (if script
+        (pdb (concat "python -m pdb " script))
+      (message "No script found."))))
 
 (provide 'proviso-gud)
 ;;; proviso-gud.el ends here
