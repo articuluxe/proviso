@@ -172,10 +172,6 @@ ARG allows customizing behavior."
   (proviso-compile--pre-compile)
   (call-interactively 'recompile))
 
-(with-eval-after-load 'cc-mode
-  (define-key c-mode-base-map (kbd "\C-c RET") #'proviso-compile)
-  (define-key c-mode-base-map "\C-cm" #'proviso-recompile)
-  (define-key c-mode-base-map "\C-ck" #'kill-compilation))
 (defun proviso-choose-recompile ()
   "Re-execute a compile command selected from history."
   (interactive)
@@ -185,6 +181,9 @@ ARG allows customizing behavior."
     (proviso-compile--pre-compile)
     (compile compile-command)))
 
+(global-set-key (kbd "\C-c RET") #'proviso-compile)
+(global-set-key "\C-cm" #'proviso-recompile)
+(global-set-key "\C-ck" #'kill-compilation)
 
 ;; compile errors
 (defvar proviso-ignore-compile-error-functions
