@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-06-03 15:54:40 dan.harms>
+;; Modified Time-stamp: <2019-06-18 11:28:12 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -63,7 +63,7 @@ REST, if not nil, is appended."
 
 (defvar proviso-gentags-max-jobs-local 10
   "Maximum allowed concurrently spawned processes for local projects.")
-(defvar proviso-gentags-max-jobs-remote 5
+(defvar proviso-gentags-max-jobs-remote 8
   "Maximum allowed concurrently spawned processes for remote projects.")
 (defvar-local proviso-gentags--max-jobs proviso-gentags-max-jobs-local
   "Maximum number of spawned processes allowed at once.")
