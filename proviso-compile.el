@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-01-08 08:50:26 dharms>
+;; Modified Time-stamp: <2019-06-18 08:34:27 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -176,6 +176,15 @@ ARG allows customizing behavior."
   (define-key c-mode-base-map (kbd "\C-c RET") #'proviso-compile)
   (define-key c-mode-base-map "\C-cm" #'proviso-recompile)
   (define-key c-mode-base-map "\C-ck" #'kill-compilation))
+(defun proviso-choose-recompile ()
+  "Re-execute a compile command selected from history."
+  (interactive)
+  (let ((cmd (ivy-read "Recompile: " compile-history
+                       :caller 'proviso-choose-recompile)))
+    (setq compile-command cmd)
+    (proviso-compile--pre-compile)
+    (compile compile-command)))
+
 
 ;; compile errors
 (defvar proviso-ignore-compile-error-functions
