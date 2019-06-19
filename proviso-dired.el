@@ -1,9 +1,9 @@
 ;;; proviso-dired.el --- proviso dired utilities
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, June 28, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-06-01 08:13:50 dharms>
+;; Modified Time-stamp: <2019-06-19 08:05:54 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project dired
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -57,20 +57,22 @@
     lst))
 
 ;;;###autoload
-(defun proviso-open-dired-this-project ()
+(defun proviso-dired-open-this-project ()
   "Open a dired buffer in some directory according to the current project."
   (interactive)
   (let ((cands (proviso-gather-dired-dirs (proviso-current-project))))
-    (ivy-read "Open dired: " cands
-              :caller 'proviso-open-dired-this-project
-              :action (lambda (x)
-                        (let ((file (directory-file-name (cdr x))))
-                          (if (file-readable-p file)
-                              (dired file)
-                            (error "%s does not exist!" file)))))))
+    (if cands
+        (ivy-read "Open dired: " cands
+                  :caller 'proviso-dired-open-this-project
+                  :action (lambda (x)
+                            (let ((file (directory-file-name (cdr x))))
+                              (if (file-readable-p file)
+                                  (dired file)
+                                (error "%s does not exist!" file)))))
+      (dired default-directory))))
 
 ;;;###autoload
-(defun proviso-open-dired-all-projects ()
+(defun proviso-dired-open-all-projects ()
   "Open a dired buffer in some directory according to all projects."
   (interactive)
   (let (lst cands)
@@ -79,13 +81,15 @@
     (dolist (elt lst)
       (setq cands (append cands
                           (proviso-gather-dired-dirs elt))))
-    (ivy-read "Open dired: " cands
-              :caller 'proviso-open-dired-all-projects
-              :action (lambda (x)
-                        (let ((file (directory-file-name (cdr x))))
-                          (if (file-readable-p file)
-                              (dired file)
-                            (error "%s does not exist!" file)))))))
+    (if cands
+        (ivy-read "Open dired: " cands
+                  :caller 'proviso-dired-open-all-projects
+                  :action (lambda (x)
+                            (let ((file (directory-file-name (cdr x))))
+                              (if (file-readable-p file)
+                                  (dired file)
+                                (error "%s does not exist!" file)))))
+      (dired default-directory))))
 
 (provide 'proviso-dired)
 ;;; proviso-dired.el ends here
