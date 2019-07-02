@@ -1,9 +1,9 @@
 ;;; proviso.el --- manage projects
-;; Copyright (C) 2016-2018  Dan Harms (dharms)
+;; Copyright (C) 2016-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-10-29 08:50:27 dharms>
+;; Modified Time-stamp: <2019-06-28 09:02:28 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -48,7 +48,6 @@
 (require 'proviso-gentags)
 ;; bookmarks must come before registers so that registers runs first
 (require 'proviso-bookmarks)
-(require 'proviso-sml)
 (require 'proviso-registers)
 (require 'proviso-grep)
 (require 'proviso-include-files)
