@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-06-28 08:54:57 dharms>
+;; Modified Time-stamp: <2019-07-10 12:43:20 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -256,11 +256,13 @@ non-nil."
 
 (defun proviso-compile-notify (buffer string)
   "Make a notification based on BUFFER finishing as described by STRING."
-  (call-process "notify-send" nil nil nil
-                "-t" "0"
-                "-i" "emacs"
-                "Compilation finished"
-                string))
+  (when (and (string-match-p "compilation" (buffer-name buffer))
+             (string-match-p "finished" string))
+    (call-process "notify-send" nil nil nil
+                  "-t" "2"
+                  "-i" "emacs"
+                  "Compilation finished"
+                  string)))
 
 (add-hook 'compilation-finish-functions 'proviso-compile-dispose-buffer)
 
