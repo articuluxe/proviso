@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-07-31 09:05:55 dharms>
+;; Modified Time-stamp: <2019-08-01 12:14:03 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -140,7 +140,7 @@ PROJ, if non-nil, will be highlighted in the results."
   (interactive)
   (let ((proj (proviso-current-project)))
     (when proj
-      (message "%s" (proviso-get proj :project-name)))))
+      (message "%s" (proviso-prettify-project proj)))))
 
 (defvar proviso-display-buffer-name "*proviso-projects*"
   "Name of the buffer describing proviso projects.")
@@ -158,7 +158,7 @@ PROJ, if non-nil, will be highlighted in the results."
                 (list elt
                       (vconcat
                        (list
-                        (if (string= name (symbol-name curr)) "*" "")
+                        (if (string= elt (symbol-name curr)) "*" "")
                         name
                         root
                         remote
@@ -169,7 +169,7 @@ PROJ, if non-nil, will be highlighted in the results."
   tabulated-list-mode "Proviso"
   "Major mode for displaying proviso projects.
 \\{proviso-display-mode-map\}"
-  (setq tabulated-list-format [("Current" 5 t)
+  (setq tabulated-list-format [("Current" 8 t)
                                ("Project" 15 t)
                                ("Root" 55 t)
                                ("Remote" 30 t)
