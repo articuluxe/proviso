@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-01 12:01:17 dan.harms>
+;; Modified Time-stamp: <2019-08-01 12:03:53 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -473,7 +473,7 @@ MAXWIDTH is an optional max width for the name parameter."
         (dir (proviso-get proj :root-dir))
         (host (proviso-get proj :remote-host)))
     (unless maxwidth
-      (setq maxwidth (string-width (proviso-get proj :project-name))))
+      (setq maxwidth (string-width name)))
     (concat
      (propertize
       (format
