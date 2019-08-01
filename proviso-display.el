@@ -1,9 +1,9 @@
 ;;; proviso-display.el --- display information about proviso
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-06-01 08:13:48 dharms>
+;; Modified Time-stamp: <2019-07-31 09:05:55 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -134,30 +134,43 @@ PROJ, if non-nil, will be highlighted in the results."
         (message "%s" projs)
       (error "No projects"))))
 
+;;;###autoload
+(defun proviso-display-echo-current-project-name ()
+  "Echo the current active project name, if any."
+  (interactive)
+  (let ((proj (proviso-current-project)))
+    (when proj
+      (message "%s" (proviso-get proj :project-name)))))
+
 (defvar proviso-display-buffer-name "*proviso-projects*"
   "Name of the buffer describing proviso projects.")
 
 (defun proviso-display-entries ()
   "Generate entry list for tabulated-list."
-  (let (lst)
+  (let ((curr (proviso-current-project))
+        lst)
     (mapatoms (lambda (atom)
                 (push (symbol-name atom) lst)) proviso-obarray)
     (mapcar (lambda (elt)
-              (let ((root (proviso-get elt :root-dir))
+              (let ((name (proviso-get elt :project-name))
+                    (root (proviso-get elt :root-dir))
                     (remote (or (proviso-get elt :remote-host) "")))
                 (list elt
                       (vconcat
-                       (list elt
-                             root
-                             remote
-                             )))))
+                       (list
+                        (if (string= name (symbol-name curr)) "*" "")
+                        name
+                        root
+                        remote
+                        )))))
             lst)))
 
 (define-derived-mode proviso-display-mode
   tabulated-list-mode "Proviso"
   "Major mode for displaying proviso projects.
 \\{proviso-display-mode-map\}"
-  (setq tabulated-list-format [("Project" 15 t)
+  (setq tabulated-list-format [("Current" 5 t)
+                               ("Project" 15 t)
                                ("Root" 55 t)
                                ("Remote" 30 t)
                                ])
