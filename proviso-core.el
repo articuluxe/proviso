@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-01 08:58:17 dharms>
+;; Modified Time-stamp: <2019-08-01 12:01:17 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -466,6 +466,29 @@ Note that `executable-find' operates on the local host."
       (eval (car curr))
       (setq i (cdr curr)))))
 
+(defun proviso-prettify-project (proj &optional maxwidth)
+  "Return a prettified description of PROJ.
+MAXWIDTH is an optional max width for the name parameter."
+  (let ((name (proviso-get proj :project-name))
+        (dir (proviso-get proj :root-dir))
+        (host (proviso-get proj :remote-host)))
+    (unless maxwidth
+      (setq maxwidth (string-width (proviso-get proj :project-name))))
+    (concat
+     (propertize
+      (format
+       (concat "%-"
+               (format "%d" maxwidth)
+               "s")
+       name)
+      'face '(bold))
+     " "
+     (propertize (format "%s" dir)
+                 'face '(italic))
+     (when host
+       (propertize
+        (concat " @" host) 'face '(shadow))))))
+
 ;;;###autoload
 (defun proviso-choose-project (&optional prompt-string)
   "Allow the user to choose a project among those currently defined.
@@ -481,23 +504,7 @@ PROMPT-STRING allows customizing a special prompt."
               proviso-obarray)
     (mapatoms (lambda (atom)
                 (push (cons
-                       (let ((name (proviso-get atom :project-name))
-                             (dir (proviso-get atom :root-dir))
-                             (host (proviso-get atom :remote-host)))
-                         (concat
-                          (propertize
-                           (format
-                            (concat "%-"
-                                    (format "%d" max)
-                                    "s")
-                            name)
-                           'face '(bold))
-                          " "
-                          (propertize (format "%s" dir)
-                                      'face '(italic))
-                          (when host
-                            (propertize
-                             (concat " @" host) 'face '(shadow)))))
+                       (proviso-prettify-project atom max)
                        atom)
                       lst))
               proviso-obarray)
