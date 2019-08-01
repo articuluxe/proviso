@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-01-09 08:26:01 dharms>
+;; Modified Time-stamp: <2019-07-30 00:08:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project tags gentags
 
@@ -35,9 +35,10 @@
   (let ((base (file-name-directory load-file-name))
         (proviso-gentags-ctags-cpp-kinds "+l")
         file-contents arg-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'set-process-sentinel)
                (lambda (_ _2)
                  ))
@@ -50,18 +51,16 @@
                (lambda(_) "exctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d/\")
                   (:name \"third\" :dir \"d2/\")
                   (:name \"fourth\" :dir \"/home/\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -104,9 +103,10 @@
   (let ((base (file-name-directory load-file-name))
         (proviso-gentags-ctags-cpp-kinds "+l")
         file-contents arg-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'set-process-sentinel)
                (lambda (_ _2)
                  ))
@@ -121,7 +121,6 @@
       ;; open file
       (setq file-contents "")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -147,9 +146,10 @@
   (let ((base (file-name-directory load-file-name))
         (proviso-gentags-ctags-cpp-kinds "+l")
         file-contents arg-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'set-process-sentinel)
                (lambda (_ _2)
                  ))
@@ -162,18 +162,16 @@
                (lambda(_) "exctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d\")
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -215,9 +213,10 @@
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents arg-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'set-process-sentinel)
                (lambda (_ _2)
                  ))
@@ -230,18 +229,17 @@
                (lambda(_) "exctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d\")
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init :tags-subdir \".mytags/\")
-")
+:tags-subdir \".mytags/\"
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -283,9 +281,10 @@
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents arg-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'set-process-sentinel)
                (lambda (_ _2)
                  ))
@@ -298,18 +297,17 @@
                (lambda(_) "exctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d\")
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init :tags-subdir \".mytags\")
-")
+:tags-subdir \".mytags\"
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -352,9 +350,10 @@
   (let ((base (file-name-directory load-file-name))
         (proviso-gentags-ctags-cpp-kinds "+l")
         file-contents arg-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'set-process-sentinel)
                (lambda (_ _2)
                  ))
@@ -367,18 +366,16 @@
                (lambda(_) "exctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\" :ctags-opts \"--exclude=boost\")
                   (:name \"second\" :dir \"d/\" :ctags-opts \"--exclude=asio --exclude=spirit\")
                   (:name \"third\" :dir \"d2/\")
                   (:name \"fourth\" :dir \"/home/\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -421,9 +418,10 @@
   (let ((base (file-name-directory load-file-name))
         (proviso-gentags-ctags-cpp-kinds "+lw")
         file-contents arg-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'set-process-sentinel)
                (lambda (_ _2)
                  ))
@@ -436,18 +434,17 @@
                (lambda(_) "exctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d\")
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init :tags-subdir \".mytags\")
-")
+:tags-subdir \".mytags\"
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -489,9 +486,10 @@
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents arg-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'set-process-sentinel)
                (lambda (_ _2)
                  ))
@@ -504,18 +502,16 @@
                (lambda(_) "myctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d\")
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -557,9 +553,10 @@
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents arg-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'set-process-sentinel)
                (lambda (_ _2)
                  ))
@@ -573,18 +570,16 @@
                  (list "totally new options"))))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d\")
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)

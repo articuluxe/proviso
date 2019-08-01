@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-02-19 08:46:51 dharms>
+;; Modified Time-stamp: <2019-08-01 08:58:17 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -31,17 +31,34 @@
 (require 'seq)
 (require 'tramp)
 (require 'parsenv nil t)
+(require 'ht)
 
 (defvar proviso-obarray
-  (let ((intern-obarray (make-vector 7 0)))
+  (let ((intern-obarray (make-vector 10 0)))
     intern-obarray)
   "Array of project objects.")
-(defvar proviso-path-alist '()
+
+(defvar proviso-provisional-obarray
+  (let ((intern-obarray (make-vector 10 0)))
+    intern-obarray)
+  "Array of provisional project objects.")
+
+(defvar proviso-path-alist nil
   "Alist of pairs of strings (REGEXP . PROJECT-NAME).
-A project is used for a file if the filename matches REGEXP.  In the case
-of no matches, the default project is instead used.")
-(defvar-local proviso-local-proj nil)
-(defvar proviso-curr-proj nil)
+This is a provisional mapping of potential projects.
+A project is used for a file if that file's path matches REGEXP.")
+
+(defvar proviso-projects
+  (ht-create 'equal)
+  "Registry of active remote projects keyed by host.")
+
+(defvar proviso-proj-alist nil
+  "Active projects on localhost.
+Alist of pairs of strings (DIR . PROJECT#DIR[@REMOTE]).
+Maps filepaths to projects already loaded.")
+
+(defvar-local proviso-local-proj nil "Current buffer's project.")
+(defvar proviso-curr-proj nil "Last known global project.")
 
 (defun proviso-current-project ()
   "Return the current project, or if none, the last used."
@@ -67,7 +84,7 @@ Melds `proviso' functionality into Emacs' `project'.
 TODO: the project may not actually exist yet."
   (let ((root (proviso--find-root dir)))
     (and root
-         (cons 'vc (cdr root)))))
+         (cons 'vc (second root)))))
 
 ;; Project Properties:
 ;;   - External:
@@ -80,8 +97,8 @@ TODO: the project may not actually exist yet."
 ;;  :grep-exclude-dirs
 ;;  :clang-format
 ;;   - Internal:
-;; :root-dir :project-name :inited :initfun
-;; :init-errors
+;; :root-dir :project-name :project-uid
+;; :inited :initfun :init-errors
 ;; :remote-prefix :remote-host :root-stem
 ;; :registers
 ;; :tags-alist :tags-dir :tags-lastgen
@@ -119,14 +136,15 @@ Hook functions are called with one parameter: the file's major mode.")
   :group 'proviso-custom-group)
 
 (defun proviso-proj-p (proj)
-  "Return non-nil if PROJ is a project."
+  "Return non-nil if PROJ is an active project.
+PROJ is not simply a basename but includes a path."
   (intern-soft proj proviso-obarray))
 
-(defvar-local proviso--last-proj-defined nil
-  "The most recent project to be defined.")
+(defun proviso-provisional-proj-p (proj)
+  "Return non-nil if PROJ is a provisional project."
+  (intern-soft proj proviso-provisional-obarray))
 
-(defvar proviso-project-signifiers '(
-                                     "\\.proviso$"
+(defvar proviso-project-signifiers '("\\.proviso$"
                                      "\\.git$"
                                      "\\.svn$"
                                      ;; other possibilities:
@@ -134,53 +152,111 @@ Hook functions are called with one parameter: the file's major mode.")
                                      )
   "A list of patterns that signify project roots.")
 
-(defun proviso-define-project (project &rest plist)
-  "Create or replace a project named PROJECT.
+(defun proviso-define-project (project path &rest plist)
+  "Create a provisional project named PROJECT located at PATH.
 Add to it the property list PLIST."
-  (let ((p (intern project proviso-obarray)))
-    (setplist p plist)
-    (setq proviso--last-proj-defined p)))
+  (let ((proj (intern project proviso-provisional-obarray)))
+    (setplist proj plist)
+    (setq proviso-path-alist
+          (cons (cons path project) proviso-path-alist))
+    proj))
 
-(defun proviso-define-derived-project (project parent &rest plist)
-  "Create or replace a project named PROJECT.
+(defun proviso-define-project-derived (project parent path &rest plist)
+  "Create a provisional project named PROJECT located at PATH.
 Its parent is PARENT.  Add to it the property list PLIST."
-  (let ((p (intern project proviso-obarray)))
-    (setplist p (append (list :parent parent) plist))
-    (setq proviso--last-proj-defined p)))
+  (let ((parent (intern-soft parent proviso-provisional-obarray))
+        (child (intern project proviso-provisional-obarray)))
+    (setplist child
+              (append
+               (list :parent parent)
+               plist))
+    (setq proviso-path-alist
+          (cons (cons path project) proviso-path-alist))
+    child))
 
-(defun proviso-get-plist (project)
-  "Return the plist associated with project PROJECT."
-  (symbol-plist (intern-soft project proviso-obarray)))
+(defun proviso-define-active-project (project &optional plist)
+  "Create or replace an active project named PROJECT.
+Add to it the property list PLIST."
+  (let ((proj (intern project proviso-obarray)))
+    (when plist
+      (setplist proj plist))
+    proj))
 
-(defun proviso-put (project property value)
-  "Put into PROJECT the PROPERTY with value VALUE."
-  (let ((p (intern-soft project proviso-obarray)))
-    (if p (put p property value)
-      (error "Invalid project %s" project))))
+(defun proviso-get-plist (project &optional provisional)
+  "Return the plist associated with project PROJECT.
+If optional PROVISIONAL is non-nil, look for a provisional project."
+  (let ((ob (if provisional proviso-provisional-obarray proviso-obarray)))
+    (symbol-plist (intern-soft project ob))))
 
-(defun proviso-get (project property &optional inhibit-polymorphism)
+(defun proviso-put (project property value &optional provisional)
+  "Put into PROJECT the PROPERTY with value VALUE.
+If optional PROVISIONAL is non-nil, find a provisional project."
+  (let* ((ob (if provisional proviso-provisional-obarray proviso-obarray))
+         (proj (intern-soft project ob)))
+    (if proj (put proj property value))))
+
+(defun proviso-get (project property &optional provisional inhibit-polymorphism)
   "Get from PROJECT the value associated with PROPERTY.
+If optional PROVISIONAL is non-nil, find a provisional project.
 INHIBIT-POLYMORPHISM, if non-nil, will constrain lookup from
 searching in any bases."
-  (let ((p (intern-soft project proviso-obarray))
-        parent parentname)
-    (when p
-      (or (get p property)
+  (let* ((ob (if provisional proviso-provisional-obarray proviso-obarray))
+         (proj (intern-soft project ob))
+         parent parentname)
+    (when proj
+      (or (get proj property)
           (and (not inhibit-polymorphism)
-               (setq parentname (get p :parent))
-               (setq parent (intern-soft parentname proviso-obarray))
-               (proviso-get parent property))))))
+               (setq parentname (get proj :parent))
+               (if (setq parent (intern-soft parentname ob))
+                   (proviso-get parent property provisional)
+                 (if (setq parent (intern-soft parentname
+                                               (if provisional proviso-obarray
+                                                 proviso-provisional-obarray)))
+                     (proviso-get parent property (not provisional)))))))))
 
 (defun proviso-find-path-alist (&optional filename)
-  "Scan `proviso-path-alist' for an entry to match FILENAME."
-  (assoc-default
-   (or filename (buffer-file-name) (buffer-name))
-   proviso-path-alist 'string-match))
+  "Scan `proviso-path-alist' for an entry to match FILENAME.
+If found, returns a cons cell (PATH . project)."
+  (assoc (or filename (buffer-file-name) (buffer-name))
+         proviso-path-alist
+         'string-match))
 
-(defun proviso-name-p (proj)
-  "Return non-nil if PROJ names an active project."
-  (seq-find (lambda (elt)
-              (string= (cdr elt) proj)) proviso-path-alist))
+(defun proviso-find-active-project (dir &optional host)
+  "Return an active project for DIR.
+HOST defaults to nil for localhost."
+  (if host
+      (let ((alist (ht-get proviso-projects host)))
+        (when alist
+          (proviso-find-active-proj--alist dir alist)))
+    (proviso-find-active-proj--alist dir proviso-proj-alist)))
+
+(defun proviso-find-active-proj--alist (dir alist)
+  "Find any active project in ALIST with root DIR."
+  (assoc-default dir alist 'string-match))
+
+(defun proviso-add-active-project-path (dir uid &optional host)
+  "Add project UID centered at absolute path DIR.
+HOST defaults to nil for localhost."
+  (if host
+      (let ((alist (ht-get proviso-projects host)))
+        (if alist
+            (ht-set! proviso-projects host
+                     (proviso-add-active-proj-path--alist alist dir uid))))
+    (setq proviso-proj-alist
+          (proviso-add-active-proj-path--alist proviso-proj-alist dir uid)
+    )))
+
+(defun proviso-add-active-proj-path--alist (alist dir uid)
+  "Add definition for project UID at DIR to ALIST."
+  (cons (cons dir uid) alist))
+
+(defun proviso-create-project-uid (project dir &optional host)
+  "Return a unique ID identifying PROJECT located at DIR on HOST.
+HOST defaults to nil for localhost."
+  (let ((uid (concat project "#" dir)))
+    (if host
+        (concat uid "@" host)
+      uid)))
 
 (define-error 'proviso-error "Project error")
 (define-error 'proviso-error-non-fatal "Project load stopped" 'proviso-error)
@@ -317,7 +393,7 @@ Returns a list (ROOT FILE)."
 
 (defun proviso--find-root (dir &optional absolute)
   "Search for the project root, starting from DIR and moving up the file tree.
-Returns a cons (file . dir) containing the project file and its parent
+Returns a list (file dir) containing the project file and its parent
 directory, if found, else nil.  If ABSOLUTE is non-nil, the path, if found,
 will be absolute.  Project files can look like any of the following:
     1) .proviso
@@ -331,7 +407,7 @@ be a directory."
       (seq-let [root file] (proviso--find-root-helper dir pattern)
         (and root file
              (throw 'found
-                    (cons file
+                    (list file
                           (if absolute (expand-file-name root) root))))))))
 
 (defun proviso-compute-basename-from-file (name)
@@ -396,14 +472,43 @@ Note that `executable-find' operates on the local host."
 PROMPT-STRING allows customizing a special prompt."
   (interactive)
   (let ((prompt (or prompt-string "Project: "))
+        (max 0)
         lst)
     (mapatoms (lambda (atom)
-                (push (symbol-name atom) lst)) proviso-obarray)
+                (if (> (string-width (proviso-get atom :project-name))
+                       max)
+                    (setq max (string-width (proviso-get atom :project-name)))))
+              proviso-obarray)
+    (mapatoms (lambda (atom)
+                (push (cons
+                       (let ((name (proviso-get atom :project-name))
+                             (dir (proviso-get atom :root-dir))
+                             (host (proviso-get atom :remote-host)))
+                         (concat
+                          (propertize
+                           (format
+                            (concat "%-"
+                                    (format "%d" max)
+                                    "s")
+                            name)
+                           'face '(bold))
+                          " "
+                          (propertize (format "%s" dir)
+                                      'face '(italic))
+                          (when host
+                            (propertize
+                             (concat " @" host) 'face '(shadow)))))
+                       atom)
+                      lst))
+              proviso-obarray)
     (if (seq-empty-p lst)
         (error "No projects defined")
-      (ivy-read prompt lst
-                :caller 'proviso-choose-project
-                ))))
+      (catch 'exit
+        (ivy-read prompt lst
+                  :action (lambda (x)
+                            (throw 'exit (cdr x)))
+                  :caller 'proviso-choose-project
+                  )))))
 
 (defun proviso-load-environment-variables-from-file (proj name)
   "Load environment variables in root dir of PROJ from file NAME.

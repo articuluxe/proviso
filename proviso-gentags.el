@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-06-18 11:28:12 dan.harms>
+;; Modified Time-stamp: <2019-07-30 10:46:28 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -30,6 +30,7 @@
 (require 'proviso-core)
 (require 'subr-x)
 (require 'find-file)
+(eval-when-compile (require 'cl-lib))
 (require 'async)
 (require 'xfer)
 
@@ -84,7 +85,7 @@ locally."
   (interactive "P")
   (let ((proj (if (= (prefix-numeric-value current-prefix-arg) 16)
                   (proviso-choose-project) (proviso-current-project))))
-    (unless (proviso-proj-p proj)
+    (unless proj
       (error "Could not generate tags: no active project"))
     (proviso-gentags--start-gen proj arg)))
 
@@ -175,7 +176,7 @@ REMOTE is non-nil if the project is on a remote host."
              nil)
             (t (dotimes (i (- proviso-gentags--max-jobs wrk) t)
                  (unless (seq-empty-p proviso-gentags--waiting-jobs)
-                   (incf proviso-gentags--num-working-jobs)
+                   (cl-incf proviso-gentags--num-working-jobs)
                    (proviso-gentags--spawn
                     (pop proviso-gentags--waiting-jobs)
                     buffer))))))))

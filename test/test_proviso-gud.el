@@ -1,11 +1,11 @@
 #!/bin/sh
 ":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-gud.el --- test proviso gud functionality
-;; Copyright (C) 2018  Dan Harms (dharms)
+;; Copyright (C) 2018-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, February  1, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-02-01 17:49:33 dharms>
+;; Modified Time-stamp: <2019-07-30 00:27:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso gud debugger test
 
@@ -34,19 +34,18 @@
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents))))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -61,12 +60,13 @@
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents))))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"\")
                   ))
@@ -78,10 +78,8 @@
                '( (:name \"DBG\" :dir \"d3\")
                 ))
    )
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)

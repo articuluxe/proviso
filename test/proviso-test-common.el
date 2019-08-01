@@ -1,9 +1,9 @@
 ;;; proviso-test-common.el --- common test utilities for proviso
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, March 31, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-11 05:58:28 dharms>
+;; Modified Time-stamp: <2019-07-26 08:37:33 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso test
 
@@ -55,7 +55,9 @@
 (defun proviso-test-reset-all ()
   "Reset all profile-related data structures to nil."
   (setq proviso-obarray (make-vector 7 0))
-  (setq proviso-path-alist '())
+  (setq proviso-provisional-obarray (make-vector 10 0))
+  (setq proviso-path-alist nil)
+  (setq proviso-proj-alist nil)
   (setq proviso-curr-proj nil)
   (setq proviso-local-proj (default-value 'proviso-local-proj))
   )

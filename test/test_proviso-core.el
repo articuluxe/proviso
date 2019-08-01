@@ -1,11 +1,11 @@
 #!/bin/sh
 ":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-core.el --- test proviso-core.el
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-04-30 08:42:35 dharms>
+;; Modified Time-stamp: <2019-07-30 09:10:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 
@@ -32,24 +32,28 @@
 ;; tests
 (ert-deftest proviso-core-manipulate-properties-test ()
   (proviso-test-reset-all)
-  (proviso-define-project "test")
-  (let ((p (intern-soft "test" proviso-obarray)))
-    (should (proviso-proj-p p))
-    (should-not (proviso-get p :a))
-    (proviso-put p :a "avalue")
-    (should (string= "avalue" (proviso-get p :a)))
-    (proviso-put p :a nil)
-    (should-not (proviso-get p :a))
+  (proviso-define-project "test" "path")
+  (let* ((prov (intern-soft "test" proviso-provisional-obarray))
+         (proj (proviso-define-active-project "test" (symbol-plist prov))))
+    (should (proviso-provisional-proj-p prov))
+    (should (proviso-proj-p proj))
+    (should-not (proviso-get proj :a))
+    (proviso-put proj :a "avalue")
+    (should (string= "avalue" (proviso-get proj :a)))
+    (proviso-put proj :a nil)
+    (should-not (proviso-get proj :a))
     ))
 
 (ert-deftest proviso-core-manipulate-properties-derived-test ()
   (proviso-test-reset-all)
-  (proviso-define-project "parent" :p 'value)
-  (proviso-define-derived-project "child" "parent")
-  (let ((p (intern "child" proviso-obarray)))
-    (should (proviso-proj-p p))
-    (should (eq (proviso-get p :p) 'value))
-    (should-not (proviso-get p :p t))
+  (proviso-define-project "parent" "path" :p 'value)
+  (proviso-define-project-derived "child" "parent" "path")
+  (let* ((prov (intern-soft "child" proviso-provisional-obarray))
+         (proj (proviso-define-active-project "child" (symbol-plist prov))))
+    (should (proviso-provisional-proj-p prov))
+    (should (proviso-proj-p proj))
+    (should (eq (proviso-get proj :p) 'value))
+    (should-not (proviso-get proj :p t))
     ))
 
 (ert-deftest proviso-core-compute-basename-test ()
@@ -65,8 +69,6 @@
                     "~/sample/.proviso") "sample"))
   (should (string= (proviso-compute-basename-from-file
                     "~/sample/.git") "sample"))
-  ;; (should (not (string-equal (proviso--compute-basename
-  ;;                             "unknown") "")))
   )
 
 (ert-deftest proviso-core-compute-stem-test ()
@@ -88,7 +90,7 @@
         dir)
     (setq dir (concat base "a/b/c/d"))
     (should (equal (proviso--find-root dir t)
-                   (cons (concat base "a/b/c/c.proviso")
+                   (list (concat base "a/b/c/c.proviso")
                          (concat base "a/b/c/"))))
     ))
 

@@ -1,11 +1,11 @@
 #!/bin/sh
 ":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-grep.el --- test proviso grep dirs
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-01-03 22:57:52 dharms>
+;; Modified Time-stamp: <2019-07-30 00:25:53 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project grep test
 
@@ -34,19 +34,18 @@
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents))))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -61,19 +60,18 @@
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents))))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"/home/\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -88,19 +86,18 @@
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents))))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"d/\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -116,13 +113,13 @@
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents))))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
       ;; open file
       (setq file-contents "")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -138,21 +135,20 @@
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-file-name))
         file-contents)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents))))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"one\" :dir \"\")
                   (:name \"two\" :dir \"/home\")
                   (:name \"three\" :dir \"d\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -165,7 +161,6 @@
                       )))
       ;; open 2nd file, same project
       (find-file (concat base "a/b/c/d/dfile2"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -177,16 +172,13 @@
                       (concat base "a/b/c/d/")
                       )))
       ;; open 3rd file, new project
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"d2/\")
                   )))
- (proviso-define-project \"c2\" :initfun 'do-init)
-")
-      (should (not (proviso-name-p "c2")))
+)")
       (find-file (concat base "a/b/c2/d2/dfile3"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c2/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -199,7 +191,6 @@
       ;; switch back to initial buffer
       (switch-to-buffer "dfile1")
       (run-hooks 'post-command-hook)    ;simulate interactive use
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)

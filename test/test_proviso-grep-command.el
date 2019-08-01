@@ -1,11 +1,11 @@
 #!/bin/sh
 ":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-grep-command.el --- test proviso grep-command
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-07-04 14:49:27 dan.harms>
+;; Modified Time-stamp: <2019-07-30 00:21:29 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project grep command
 
@@ -112,9 +112,10 @@
   (let* ((base (file-name-directory load-file-name))
          (default-directory base)
          file-contents read-result)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'completing-read)
                (lambda (_ _2)
                  read-result))
@@ -145,16 +146,14 @@
                              (proviso-grep--create-grep-str nil)
                      )))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"d/e/\")
                   (:name \"two\" :dir \"d/e/f\")
                   )))
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-current-project-root)

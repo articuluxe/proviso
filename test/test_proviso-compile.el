@@ -1,11 +1,11 @@
 #!/bin/sh
 ":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-compile.el --- test proviso compile
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, May 25, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-23 08:47:09 dharms>
+;; Modified Time-stamp: <2019-07-29 06:52:57 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso test compile
 
@@ -35,9 +35,10 @@
   (let* ((base (file-name-directory load-file-name))
          (default-directory base)
          file-contents read-result read-index)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'completing-read)
                (lambda (_ collection &optional _3 _4 _5 _6 _7 _8) (interactive)
                  (seq-elt collection read-index)))
@@ -53,18 +54,17 @@
       (should (string= (proviso-compile-command-std '(4))
                        (concat "cd " base "a/ && make")))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun
+(lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"d/e/\")
                   ))
    (proviso-put proj :build-subdirs
                 '( (:name \"bld\" :dir \"d2/\")))
   )
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -83,9 +83,10 @@
   (let* ((base (file-name-directory load-file-name))
          (default-directory base)
          file-contents read-result read-index)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'completing-read)
                (lambda (_ collection &optional _3 _4 _5 _6 _7 _8) (interactive)
                  (seq-elt collection read-index)))
@@ -96,18 +97,17 @@
                (lambda (_ err)
                  (message "proviso-query-error: %s" err))))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun
+ (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"d/e/\")
                   ))
    (proviso-put proj :build-subdirs
-                '( (:name \"bld\" :dir \"d2/\")))
-  )
- (proviso-define-project \"c\" :initfun 'do-init :compile-cmds '(\"nmake -n \"))
-")
+                '( (:name \"bld\" :dir \"d2/\"))))
+:compile-cmds (\"nmake -n \")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -126,9 +126,10 @@
   (let* ((base (file-name-directory load-file-name))
          (default-directory base)
          file-contents read-result read-index)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'completing-read)
                (lambda (_ collection &optional _3 _4 _5 _6 _7 _8) (interactive)
                  (seq-elt collection read-index)))
@@ -139,8 +140,9 @@
                (lambda (_ err)
                  (message "proviso-query-error: %s" err))))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun
+(lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"d/e/\")
                 ))
@@ -149,10 +151,8 @@
                    (:name \"two\" :dir \"d/e/f\")
                  ))
   )
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -178,9 +178,10 @@
   (let* ((base (file-name-directory load-file-name))
          (default-directory base)
          file-contents read-result read-index)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'completing-read)
                (lambda (_ collection &optional _3 _4 _5 _6 _7 _8) (interactive)
                  (seq-elt collection read-index)))
@@ -191,8 +192,9 @@
                (lambda (_ err)
                  (message "proviso-query-error: %s" err))))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun
+(lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"d/e/\")
                 ))
@@ -201,11 +203,9 @@
                    (:name \"two\" :dir \"d/e/f\")
                  ))
   )
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (setq proviso-compile-command 'proviso-compile-command-repo)
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -233,9 +233,10 @@
          (compilation-read-command nil)
          (compilation-always-kill t)
          file-contents read-result read-index)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'completing-read)
                (lambda (_ collection &optional _3 _4 _5 _6 _7 _8) (interactive)
                  (seq-elt collection read-index)))
@@ -246,8 +247,9 @@
                (lambda (_ err)
                  (message "proviso-query-error: %s" err))))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun
+(lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"d/e/\")
                 ))
@@ -256,11 +258,9 @@
                    (:name \"two\" :dir \"d/e/f\")
                  ))
   )
- (proviso-define-project \"c\" :initfun 'do-init)
-")
+)")
       (setq proviso-compile-command 'proviso-compile-command-repo)
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -293,9 +293,10 @@
          (compilation-read-command nil)
          (compilation-always-kill t)
          file-contents read-result read-index)
-    (cl-letf (((symbol-function 'proviso--load-file)
+    (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
-                 (proviso-eval-string file-contents)))
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents)))))
               ((symbol-function 'completing-read)
                (lambda (_ collection &optional _3 _4 _5 _6 _7 _8) (interactive)
                  (seq-elt collection read-index)))
@@ -306,8 +307,9 @@
                (lambda (_ err)
                  (message "proviso-query-error: %s" err))))
       ;; open file
-      (setq file-contents "
- (defun do-init (proj)
+      (setq file-contents "(
+:initfun
+(lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"d/e/\")
                 ))
@@ -316,12 +318,11 @@
                    (:name \"two\" :dir \"d/e/f\")
                  ))
   )
- (proviso-define-project \"c\" :initfun 'do-init :compile-defun 'proviso-compile-command-repo)
-")
+:compile-defun proviso-compile-command-repo
+)")
       ;; will be overridden by the project setting for :compile-defun
       (setq proviso-compile-command 'proviso-compile-command-std)
       (find-file (concat base "a/b/c/d/dfile1"))
-      (should (proviso-name-p (proviso-get proviso-local-proj :project-name)))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
