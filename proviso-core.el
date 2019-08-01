@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-01 12:03:53 dan.harms>
+;; Modified Time-stamp: <2019-08-01 13:36:05 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -156,7 +156,8 @@ PROJ is not simply a basename but includes a path."
   "Create a provisional project named PROJECT located at PATH.
 Add to it the property list PLIST."
   (let ((proj (intern project proviso-provisional-obarray)))
-    (setplist proj plist)
+    (when plist
+      (setplist proj plist))
     (setq proviso-path-alist
           (cons (cons path project) proviso-path-alist))
     proj))
