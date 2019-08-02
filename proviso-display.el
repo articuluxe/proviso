@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-01 12:14:03 dan.harms>
+;; Modified Time-stamp: <2019-08-02 08:56:42 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -110,28 +110,38 @@ These are the symbols of the plist."
             (throw 'found (format "%S" (cadr seq)))
           (setq seq (cddr seq)))))))
 
-(defun proviso-display--get-project-names (&optional proj)
+(defun proviso-display--get-project-names (&optional curr maxwidth)
   "Return a list containing the current project names in `proviso-obarray'.
-PROJ, if non-nil, will be highlighted in the results."
-  (let ((currname (proviso-get proj :project-name))
-        name lst)
+Project CURR, if non-nil, will be highlighted in the results.
+MAXWIDTH is an optional hint to the longest project name to make
+things pretty."
+  (let (lst)
     (mapatoms (lambda (atom)
-                (setq name (symbol-name atom))
-                (push (if (string= name currname)
-                          (concat "*" name "*")
-                        name)
-                      lst))
+                (if (equal atom curr)
+                    (push
+                     (concat "* " (proviso-prettify-project atom maxwidth))
+                     lst)
+                  (push
+                   (concat "  " (proviso-prettify-project atom maxwidth))
+                   lst)))
               proviso-obarray)
-    lst))
+    (mapconcat 'identity lst "\n")))
 
 ;;;###autoload
 (defun proviso-display-echo-project-names ()
   "Echo the project names contained in `proviso-obarray'."
   (interactive)
-  (let ((projs
-         (proviso-display--get-project-names (proviso-current-project))))
-    (if projs
-        (message "%s" projs)
+  (let ((maxwidth 0)
+        msg)
+    (mapatoms (lambda (atom)
+                (if (> (string-width (proviso-get atom :project-name))
+                       maxwidth)
+                    (setq maxwidth
+                          (string-width (proviso-get atom :project-name)))))
+              proviso-obarray)
+    (if (setq msg (proviso-display--get-project-names
+                   (proviso-current-project) maxwidth))
+        (message msg)
       (error "No projects"))))
 
 ;;;###autoload
