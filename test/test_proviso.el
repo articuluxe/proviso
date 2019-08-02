@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-07-30 10:17:28 dharms>
+;; Modified Time-stamp: <2019-08-02 12:47:09 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 
@@ -234,6 +234,7 @@
       (push "nfile1" buffers)
       (should-not proviso-local-proj)
       (should (equal proviso-proj-alist nil))
+      (should (equal proviso-path-alist nil))
       ;; clean up buffers
       (dolist (b buffers) (kill-buffer b))
       )))
@@ -261,11 +262,15 @@
       (find-file (concat base "m/n/nfile1"))
       (push "nfile1" buffers)
       (should proviso-local-proj)
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
       (should (equal proviso-proj-alist
                      (list (cons (concat base "m/")
                                  (concat "neon#" base "m/")))))
-      (should (eq proviso-local-proj proviso-curr-proj))
-      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (equal proviso-path-alist
+                     (list
+                      (cons "/p/" "fog")
+                      (cons "/m/" "neon"))))
       (should (string= (concat base "m/")
                        (proviso-get proviso-local-proj :root-dir)))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -323,11 +328,13 @@
       (find-file (concat base "m/n/nfile1"))
       (push "nfile1" buffers)
       (should proviso-local-proj)
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (equal proviso-path-alist
+                     (list (cons "/m/" "neon"))))
       (should (equal proviso-proj-alist
                      (list (cons (concat base "m/")
                                  (concat "neon#" base "m/")))))
-      (should (eq proviso-local-proj proviso-curr-proj))
-      (should (eq (proviso-get proviso-local-proj :inited) t))
       (should (string= (concat base "m/")
                        (proviso-get proviso-local-proj :root-dir)))
       (should (string= (proviso-get proviso-local-proj :project-name)
