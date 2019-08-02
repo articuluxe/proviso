@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-02 12:47:09 dan.harms>
+;; Modified Time-stamp: <2019-08-03 21:21:21 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 
@@ -343,6 +343,45 @@
                        (concat "neon#" base "m/")))
       (should (eq (proviso-get proviso-local-proj :tag1)
                   'value1))
+      ;; clean up buffers
+      (dolist (b buffers) (kill-buffer b))
+      )))
+
+(ert-deftest proviso-open-project-override-provisional-project ()
+  (proviso-test-reset-all)
+  (let ((base (file-name-directory load-file-name))
+        (file-contents "")
+        buffers)
+    (cl-letf (((symbol-function 'proviso--eval-file)
+               (lambda (_)
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
+      (proviso-define-project "hidden" "a/b" :tag "overridden" :tag2 "none")
+      (should-not proviso-local-proj)
+      ;; open first file, init new project.
+      ;; Real project files override provisional projects
+      ;; this provisional project is overridden by the real project file
+      (setq file-contents "(:tag \"real\" :tag1 \"present\")")
+      (should (not proviso-local-proj))
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (push "dfile1" buffers)
+      (should proviso-local-proj)
+      (should (equal proviso-proj-alist
+                     (list (cons (concat base "a/b/c/")
+                                 (concat "c#" base "a/b/c/")))))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (string= (concat base "a/b/c/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (string= (proviso-get proviso-local-proj :project-uid)
+                       (concat "c#" base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :tag)
+                       "real"))
+      (should (string= (proviso-get proviso-local-proj :tag1)
+                       "present"))
+      (should-not (proviso-get proviso-local-proj :tag2))
       ;; clean up buffers
       (dolist (b buffers) (kill-buffer b))
       )))
