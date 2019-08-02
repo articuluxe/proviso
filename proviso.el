@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-07-31 09:03:33 dharms>
+;; Modified Time-stamp: <2019-08-01 23:15:29 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -216,11 +216,9 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
               (proviso-put proviso-local-proj :project-name basename)
               (proviso-put proviso-local-proj :project-uid fullname)
               (when remote-host
-                (unless (proviso-get proviso-local-proj :remote-host)
-                  (proviso-put proviso-local-proj :remote-host remote-host)))
+                  (proviso-put proviso-local-proj :remote-host remote-host))
               (when remote-prefix
-                (unless (proviso-get proviso-local-proj :remote-prefix)
-                  (proviso-put proviso-local-proj :remote-prefix remote-prefix)))
+                  (proviso-put proviso-local-proj :remote-prefix remote-prefix))
               (proviso-put proviso-local-proj :root-stem
                            (proviso--compute-stem proviso-local-proj)))
             )                               ;done loading new project
