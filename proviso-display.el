@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-02 08:56:42 dharms>
+;; Modified Time-stamp: <2019-08-04 12:06:38 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -161,26 +161,36 @@ things pretty."
         lst)
     (mapatoms (lambda (atom)
                 (push (symbol-name atom) lst)) proviso-obarray)
-    (mapcar (lambda (elt)
-              (let ((name (proviso-get elt :project-name))
-                    (root (proviso-get elt :root-dir))
-                    (remote (or (proviso-get elt :remote-host) "")))
-                (list elt
-                      (vconcat
-                       (list
-                        (if (string= elt (symbol-name curr)) "*" "")
-                        name
-                        root
-                        remote
-                        )))))
-            lst)))
+    (append
+     (mapcar (lambda (elt)
+               (let ((name (proviso-get elt :project-name))
+                     (root (proviso-get elt :root-dir))
+                     (remote (or (proviso-get elt :remote-host) "")))
+                 (list elt
+                       (vconcat
+                        (list
+                         (propertize name 'face
+                                     (if (string= elt (symbol-name curr))
+                                         '(underline)
+                                       '()))
+                         root
+                         remote
+                         )))))
+             lst)
+     (mapcar (lambda (elt)
+               (list elt
+                     (vconcat
+                      (list
+                       (propertize (cdr elt) 'face '(shadow italic))
+                       (propertize (car elt) 'face '(shadow italic))
+                       ""))))
+             proviso-path-alist))))
 
 (define-derived-mode proviso-display-mode
   tabulated-list-mode "Proviso"
   "Major mode for displaying proviso projects.
 \\{proviso-display-mode-map\}"
-  (setq tabulated-list-format [("Current" 8 t)
-                               ("Project" 15 t)
+  (setq tabulated-list-format [("Project" 15 t)
                                ("Root" 55 t)
                                ("Remote" 30 t)
                                ])
