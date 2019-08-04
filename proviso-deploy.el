@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-23 08:19:01 dharms>
+;; Modified Time-stamp: <2019-08-04 12:08:43 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -345,7 +345,8 @@ If ARG is non-nil, another project can be chosen."
 
 (defun proviso-deploy--file-predicate (file)
   "Return non-nil if FILE is a suitable deployment file."
-  (string-match-p "\\.deploy$" file))
+  (or (file-directory-p file)
+      (string-match-p "\\.deploy$" file)))
 
 ;;;###autoload
 (defun proviso-deploy-open-file (&optional arg)
