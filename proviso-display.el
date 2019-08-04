@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-04 12:06:38 dharms>
+;; Modified Time-stamp: <2019-08-04 17:22:34 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -176,7 +176,8 @@ things pretty."
                          root
                          remote
                          )))))
-             lst)
+             (sort lst (lambda (one two)
+                         (string< one two))))
      (mapcar (lambda (elt)
                (list elt
                      (vconcat
@@ -184,7 +185,8 @@ things pretty."
                        (propertize (cdr elt) 'face '(shadow italic))
                        (propertize (car elt) 'face '(shadow italic))
                        ""))))
-             proviso-path-alist))))
+             (sort proviso-path-alist (lambda (one two)
+                                        (string< (cdr one) (cdr two))))))))
 
 (define-derived-mode proviso-display-mode
   tabulated-list-mode "Proviso"
@@ -194,7 +196,7 @@ things pretty."
                                ("Root" 55 t)
                                ("Remote" 30 t)
                                ])
-  (setq tabulated-list-sort-key (cons "Project" nil))
+  (setq tabulated-list-sort-key nil)
   (setq tabulated-list-padding 2)
   (setq tabulated-list-entries #'proviso-display-entries)
   (tabulated-list-init-header))
