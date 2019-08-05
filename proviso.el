@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-05 08:36:04 dharms>
+;; Modified Time-stamp: <2019-08-05 15:28:36 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -168,6 +168,19 @@ This may or may not be for the first time."
     ('error (push err proviso--load-file-errors))))
 
 (advice-add 'find-file-noselect-1 :before 'proviso--file-opened-advice)
+
+(defun proviso-disable ()
+  "Disable the project manipulation features of `proviso'."
+  (interactive)
+  (message "Proviso disabled")
+  (advice-remove 'find-file-noselect-1 'proviso--file-opened-advice))
+
+;;;###autoload
+(defun proviso-enable ()
+  "Enable the project manipulation features of `proviso'."
+  (interactive)
+  (message "Proviso enabled")
+  (advice-add 'find-file-noselect-1 :before 'proviso--file-opened-advice))
 
 (defun proviso--file-opened-advice (buf filename nowarn rawfile truename number)
   "Advice to initialize a project, if necessary, for BUF, visiting FILENAME.
