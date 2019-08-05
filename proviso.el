@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-04 18:46:05 dharms>
+;; Modified Time-stamp: <2019-08-05 08:36:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -98,7 +98,9 @@ This may or may not be for the first time."
     (unless (proviso-get proj :inited)
       (proviso-put proj :inited t)
       (run-hook-with-args 'proviso-hook-on-project-pre-init proj)
-      (proviso--safe-funcall proj :initfun proj)
+      (condition-case err
+          (proviso--safe-funcall proj :initfun proj)
+        ('error (push err proviso--load-file-errors)))
       (proviso-init proj)
       (run-hook-with-args 'proviso-hook-on-project-post-init proj)
       (proviso--log-project-inited proj))
@@ -142,17 +144,17 @@ This may or may not be for the first time."
          (string-match-p (car proviso-project-signifiers) filename)
          (with-temp-buffer
            (insert-file-contents-literally filename)
-           (with-demoted-errors "Error while loading project: %S"
-             (setq str (string-trim (buffer-string)))
-             (unless (string-empty-p str)
-               (setq alist (car (read-from-string (buffer-string))))))))
+           (condition-case err
+               (progn
+                 (setq str (string-trim (buffer-string)))
+                 (unless (string-empty-p str)
+                   (setq alist (car (read-from-string (buffer-string))))))
+             ('error (push err proviso--load-file-errors)))))
     (if (listp alist)
         alist
-      (if (y-or-n-p (format "Malformed file %s; continue without loading? "
-                            filename))
-          nil
-        (user-error "Malformed file %s: %S is not a plist"
-                    filename alist)))))
+      (push (format "Malformed file %s: not a plist" filename)
+            proviso--load-file-errors)
+      nil)))
 
 (defun proviso--load-file (filename)
   "Load the settings contained within FILENAME."
