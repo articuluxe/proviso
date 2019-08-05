@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-01 23:15:29 dharms>
+;; Modified Time-stamp: <2019-08-04 18:46:05 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -143,10 +143,16 @@ This may or may not be for the first time."
          (with-temp-buffer
            (insert-file-contents-literally filename)
            (with-demoted-errors "Error while loading project: %S"
-           (setq str (string-trim (buffer-string)))
-           (unless (string-empty-p str)
-             (setq alist (car (read-from-string (buffer-string))))))))
-    alist))
+             (setq str (string-trim (buffer-string)))
+             (unless (string-empty-p str)
+               (setq alist (car (read-from-string (buffer-string))))))))
+    (if (listp alist)
+        alist
+      (if (y-or-n-p (format "Malformed file %s; continue without loading? "
+                            filename))
+          nil
+        (user-error "Malformed file %s: %S is not a plist"
+                    filename alist)))))
 
 (defun proviso--load-file (filename)
   "Load the settings contained within FILENAME."
@@ -216,9 +222,9 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
               (proviso-put proviso-local-proj :project-name basename)
               (proviso-put proviso-local-proj :project-uid fullname)
               (when remote-host
-                  (proviso-put proviso-local-proj :remote-host remote-host))
+                (proviso-put proviso-local-proj :remote-host remote-host))
               (when remote-prefix
-                  (proviso-put proviso-local-proj :remote-prefix remote-prefix))
+                (proviso-put proviso-local-proj :remote-prefix remote-prefix))
               (proviso-put proviso-local-proj :root-stem
                            (proviso--compute-stem proviso-local-proj)))
             )                               ;done loading new project
