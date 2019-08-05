@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-01 13:36:05 dan.harms>
+;; Modified Time-stamp: <2019-08-05 08:19:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -339,12 +339,12 @@ This does not otherwise remove any projects from memory."
 
 (defun proviso--remove-proviso-from-alist (project)
   "Remove project PROJECT from the internal data structure."
-  (setq proviso-path-alist
+  (setq proviso-proj-alist
         (seq-remove
          (lambda (elt)
            ;; string-equal handles a symbol using its print-name
            (string-equal (cdr elt) project))
-         proviso-path-alist)))
+         proviso-proj-alist)))
 
 (defun proviso-find-file-upwards-helper (path file)
   "Helper function to search upward from PATH for FILE."
