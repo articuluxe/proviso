@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-04 17:22:34 dharms>
+;; Modified Time-stamp: <2019-08-05 08:39:59 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -125,7 +125,9 @@ things pretty."
                    (concat "  " (proviso-prettify-project atom maxwidth))
                    lst)))
               proviso-obarray)
-    (mapconcat 'identity lst "\n")))
+    (if (> (length lst) 0)
+        (mapconcat 'identity lst "\n")
+      nil)))
 
 ;;;###autoload
 (defun proviso-display-echo-project-names ()
@@ -149,8 +151,9 @@ things pretty."
   "Echo the current active project name, if any."
   (interactive)
   (let ((proj (proviso-current-project)))
-    (when proj
-      (message "%s" (proviso-prettify-project proj)))))
+    (if proj
+        (message "%s" (proviso-prettify-project proj))
+      (user-error "No current project"))))
 
 (defvar proviso-display-buffer-name "*proviso-projects*"
   "Name of the buffer describing proviso projects.")
