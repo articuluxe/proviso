@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-05 15:28:36 dan.harms>
+;; Modified Time-stamp: <2019-08-06 09:00:46 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -214,12 +214,11 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
                   (setq proviso-local-proj
                         (proviso-define-active-project fullname props)))
               ;; else no project file; check proviso-path-alist
-              (let ((cell (proviso-find-path-alist root-dir))
+              (let ((cell (proviso-find-provisional-project root-dir))
                     props)
                 (if cell
                     (progn
-                      (string-match (car cell) root-dir)
-                      (setq root-dir (substring root-dir 0 (match-end 0)))
+                      (setq root-dir (car cell))
                       (setq basename (cdr cell))
                       (setq props (intern-soft basename proviso-provisional-obarray))
                       (setq fullname

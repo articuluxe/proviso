@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-07-30 09:10:41 dharms>
+;; Modified Time-stamp: <2019-08-06 08:59:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 
@@ -69,6 +69,23 @@
                     "~/sample/.proviso") "sample"))
   (should (string= (proviso-compute-basename-from-file
                     "~/sample/.git") "sample"))
+  )
+
+(ert-deftest proviso-core-find-provisional-project-test ()
+  (let ((proviso-path-alist '()))
+    (should-not (proviso-find-provisional-project "~/src/path/path2/file")))
+  (let ((proviso-path-alist '(("path/" . "neon"))))
+    (should (equal
+             (proviso-find-provisional-project "~/src/path/path2/file")
+             '("~/src/path/" . "neon"))))
+  (let ((proviso-path-alist '(("path" . "neon"))))
+    (should (equal
+             (proviso-find-provisional-project "~/src/path/path2/file")
+             '("~/src/path/" . "neon"))))
+  (let ((proviso-path-alist '(("path2/" . "neon"))))
+    (should (equal
+             (proviso-find-provisional-project "~/src/path/path2/file")
+             '("~/src/path/path2/" . "neon"))))
   )
 
 (ert-deftest proviso-core-compute-stem-test ()
