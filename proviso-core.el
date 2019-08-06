@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-06 08:57:31 dharms>
+;; Modified Time-stamp: <2019-08-06 13:04:41 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -218,13 +218,15 @@ searching in any bases."
 (defun proviso-find-provisional-project (&optional filename)
   "Scan `proviso-path-alist' for an entry to match FILENAME.
 If found, returns a cons cell (PATH . project)."
-  (let ((cell (assoc (or filename (buffer-file-name) (buffer-name))
-                     proviso-path-alist
-                     'string-match)))
-    (if cell
-        (cons (file-name-as-directory (substring filename 0 (match-end 0)))
-              (cdr cell))
-      nil)))
+  (let ((file (or filename (buffer-file-name) (buffer-name))))
+    (catch 'exit
+      (mapc (lambda (elt)
+              (if (string-match (car elt) file)
+                  (throw 'exit
+                         (cons
+                          (substring file 0 (match-end 0))
+                          (cdr elt)))))
+            proviso-path-alist))))
 
 (defun proviso-find-active-project (dir &optional host)
   "Return an active project for DIR.

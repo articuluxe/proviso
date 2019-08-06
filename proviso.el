@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-06 09:00:46 dharms>
+;; Modified Time-stamp: <2019-08-06 13:06:16 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -218,7 +218,7 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
                     props)
                 (if cell
                     (progn
-                      (setq root-dir (car cell))
+                      (setq root-dir (file-name-as-directory (car cell)))
                       (setq basename (cdr cell))
                       (setq props (intern-soft basename proviso-provisional-obarray))
                       (setq fullname
