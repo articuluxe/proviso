@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-06 13:06:16 dan.harms>
+;; Modified Time-stamp: <2019-08-07 16:02:19 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -192,19 +192,20 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
   (with-current-buffer buffer
     (make-local-variable 'proviso-local-proj)
     (put 'proviso-local-proj 'permanent-local t)
-    (let ((dir (file-name-directory (expand-file-name filename)))
-          basename fullname)
-      (seq-let [remote-host remote-localname remote-prefix]
-          (proviso--compute-remote-props dir)
-        (if (setq fullname (proviso-find-active-project dir remote-host))
-            ;; active project already exists
-            (setq proviso-local-proj (intern-soft fullname proviso-obarray))
-          ;; no current project; so look for new project
-          (seq-let [root-file root-dir] (proviso--find-root dir t)
-            (if remote-host
-                (setq root-dir remote-localname)
-              (unless root-dir (setq root-dir dir)))
-            (if root-file               ;found a project file
+    (let* ((dir (file-name-directory (expand-file-name filename)))
+           (remote-prefix (file-remote-p dir))
+           (remote-host (file-remote-p dir 'host))
+           basename fullname)
+      (if (setq fullname (proviso-find-active-project dir remote-host))
+          ;; active project already exists
+          (setq proviso-local-proj (intern-soft fullname proviso-obarray))
+        ;; no current project; so look for new project
+        (seq-let [root-file root-dir] (proviso--find-root dir t)
+          (unless root-dir (setq root-dir dir))
+          (if root-file               ;found a project file
+              (progn
+                (when remote-host
+                  (setq root-dir (file-remote-p root-dir 'localname)))
                 (let ((props (proviso--eval-file root-file)))
                   ;; project name defaults to filename, unless overridden
                   (unless (setq basename (plist-get props :project-name))
@@ -212,38 +213,38 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
                   (setq fullname (proviso-create-project-uid basename root-dir remote-host))
                   (proviso-add-active-project-path root-dir fullname remote-host)
                   (setq proviso-local-proj
-                        (proviso-define-active-project fullname props)))
-              ;; else no project file; check proviso-path-alist
-              (let ((cell (proviso-find-provisional-project root-dir))
-                    props)
-                (if cell
-                    (progn
-                      (setq root-dir (file-name-as-directory (car cell)))
-                      (setq basename (cdr cell))
-                      (setq props (intern-soft basename proviso-provisional-obarray))
-                      (setq fullname
-                            (proviso-create-project-uid basename root-dir remote-host))
-                      (proviso-add-active-project-path root-dir fullname remote-host)
-                      (setq proviso-local-proj
-                            (proviso-define-active-project fullname
-                                                           (if props
-                                                               (symbol-plist props)
-                                                             nil))))
-                  ;; else no project here
-                  )))
-            (when proviso-local-proj
-              (proviso-put proviso-local-proj :root-dir root-dir)
-              (proviso-put proviso-local-proj :project-name basename)
-              (proviso-put proviso-local-proj :project-uid fullname)
-              (when remote-host
-                (proviso-put proviso-local-proj :remote-host remote-host))
-              (when remote-prefix
-                (proviso-put proviso-local-proj :remote-prefix remote-prefix))
-              (proviso-put proviso-local-proj :root-stem
-                           (proviso--compute-stem proviso-local-proj)))
-            )                               ;done loading new project
-          (proviso--loaded proviso-local-proj)
-          )))))
+                        (proviso-define-active-project fullname props))))
+            ;; else no project file; check proviso-path-alist
+            (let ((cell (proviso-find-provisional-project root-dir))
+                  props)
+              (if cell
+                  (progn
+                    (setq root-dir (file-name-as-directory (car cell)))
+                    (setq basename (cdr cell))
+                    (setq props (intern-soft basename proviso-provisional-obarray))
+                    (setq fullname
+                          (proviso-create-project-uid basename root-dir remote-host))
+                    (proviso-add-active-project-path root-dir fullname remote-host)
+                    (setq proviso-local-proj
+                          (proviso-define-active-project fullname
+                                                         (if props
+                                                             (symbol-plist props)
+                                                           nil))))
+                ;; else no project here
+                )))
+          (when proviso-local-proj
+            (proviso-put proviso-local-proj :root-dir root-dir)
+            (proviso-put proviso-local-proj :project-name basename)
+            (proviso-put proviso-local-proj :project-uid fullname)
+            (when remote-host
+              (proviso-put proviso-local-proj :remote-host remote-host))
+            (when remote-prefix
+              (proviso-put proviso-local-proj :remote-prefix remote-prefix))
+            (proviso-put proviso-local-proj :root-stem
+                         (proviso--compute-stem proviso-local-proj)))
+          )                               ;done loading new project
+        (proviso--loaded proviso-local-proj)
+        ))))
 
 (provide 'proviso)
 ;;; proviso.el ends here
