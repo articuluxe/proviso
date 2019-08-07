@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-07 16:02:19 dan.harms>
+;; Modified Time-stamp: <2019-08-07 16:46:52 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -198,7 +198,8 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
            basename fullname)
       (if (setq fullname (proviso-find-active-project dir remote-host))
           ;; active project already exists
-          (setq proviso-local-proj (intern-soft fullname proviso-obarray))
+          (unless (setq proviso-local-proj (intern-soft fullname proviso-obarray))
+            (error "Unable to open existing project %s for %s" fullname filename))
         ;; no current project; so look for new project
         (seq-let [root-file root-dir] (proviso--find-root dir t)
           (unless root-dir (setq root-dir dir))
@@ -212,8 +213,10 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
                     (setq basename (proviso-compute-basename-from-file root-file)))
                   (setq fullname (proviso-create-project-uid basename root-dir remote-host))
                   (proviso-add-active-project-path root-dir fullname remote-host)
-                  (setq proviso-local-proj
-                        (proviso-define-active-project fullname props))))
+                  (unless (setq proviso-local-proj
+                                (proviso-define-active-project fullname props))
+                    (error "Unable to set project %s from %s for %s"
+                           fullname root-file filename))))
             ;; else no project file; check proviso-path-alist
             (let ((cell (proviso-find-provisional-project root-dir))
                   props)
@@ -225,11 +228,13 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
                     (setq fullname
                           (proviso-create-project-uid basename root-dir remote-host))
                     (proviso-add-active-project-path root-dir fullname remote-host)
-                    (setq proviso-local-proj
-                          (proviso-define-active-project fullname
-                                                         (if props
-                                                             (symbol-plist props)
-                                                           nil))))
+                    (unless (setq proviso-local-proj
+                                  (proviso-define-active-project fullname
+                                                                 (if props
+                                                                     (symbol-plist props)
+                                                                   nil)))
+                      (error "Unable to set project %s from provisional %s for %s"
+                             fullname basename filename)))
                 ;; else no project here
                 )))
           (when proviso-local-proj
