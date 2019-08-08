@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-08 08:14:50 dharms>
+;; Modified Time-stamp: <2019-08-08 09:46:35 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -458,7 +458,7 @@ writeable dir tracking a non-writeable one."
                           (expand-file-name "~"))))
         (base (or (getenv "PROVISO_BASE")
                   ".proviso.d"))
-        (sub ("projects"))
+        (sub "projects")
         (proj (concat
                (replace-regexp-in-string
                 "/\\|\\\\" "!"
