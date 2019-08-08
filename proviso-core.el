@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-06 13:04:41 dan.harms>
+;; Modified Time-stamp: <2019-08-07 09:04:11 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -451,6 +451,29 @@ DIR may be remote."
                             (list rem-domain rem-host
                                   rem-port "" rem-hop)
                           (error (list "" rem-host rem-port "" rem-hop)))))))))
+
+(defun proviso--compute-local-scratch-dir (proj)
+  "Compute a project PROJ's scratch dir.
+This may be a local dir tracking a remote location, or a
+writeable dir tracking a non-writeable one."
+  (let ((home (concat (or (getenv "HOME")
+                          (expand-file-name "~"))))
+        (base (or (getenv "PROVISO_BASE")
+                  ".proviso.d"))
+        (sub ("projects"))
+        (proj (concat
+               (replace-regexp-in-string
+                "/\\|\\\\" "!"
+                (proviso-get proj :remote-host) t t) ;TODO will error if nil
+               "!"
+               (replace-regexp-in-string
+                "/\\|\\\\" "!"
+                (proviso-get proj :root-dir)))))
+    (concat
+     (file-name-as-directory home)
+     (file-name-as-directory base)
+     (file-name-as-directory sub)
+     (file-name-as-directory proj))))
 
 (defun proviso--compute-stem (proj)
   "Compute a project PROJ's stem.
