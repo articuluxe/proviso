@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, March 31, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-07-26 08:37:33 dharms>
+;; Modified Time-stamp: <2019-08-08 08:09:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso test
 
@@ -60,6 +60,7 @@
   (setq proviso-proj-alist nil)
   (setq proviso-curr-proj nil)
   (setq proviso-local-proj (default-value 'proviso-local-proj))
+  (setq proviso-projects (ht-create 'equal))
   )
 
 

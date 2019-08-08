@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-06 13:04:10 dan.harms>
+;; Modified Time-stamp: <2019-08-08 08:07:46 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 
@@ -90,6 +90,14 @@
   ;;   (should (equal
   ;;            (proviso-find-provisional-project "~/src/path/path2/file")
   ;;            '("~/src/path/path2/" . "neon-path2"))))
+  )
+
+(ert-deftest proviso-core-test-add-active-projects ()
+  (proviso-test-reset-all)
+  (should-not (proviso-find-active-project "/a/b/" "rem-host"))
+  (proviso-add-active-project-path "a/b/" "neon#/a/b/@rem-host" "rem-host")
+  (should (equal (proviso-find-active-project "/a/b/" "rem-host")
+                 "neon#/a/b/@rem-host"))
   )
 
 (ert-deftest proviso-core-compute-stem-test ()

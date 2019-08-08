@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-07 09:04:11 dharms>
+;; Modified Time-stamp: <2019-08-08 08:14:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -246,12 +246,10 @@ HOST defaults to nil for localhost."
 HOST defaults to nil for localhost."
   (if host
       (let ((alist (ht-get proviso-projects host)))
-        (if alist
-            (ht-set! proviso-projects host
-                     (proviso-add-active-proj-path--alist alist dir uid))))
+        (ht-set! proviso-projects host
+                 (proviso-add-active-proj-path--alist alist dir uid)))
     (setq proviso-proj-alist
-          (proviso-add-active-proj-path--alist proviso-proj-alist dir uid)
-    )))
+          (proviso-add-active-proj-path--alist proviso-proj-alist dir uid))))
 
 (defun proviso-add-active-proj-path--alist (alist dir uid)
   "Add definition for project UID at DIR to ALIST."
@@ -552,8 +550,8 @@ PROMPT-STRING allows customizing a special prompt."
 Nothing is done if no such file exists in the root director of PROJ."
   (interactive "fLoad environment variables from file: ")
   (let* ((remote (proviso-get proj :remote-prefix))
-        (root (proviso-get proj :root-dir))
-        (file (concat remote root name)))
+         (root (proviso-get proj :root-dir))
+         (file (concat remote root name)))
     (setenv "REPO_ROOT" (directory-file-name root))
     (and (featurep 'parsenv)
          (parsenv-load-env file))))
