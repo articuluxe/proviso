@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-03 21:21:21 dharms>
+;; Modified Time-stamp: <2019-08-08 08:23:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 
@@ -61,6 +61,8 @@
                        "c"))
       (should (string= (proviso-get proviso-local-proj :project-uid)
                        (concat "c#" base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "a/b/c/")))
       ;; open 2nd file, same project
       (find-file (concat base "a/b/c/d/dfile2"))
       (push "dfile2" buffers)
@@ -75,6 +77,8 @@
                        "c"))
       (should (string= (proviso-get proviso-local-proj :project-uid)
                        (concat "c#" base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "a/b/c/")))
       ;; open 3rd file, new project
       (setq file-contents " ")
       (find-file (concat base "a/b/c2/d2/dfile3"))
@@ -89,6 +93,10 @@
                        (proviso-get proviso-local-proj :root-dir)))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c2"))
+      (should (string= (proviso-get proviso-local-proj :project-uid)
+                       (concat "c2#" base "a/b/c2/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "a/b/c2/")))
       (should (eq (proviso-get proviso-local-proj :inited) t))
       ;; clean up buffers
       (dolist (b buffers) (kill-buffer b))
@@ -120,6 +128,8 @@
                        "override"))
       (should (string= (proviso-get proviso-local-proj :project-uid)
                        (concat "override#" base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "a/b/c/")))
       ;; clean up buffers
       (dolist (b buffers) (kill-buffer b))
       )))
@@ -151,6 +161,8 @@
                        "c"))
       (should (string= (proviso-get proviso-local-proj :project-uid)
                        (concat "c#" base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "a/b/c/")))
       ;; clean up buffers
       (dolist (b buffers) (kill-buffer b))
       )))
@@ -183,6 +195,8 @@
                        "c"))
       (should (string= (proviso-get proviso-local-proj :project-uid)
                        (concat "c#" base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "a/b/c/")))
       (dired-delete-file (concat base "a/b/c/d/gitsubdir/.git") 'always)
       (dolist (b buffers) (kill-buffer b))
       )))
@@ -213,6 +227,8 @@
                        "gitproject"))
       (should (string= (proviso-get proviso-local-proj :project-uid)
                        (concat "gitproject#" base "a/gitproject/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "a/gitproject/")))
       (dired-delete-file (concat base "a/gitproject/.git") 'always)
       (dolist (b buffers) (kill-buffer b))
       )))
@@ -277,6 +293,8 @@
                        "neon"))
       (should (string= (proviso-get proviso-local-proj :project-uid)
                        (concat "neon#" base "m/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "m/")))
       ;; open 2nd file, same project
       (find-file (concat base "m/n/nfile2"))
       (push "nfile2" buffers)
@@ -291,6 +309,8 @@
                        "neon"))
       (should (string= (proviso-get proviso-local-proj :project-uid)
                        (concat "neon#" base "m/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "m/")))
       ;; open 3rd file, new project
       (setq file-contents " ")
       (find-file (concat base "p/qfile1"))
@@ -305,6 +325,8 @@
                        (proviso-get proviso-local-proj :root-dir)))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "fog"))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "p/")))
       (should (eq (proviso-get proviso-local-proj :inited) t))
       ;; clean up buffers
       (dolist (b buffers) (kill-buffer b))
@@ -341,6 +363,8 @@
                        "neon"))
       (should (string= (proviso-get proviso-local-proj :project-uid)
                        (concat "neon#" base "m/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "m/")))
       (should (eq (proviso-get proviso-local-proj :tag1)
                   'value1))
       ;; clean up buffers
@@ -377,6 +401,8 @@
                        "c"))
       (should (string= (proviso-get proviso-local-proj :project-uid)
                        (concat "c#" base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :tag)
                        "real"))
       (should (string= (proviso-get proviso-local-proj :tag1)
