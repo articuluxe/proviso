@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-08 09:46:35 dan.harms>
+;; Modified Time-stamp: <2019-08-09 15:10:58 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -494,25 +494,34 @@ Note that `executable-find' operates on the local host."
       (eval (car curr))
       (setq i (cdr curr)))))
 
-(defun proviso-prettify-project (proj &optional maxwidth)
+(defun proviso-prettify-project (proj &optional maxwidth-name
+                                      maxwidth-dir)
   "Return a prettified description of PROJ.
-MAXWIDTH is an optional max width for the name parameter."
+MAXWIDTH-NAME is an optional max width for the name parameter.
+MAXWIDTH-DIr is an optional max width for the dir parameter."
   (let ((name (proviso-get proj :project-name))
         (dir (proviso-get proj :root-dir))
         (host (proviso-get proj :remote-host)))
-    (unless maxwidth
-      (setq maxwidth (string-width name)))
+    (unless maxwidth-name
+      (setq maxwidth-name (string-width name)))
+    (unless maxwidth-dir
+      (setq maxwidth-dir (string-width dir)))
     (concat
      (propertize
       (format
        (concat "%-"
-               (format "%d" maxwidth)
+               (format "%d" maxwidth-name)
                "s")
        name)
       'face '(bold))
      " "
-     (propertize (format "%s" dir)
-                 'face '(italic))
+     (propertize
+      (format
+       (concat "%-"
+               (format "%d" maxwidth-dir)
+               "s")
+       dir)
+      'face '(italic))
      (when host
        (propertize
         (concat " @" host) 'face '(shadow))))))

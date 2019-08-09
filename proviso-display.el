@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-05 08:39:59 dharms>
+;; Modified Time-stamp: <2019-08-09 15:07:40 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -110,19 +110,25 @@ These are the symbols of the plist."
             (throw 'found (format "%S" (cadr seq)))
           (setq seq (cddr seq)))))))
 
-(defun proviso-display--get-project-names (&optional curr maxwidth)
+(defun proviso-display--get-project-names (&optional curr maxwidth-name
+                                                     maxwidth-dir)
   "Return a list containing the current project names in `proviso-obarray'.
 Project CURR, if non-nil, will be highlighted in the results.
-MAXWIDTH is an optional hint to the longest project name to make
-things pretty."
+MAXWIDTH-NAME is an optional hint to the longest project name to
+make things pretty.  MAXWIDTH-DIR is an optional hint as to the
+longest root dir."
   (let (lst)
     (mapatoms (lambda (atom)
                 (if (equal atom curr)
                     (push
-                     (concat "* " (proviso-prettify-project atom maxwidth))
+                     (concat "* "
+                             (proviso-prettify-project
+                              atom maxwidth-name maxwidth-dir))
                      lst)
                   (push
-                   (concat "  " (proviso-prettify-project atom maxwidth))
+                   (concat "  "
+                           (proviso-prettify-project
+                            atom maxwidth-name maxwidth-dir))
                    lst)))
               proviso-obarray)
     (if (> (length lst) 0)
@@ -133,16 +139,21 @@ things pretty."
 (defun proviso-display-echo-project-names ()
   "Echo the project names contained in `proviso-obarray'."
   (interactive)
-  (let ((maxwidth 0)
+  (let ((maxwidth-name 0)
+        (maxwidth-dir 0)
         msg)
     (mapatoms (lambda (atom)
                 (if (> (string-width (proviso-get atom :project-name))
-                       maxwidth)
-                    (setq maxwidth
-                          (string-width (proviso-get atom :project-name)))))
+                       maxwidth-name)
+                    (setq maxwidth-name
+                          (string-width (proviso-get atom :project-name))))
+                (if (> (string-width (proviso-get atom :root-dir))
+                       maxwidth-dir)
+                    (setq maxwidth-dir
+                          (string-width (proviso-get atom :root-dir)))))
               proviso-obarray)
     (if (setq msg (proviso-display--get-project-names
-                   (proviso-current-project) maxwidth))
+                   (proviso-current-project) maxwidth-name maxwidth-dir))
         (message msg)
       (error "No projects"))))
 
