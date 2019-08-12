@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-12 08:33:29 dharms>
+;; Modified Time-stamp: <2019-08-12 10:43:01 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -564,16 +564,20 @@ MAXWIDTH-DIr is an optional max width for the dir parameter."
 PROMPT-STRING allows customizing a special prompt."
   (interactive)
   (let ((prompt (or prompt-string "Project: "))
-        (max 0)
+        (maxwidth-name 0)
+        (maxwidth-dir 0)
         lst)
     (mapatoms (lambda (atom)
                 (if (> (string-width (proviso-get atom :project-name))
-                       max)
-                    (setq max (string-width (proviso-get atom :project-name)))))
+                       maxwidth-name)
+                    (setq maxwidth-name (string-width (proviso-get atom :project-name))))
+                (if (> (string-width (proviso-get atom :root-dir))
+                       maxwidth-dir)
+                    (setq maxwidth-dir (string-width (proviso-get atom :root-dir)))))
               proviso-obarray)
     (mapatoms (lambda (atom)
                 (push (cons
-                       (proviso-prettify-project atom max)
+                       (proviso-prettify-project atom maxwidth-name maxwidth-dir)
                        atom)
                       lst))
               proviso-obarray)
