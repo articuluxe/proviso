@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-09 15:10:58 dharms>
+;; Modified Time-stamp: <2019-08-12 08:33:29 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -215,6 +215,32 @@ searching in any bases."
                                                  proviso-provisional-obarray)))
                      (proviso-get parent property (not provisional)))))))))
 
+(defun proviso--get-provisonal-match-data (orig data)
+  "Return new string and match data to match ORIG string with DATA.
+Returned is a list '(newstring data) that contains all the
+matched sub-expressions contained within ORIG, according to
+`match-data' DATA."
+  (let ((sz (length data))
+        (i 2)
+        beg end substr
+        str match)
+    (while (<= (1+ i) sz)
+      (setq beg (nth i data))
+      (setq end (nth (1+ i) data))
+      (if (and beg
+               end
+               (setq substr (substring-no-properties orig beg end)))
+          (progn
+            (push (length str) match)
+            (push (+ (length str) (length substr)) match)
+            (setq str (concat str substr)))
+        (push nil match)
+        (push nil match))
+      (setq i (+ i 2)))
+    (list str
+          (append (list 0 (length str))
+                  (nreverse match)))))
+
 (defun proviso-find-provisional-project (&optional filename)
   "Scan `proviso-path-alist' for an entry to match FILENAME.
 If found, returns a cons cell (PATH . project)."
@@ -225,7 +251,13 @@ If found, returns a cons cell (PATH . project)."
                   (throw 'exit
                          (cons
                           (substring file 0 (match-end 0))
-                          (cdr elt)))))
+                          (seq-let [str md]
+                              (proviso--get-provisonal-match-data file (match-data))
+                            (if (and str md)
+                                (progn
+                                  (set-match-data md)
+                                  (replace-match (cdr elt) t nil str 0))
+                              (cdr elt)))))))
             proviso-path-alist))))
 
 (defun proviso-find-active-project (dir &optional host)
