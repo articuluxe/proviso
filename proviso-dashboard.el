@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-19 08:43:50 dharms>
+;; Modified Time-stamp: <2019-08-13 12:43:46 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -95,18 +95,24 @@ Optional ARG allows choosing a project."
                  :section post)
        (:heading "Root"
                  :content (lambda ()
-                            (let ((file (proviso-get proviso-local-proj :root-dir)))
+                            (let ((dir (proviso-get proviso-local-proj :root-dir)))
                               (propertize (replace-regexp-in-string
-                                           (getenv "HOME") "~" file)
+                                           (getenv "HOME") "~" dir)
                                           'face '(bold))))
                  :bindings (("d" "Goto Root" proviso-dashboard-goto-root)))
+       (:heading "Scratch"
+                 :content (lambda ()
+                            (let ((dir (proviso-get proviso-local-proj :scratch-dir)))
+                              (propertize (replace-regexp-in-string
+                                           (getenv "HOME") "~" dir)
+                                          'face '()))))
        (:heading "Remote host"
                  :predicate (lambda ()
                               (proviso-get proviso-local-proj :remote-host))
                  :content (lambda ()
                             (propertize (proviso-get proviso-local-proj :remote-host)
                                         'face '(bold))))
-       (:heading "Tags file"
+       (:heading "Tags"
                  :content (lambda ()
                             (let ((gen (proviso-get proviso-local-proj :tags-lastgen)))
                               (propertize (if gen (current-time-string gen)
