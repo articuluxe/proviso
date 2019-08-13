@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-12 10:43:01 dan.harms>
+;; Modified Time-stamp: <2019-08-13 16:15:36 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -482,28 +482,28 @@ DIR may be remote."
                                   rem-port "" rem-hop)
                           (error (list "" rem-host rem-port "" rem-hop)))))))))
 
-(defun proviso--compute-local-scratch-dir (proj)
-  "Compute a project PROJ's scratch dir.
-This may be a local dir tracking a remote location, or a
-writeable dir tracking a non-writeable one."
-  (let ((home (concat (or (getenv "HOME")
+(defun proviso--compute-proviso-dir (&optional remote)
+  "Compute the proviso directory.
+REMOTE, if non-nil, signifies a remote host of interest."
+  (let ((home (concat (or (getenv "HOME") ;TODO handle remote
                           (expand-file-name "~"))))
         (base (or (getenv "PROVISO_BASE")
-                  ".proviso.d"))
-        (sub "projects")
-        (proj (concat
-               (replace-regexp-in-string
-                "/\\|\\\\" "!"
-                (proviso-get proj :remote-host) t t) ;TODO will error if nil
-               "!"
-               (replace-regexp-in-string
-                "/\\|\\\\" "!"
-                (proviso-get proj :root-dir)))))
-    (concat
-     (file-name-as-directory home)
-     (file-name-as-directory base)
-     (file-name-as-directory sub)
-     (file-name-as-directory proj))))
+                  ".proviso.d")))
+    (concat (file-name-as-directory home)
+            (file-name-as-directory base))))
+
+(defun proviso--compute-scratch-dir (root-dir &optional remote-host local)
+  "Compute scratch dir for a project at ROOT-DIR, at optional REMOTE-HOST.
+LOCAL signifies the scratch dir should be local, even when
+there's a remote host.  This may be a local dir tracking a remote
+location, or a writeable dir tracking a non-writeable one."
+  (let ((sub "projects/"))
+    (file-name-as-directory
+     (concat (proviso--compute-proviso-dir (and (not local) remote-host))
+             sub
+             (when (and local remote-host)
+               (concat remote-host "@"))
+             (replace-regexp-in-string "/\\|\\\\" "!" root-dir)))))
 
 (defun proviso--compute-stem (proj)
   "Compute a project PROJ's stem.
