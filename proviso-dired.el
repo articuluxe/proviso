@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, June 28, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-06-19 08:05:54 dharms>
+;; Modified Time-stamp: <2019-08-13 14:59:40 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project dired
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -31,7 +31,7 @@
 (require 'ivy)
 
 (defun proviso-dired-open-project (proj)
-  "Open dired on project PROJ."
+  "Open dired on project PROJ's root dir."
   (let* ((remote (proviso-get proj :remote-prefix))
          (root (proviso-get proj :root-dir))
          (dir (directory-file-name

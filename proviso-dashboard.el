@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-13 12:43:46 dan.harms>
+;; Modified Time-stamp: <2019-08-13 15:03:45 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -76,6 +76,14 @@ Optional ARG allows choosing a project."
     (when proj
       (proviso-dired-open-project proj))))
 
+(defun proviso-dashboard-goto-scratch ()
+  "Go to the scratch dir of the current project."
+  (let ((dir (proviso-get proviso-local-proj :scratch-dir)))
+    (and dir
+         (setq dir (directory-file-name dir))
+         (file-readable-p dir)
+         (dired dir))))
+
 (defun proviso-dashboard-create (proj)
   "Create a dashboard for project PROJ."
   (interactive)
@@ -105,7 +113,8 @@ Optional ARG allows choosing a project."
                             (let ((dir (proviso-get proviso-local-proj :scratch-dir)))
                               (propertize (replace-regexp-in-string
                                            (getenv "HOME") "~" dir)
-                                          'face '()))))
+                                          'face '())))
+                 :bindings (("d" "Goto Scratch" proviso-dashboard-goto-scratch)))
        (:heading "Remote host"
                  :predicate (lambda ()
                               (proviso-get proviso-local-proj :remote-host))
