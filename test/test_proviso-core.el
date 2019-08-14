@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-12 08:36:24 dharms>
+;; Modified Time-stamp: <2019-08-14 14:59:52 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 
@@ -111,20 +111,6 @@
   (should (equal (proviso-find-active-project "/a/b/" "rem-host")
                  "neon#/a/b/@rem-host"))
   )
-
-(ert-deftest proviso-core-compute-stem-test ()
-  (let ((proj (intern "temp" proviso-obarray)) str)
-    ;; absolute path
-    (setq str "/home/me/temp/")
-    (proviso-put proj :root-dir str)
-    (should (string= (proviso--compute-stem proj) str))
-    ;; absolute, without trailing slash
-    (setq str "/home/me/temp")
-    (proviso-put proj :root-dir str)
-    (should (string= (proviso--compute-stem proj) str))
-    (proviso-put proj :root-dir "~/me")
-    (should (string= (proviso--compute-stem proj) "me"))
-    ))
 
 (ert-deftest proviso-core-find-root-test ()
   (let ((base (file-name-directory load-file-name))
