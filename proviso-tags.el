@@ -1,9 +1,9 @@
 ;;; proviso-tags.el --- add tags functionality to profiles
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-06-07 07:49:04 dharms>
+;; Modified Time-stamp: <2019-08-14 10:46:42 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso tags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -32,35 +32,6 @@
 (require 'proviso-etags-table)
 (require 'proviso-etags-select)
 
-(defun proviso-tags-compute-remote-subdir-stem (proj)
-  "Compute remote profile PROJ's stem.
-Format is useful for uniquely naming the local TAGS directory."
-  (concat
-   (replace-regexp-in-string
-    "/\\|\\\\" "!"
-    (proviso-get proj :remote-host) t t)
-   "!"
-   (replace-regexp-in-string
-    "/\\|\\\\" "!"
-    (proviso-get proj :root-stem))))
-
-(defun proviso-tags-compute-tags-dir (proj base)
-  "Compute where project PROJ's local TAGS should live.
-BASE gives the root directory."
-  (let ((tags-base (or (getenv "EMACS_TAGS_DIR") "~"))
-        (sub (or (proviso-get proj :tags-subdir) ".tags/"))
-        dest)
-    (unless base (setq base default-directory))
-    (unless (tramp-tramp-file-p base)
-      ;; in the local case, set the tags-base according to the project
-      (setq tags-base base))
-    (setq dest (concat (file-name-as-directory tags-base)
-                       (file-name-as-directory sub)))
-    (if (tramp-tramp-file-p base)
-        (concat dest (file-name-as-directory
-                      (proviso-tags-compute-remote-subdir-stem proj)))
-      dest)))
-
 (defun proviso-tags-on-init (proj)
   "Initialize tags functionality when profile PROJ is initialized.
 This includes storing the setting for `etags-table-alist'
@@ -68,8 +39,12 @@ into :tags-alist."
   (let* ((remote (proviso-get proj :remote-prefix))
          (root (proviso-get proj :root-dir))
          (lst (proviso-get proj :proj-alist))
-         (tag-root (proviso-tags-compute-tags-dir
-                    proj (concat remote root)))
+         (scratch (proviso-get proj :scratch-dir))
+         (local-scratch (proviso-get proj :local-scratch-dir))
+         (subdir ".tags/")
+         (tag-root (if local-scratch
+                       (concat local-scratch subdir)
+                     (concat scratch subdir)))
          tags-alist ext-dirs curr entry dir)
     ;; tag-alist is a list of lists of at least one element.  Each element is
     ;; a list of strings: the car is the regex to match filenames, the cdr the
@@ -81,9 +56,7 @@ into :tags-alist."
            (list (concat
                   ;; this first capture group is needed to match
                   ;; any remote prefix
-                  "^\\(.*\\)"
-                  (proviso-get proj :root-stem)
-                  "\\(.*\\)$"))))
+                  "^\\(.*\\)" root "\\(.*\\)$"))))
     (dolist (element lst)
       (setq curr (plist-get element :name))
       (setq entry (expand-file-name

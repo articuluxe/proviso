@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-07-30 00:08:04 dharms>
+;; Modified Time-stamp: <2019-08-14 10:54:22 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project tags gentags
 
@@ -237,7 +237,6 @@
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
-:tags-subdir \".mytags/\"
 )")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
@@ -247,28 +246,28 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
-                                 (concat base "a/b/c/.mytags/first-tags")
-                                 (concat base "a/b/c/.mytags/second-tags")
-                                 (concat base "a/b/c/.mytags/third-tags")
-                                 (concat base "a/b/c/.mytags/fourth-tags"))
+                                 (concat base "a/b/c/.tags/first-tags")
+                                 (concat base "a/b/c/.tags/second-tags")
+                                 (concat base "a/b/c/.tags/third-tags")
+                                 (concat base "a/b/c/.tags/fourth-tags"))
                            (list (concat "^\\(.*\\)" "/home" "\\(.*\\)$")
-                                 (concat base "a/b/c/.mytags/first-tags")
-                                 (concat base "a/b/c/.mytags/second-tags")
-                                 (concat base "a/b/c/.mytags/third-tags")
-                                 (concat base "a/b/c/.mytags/fourth-tags"))
+                                 (concat base "a/b/c/.tags/first-tags")
+                                 (concat base "a/b/c/.tags/second-tags")
+                                 (concat base "a/b/c/.tags/third-tags")
+                                 (concat base "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
                           (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
-                           base "a/b/c/.mytags/first-tags "
+                           base "a/b/c/.tags/first-tags "
                            base "a/b/c")
                           (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
-                           base "a/b/c/.mytags/second-tags "
+                           base "a/b/c/.tags/second-tags "
                            base "a/b/c/d")
                           (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
-                           base "a/b/c/.mytags/third-tags "
+                           base "a/b/c/.tags/third-tags "
                            base "a/b/c/d2")
                           (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
-                           base "a/b/c/.mytags/fourth-tags "
+                           base "a/b/c/.tags/fourth-tags "
                            "/home")
                           ))
       (proviso-gentags-generate-tags)
@@ -305,7 +304,6 @@
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
-:tags-subdir \".mytags\"
 )")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
@@ -315,28 +313,28 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
-                                 (concat base "a/b/c/.mytags/first-tags")
-                                 (concat base "a/b/c/.mytags/second-tags")
-                                 (concat base "a/b/c/.mytags/third-tags")
-                                 (concat base "a/b/c/.mytags/fourth-tags"))
+                                 (concat base "a/b/c/.tags/first-tags")
+                                 (concat base "a/b/c/.tags/second-tags")
+                                 (concat base "a/b/c/.tags/third-tags")
+                                 (concat base "a/b/c/.tags/fourth-tags"))
                            (list (concat "^\\(.*\\)" "/home" "\\(.*\\)$")
-                                 (concat base "a/b/c/.mytags/first-tags")
-                                 (concat base "a/b/c/.mytags/second-tags")
-                                 (concat base "a/b/c/.mytags/third-tags")
-                                 (concat base "a/b/c/.mytags/fourth-tags"))
+                                 (concat base "a/b/c/.tags/first-tags")
+                                 (concat base "a/b/c/.tags/second-tags")
+                                 (concat base "a/b/c/.tags/third-tags")
+                                 (concat base "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
                           (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
-                           base "a/b/c/.mytags/first-tags "
+                           base "a/b/c/.tags/first-tags "
                            base "a/b/c")
                           (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
-                           base "a/b/c/.mytags/second-tags "
+                           base "a/b/c/.tags/second-tags "
                            base "a/b/c/d")
                           (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
-                           base "a/b/c/.mytags/third-tags "
+                           base "a/b/c/.tags/third-tags "
                            base "a/b/c/d2")
                           (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
-                           base "a/b/c/.mytags/fourth-tags "
+                           base "a/b/c/.tags/fourth-tags "
                            "/home")
                           ))
       (proviso-gentags-generate-tags)
@@ -442,7 +440,6 @@
                   (:name \"third\" :dir \"d2\")
                   (:name \"fourth\" :dir \"/home\")
                   )))
-:tags-subdir \".mytags\"
 )")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
@@ -452,28 +449,28 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
-                                 (concat base "a/b/c/.mytags/first-tags")
-                                 (concat base "a/b/c/.mytags/second-tags")
-                                 (concat base "a/b/c/.mytags/third-tags")
-                                 (concat base "a/b/c/.mytags/fourth-tags"))
+                                 (concat base "a/b/c/.tags/first-tags")
+                                 (concat base "a/b/c/.tags/second-tags")
+                                 (concat base "a/b/c/.tags/third-tags")
+                                 (concat base "a/b/c/.tags/fourth-tags"))
                            (list (concat "^\\(.*\\)" "/home" "\\(.*\\)$")
-                                 (concat base "a/b/c/.mytags/first-tags")
-                                 (concat base "a/b/c/.mytags/second-tags")
-                                 (concat base "a/b/c/.mytags/third-tags")
-                                 (concat base "a/b/c/.mytags/fourth-tags"))
+                                 (concat base "a/b/c/.tags/first-tags")
+                                 (concat base "a/b/c/.tags/second-tags")
+                                 (concat base "a/b/c/.tags/third-tags")
+                                 (concat base "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
                           (concat "-c exctags -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
-                           base "a/b/c/.mytags/first-tags "
+                           base "a/b/c/.tags/first-tags "
                            base "a/b/c")
                           (concat "-c exctags -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
-                           base "a/b/c/.mytags/second-tags "
+                           base "a/b/c/.tags/second-tags "
                            base "a/b/c/d")
                           (concat "-c exctags -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
-                           base "a/b/c/.mytags/third-tags "
+                           base "a/b/c/.tags/third-tags "
                            base "a/b/c/d2")
                           (concat "-c exctags -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
-                           base "a/b/c/.mytags/fourth-tags "
+                           base "a/b/c/.tags/fourth-tags "
                            "/home")
                           ))
       (proviso-gentags-generate-tags)

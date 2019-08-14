@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, April 13, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-07-30 06:43:03 dharms>
+;; Modified Time-stamp: <2019-08-14 10:52:33 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project tags etags
 
@@ -149,7 +149,6 @@
                   (:name \"third\" :dir \"d2/\")
                   (:name \"fourth\" :dir \"/home/\")
                   )))
-:tags-subdir \".mytags_subdir/\"
 )")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
@@ -158,15 +157,15 @@
                        "c"))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
-                                 (concat base "a/b/c/.mytags_subdir/first-tags")
-                                 (concat base "a/b/c/.mytags_subdir/second-tags")
-                                 (concat base "a/b/c/.mytags_subdir/third-tags")
-                                 (concat base "a/b/c/.mytags_subdir/fourth-tags"))
+                                 (concat base "a/b/c/.tags/first-tags")
+                                 (concat base "a/b/c/.tags/second-tags")
+                                 (concat base "a/b/c/.tags/third-tags")
+                                 (concat base "a/b/c/.tags/fourth-tags"))
                            (list (concat "^\\(.*\\)" "/home/" "\\(.*\\)$")
-                                 (concat base "a/b/c/.mytags_subdir/first-tags")
-                                 (concat base "a/b/c/.mytags_subdir/second-tags")
-                                 (concat base "a/b/c/.mytags_subdir/third-tags")
-                                 (concat base "a/b/c/.mytags_subdir/fourth-tags"))
+                                 (concat base "a/b/c/.tags/first-tags")
+                                 (concat base "a/b/c/.tags/second-tags")
+                                 (concat base "a/b/c/.tags/third-tags")
+                                 (concat base "a/b/c/.tags/fourth-tags"))
                                    )))
       ;; clean up buffers
       (kill-buffer "dfile1")
@@ -189,7 +188,6 @@
                   (:name \"third\" :dir \"d2/\")
                   (:name \"fourth\" :dir \"/home/\")
                   )))
-:tags-subdir \".mytags_subdir\"
 )")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
@@ -198,15 +196,15 @@
                        "c"))
       (should (equal (proviso-get proviso-local-proj :tags-alist)
                      (list (list (concat "^\\(.*\\)" base "a/b/c/" "\\(.*\\)$")
-                                 (concat base "a/b/c/.mytags_subdir/first-tags")
-                                 (concat base "a/b/c/.mytags_subdir/second-tags")
-                                 (concat base "a/b/c/.mytags_subdir/third-tags")
-                                 (concat base "a/b/c/.mytags_subdir/fourth-tags"))
+                                 (concat base "a/b/c/.tags/first-tags")
+                                 (concat base "a/b/c/.tags/second-tags")
+                                 (concat base "a/b/c/.tags/third-tags")
+                                 (concat base "a/b/c/.tags/fourth-tags"))
                            (list (concat "^\\(.*\\)" "/home/" "\\(.*\\)$")
-                                 (concat base "a/b/c/.mytags_subdir/first-tags")
-                                 (concat base "a/b/c/.mytags_subdir/second-tags")
-                                 (concat base "a/b/c/.mytags_subdir/third-tags")
-                                 (concat base "a/b/c/.mytags_subdir/fourth-tags"))
+                                 (concat base "a/b/c/.tags/first-tags")
+                                 (concat base "a/b/c/.tags/second-tags")
+                                 (concat base "a/b/c/.tags/third-tags")
+                                 (concat base "a/b/c/.tags/fourth-tags"))
                                    )))
       ;; clean up buffers
       (kill-buffer "dfile1")
