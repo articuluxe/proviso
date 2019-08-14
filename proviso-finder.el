@@ -1,9 +1,9 @@
-;;; proviso-finder.el --- utilities for selecting files in a project
-;; Copyright (C) 2018  Dan Harms (dharms)
+;;; proviso-finder.el --- Utilities for selecting files in a project
+;; Copyright (C) 2018-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-09-19 08:07:19 dharms>
+;; Modified Time-stamp: <2019-08-14 14:56:34 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -37,10 +37,8 @@
   "Should the file cache be populated automatically."
   :group 'proviso-custom-group)
 
-(defun proviso-finder-gather-files-interactive (proj &optional all-files)
-  "Gather files in project PROJ.
-If ALL-FILES is nil, only the first source directory will be
-searched."
+(defun proviso-finder-gather-files-interactive (proj)
+  "Gather files in project PROJ."
   (let ((remote (proviso-get proj :remote-prefix))
         (root (or (proviso-get proj :root-dir) default-directory))
         (lst (proviso-get proj :proj-alist))
@@ -50,18 +48,16 @@ searched."
                           proviso-uninteresting-dirs))
         (include-files (or (proviso-get proj :grep-include-files)
                            proviso-interesting-files)))
-    (proviso-finder-gather-files remote root lst all-files nil
+    (proviso-finder-gather-files remote root lst nil
                                  exclude-files exclude-dirs include-files)))
 
-(defun proviso-finder-gather-files (remote root lst &optional all-files async
+(defun proviso-finder-gather-files (remote root lst &optional async
                                            exclude-files exclude-dirs include-files)
   "Gather files at REMOTE under ROOT, according to LST (see `:proj-alist').
-If ALL-FILES is nil, only the first source directory will be
-searched.  If ASYNC is non-nil, the search is occurring
-asynchronously.  EXCLUDE-FILES, EXCLUDE-DIRS and INCLUDE-FILES,
-if present, are passed on to `proviso-fulledit-gather-files'."
-  (let* ((msg (format "athering %sfiles %sunder %s"
-                      (if all-files "all " "")
+If ASYNC is non-nil, the search is occurring asynchronously.
+EXCLUDE-FILES, EXCLUDE-DIRS and INCLUDE-FILES, if present, are
+passed on to `proviso-fulledit-gather-files'."
+  (let* ((msg (format "athering all files %sunder %s"
                       (if async "asynchronously " "")
                       (concat remote root)))
          (reporter (unless async (make-progress-reporter (concat "G" msg "..."))))
@@ -82,32 +78,27 @@ if present, are passed on to `proviso-fulledit-gather-files'."
             (setq files (proviso-fulledit-gather-files dir exclude-files
                                                        exclude-dirs include-files
                                                        reporter t))
-            (setq result (nconc result (sort files 'string-lessp)))
-            (unless all-files (throw 'done result))))
+            (setq result (nconc result (sort files 'string-lessp)))))
       (when reporter (progress-reporter-done reporter))
       (unless async
         (message "Done g%s (%d files)" msg (length result))))
     (proviso-finder--adjust-paths result remote root)))
 
-(defun proviso-finder-gather-dirs-interactive (proj &optional all-dirs)
-  "Gather directories in project PROJ.
-If ALL-DIRS is nil, only the first source directory will be
-searched."
+(defun proviso-finder-gather-dirs-interactive (proj)
+  "Gather directories in project PROJ."
   (let ((remote (proviso-get proj :remote-prefix))
         (root (or (proviso-get proj :root-dir) default-directory))
         (lst (proviso-get proj :proj-alist))
         (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
                           proviso-uninteresting-dirs)))
-    (proviso-finder-gather-dirs remote root lst all-dirs nil exclude-dirs)))
+    (proviso-finder-gather-dirs remote root lst nil exclude-dirs)))
 
-(defun proviso-finder-gather-dirs (remote root lst &optional all-dirs async exclude-dirs)
+(defun proviso-finder-gather-dirs (remote root lst &optional async exclude-dirs)
   "Gather directories at REMOTE under ROOT, according to LST.
-See `:proj-alist' for more details.  If ALL-DIRS is nil, only the
-first source directory will be searched.  If ASYNC is non-nil,
+See `:proj-alist' for more details.  If ASYNC is non-nil,
 the search is occurring asynchronously.  EXCLUDE-DIRS provides an
 optional exclusion list."
-  (let* ((msg (format "athering %sdirs %sunder %s"
-                      (if all-dirs "all " "")
+  (let* ((msg (format "athering all dirs %sunder %s"
                       (if async "asynchronously " "")
                       (concat remote root)))
          (reporter (unless async (make-progress-reporter (concat "G" msg "..."))))
@@ -126,8 +117,7 @@ optional exclusion list."
                      root)
                    entry))
             (setq dirs (proviso-fulledit-gather-dirs dir exclude-dirs reporter t))
-            (setq result (nconc result (sort dirs 'string-lessp)))
-            (unless all-dirs (throw 'done result))))
+            (setq result (nconc result (sort dirs 'string-lessp)))))
       (when reporter (progress-reporter-done reporter))
       (unless async
         (message "Done g%s (%d dirs)" msg (length result))))
@@ -165,7 +155,7 @@ If ARG is non-nil, another project can be chosen."
   (interactive "P")
   (let ((proj (if arg (proviso-choose-project)
                 (proviso-current-project))))
-    (proviso-finder--find-file proj nil nil)))
+    (proviso-finder--find-file proj nil)))
 
 ;;;###autoload
 (defun proviso-finder-find-file-other-window (&optional arg)
@@ -175,34 +165,15 @@ current project is used."
   (interactive "P")
   (let ((proj (if arg (proviso-choose-project)
                 (proviso-current-project))))
-    (proviso-finder--find-file proj nil 'other)))
+    (proviso-finder--find-file proj 'other)))
 
-;;;###autoload
-(defun proviso-finder-find-file-all (&optional arg)
-  "Find file among all files in current project.
-If ARG is non-nil, another project can be chosen."
-  (interactive "P")
-  (let ((proj (if arg (proviso-choose-project)
-                (proviso-current-project))))
-    (proviso-finder--find-file proj 'all nil)))
-
-;;;###autoload
-(defun proviso-finder-find-file-all-other-window (&optional arg)
-  "Find file among all files in current project, in other window.
-If ARG is non-nil, another project can be chosen."
-  (interactive "P")
-  (let ((proj (if arg (proviso-choose-project)
-                (proviso-current-project))))
-    (proviso-finder--find-file proj 'all 'other)))
-
-(defun proviso-finder--find-file (proj all other-window)
+(defun proviso-finder--find-file (proj other-window)
   "Allow choosing a file to open in project PROJ.
-ALL means to look in all project source directories, not just the first.
 OTHER-WINDOW means to open the file in the other window."
   (let* ((remote (proviso-get proj :remote-prefix))
          (root (or (proviso-get proj :root-dir) default-directory))
-         (symbol (if all :project-files-all :project-files))
-         (future (if all :project-files-all-future :project-files-future))
+         (symbol :project-files)
+         (future :project-files-future)
          (files (proviso-get proj symbol))
          (desc (if proj (concat "in project \""
                                 (proviso-get proj :project-name)
@@ -217,7 +188,7 @@ OTHER-WINDOW means to open the file in the other window."
             (when (setq files (async-get (proviso-get proj future)))
               (proviso-put proj symbol files)))
         (setq files (proviso-finder-gather-files (file-remote-p default-directory)
-                                                 default-directory nil all nil
+                                                 default-directory nil nil
                                                  proviso-uninteresting-files
                                                  proviso-uninteresting-dirs
                                                  proviso-interesting-files))))
@@ -254,7 +225,7 @@ If ARG is non-nil, another project can be chosen."
   (interactive "P")
   (let ((proj (if arg (proviso-choose-project)
                 (proviso-current-project))))
-    (proviso-finder--find-dir proj nil nil)))
+    (proviso-finder--find-dir proj nil)))
 
 ;;;###autoload
 (defun proviso-finder-open-dir-other-window (&optional arg)
@@ -263,34 +234,15 @@ If ARG is non-nil, another project can be chosen."
   (interactive "P")
   (let ((proj (if arg (proviso-choose-project)
                 (proviso-current-project))))
-    (proviso-finder--find-dir proj nil 'other)))
+    (proviso-finder--find-dir proj 'other)))
 
-;;;###autoload
-(defun proviso-finder-open-dir-all (&optional arg)
-  "Find directory among all directories in current project.
-If ARG is non-nil, another project can be chosen."
-  (interactive "P")
-  (let ((proj (if arg (proviso-choose-project)
-                (proviso-current-project))))
-    (proviso-finder--find-dir proj 'all nil)))
-
-;;;###autoload
-(defun proviso-finder-open-dir-all-other-window (&optional arg)
-  "Find directory in other window among those in current project.
-If ARG is non-nil, another project can be chosen."
-  (interactive "P")
-  (let ((proj (if arg (proviso-choose-project)
-                (proviso-current-project))))
-    (proviso-finder--find-dir proj 'all 'other)))
-
-(defun proviso-finder--find-dir (proj all other-window)
+(defun proviso-finder--find-dir (proj other-window)
   "Allow choosing a directory to open in project PROJ.
-ALL means to look in all project source directories, not just the first.
 OTHER-WINDOW means to open the file in the other window."
   (let* ((remote (proviso-get proj :remote-prefix))
          (root (or (proviso-get proj :root-dir) default-directory))
-         (symbol (if all :project-dirs-all :project-dirs))
-         (future (if all :project-dirs-all-future :project-dirs-future))
+         (symbol :project-dirs)
+         (future :project-dirs-future)
          (dirs (proviso-get proj symbol))
          (desc (if proj (concat "in project \""
                                 (proviso-get proj :project-name)
@@ -305,7 +257,7 @@ OTHER-WINDOW means to open the file in the other window."
             (when (setq dirs (async-get (proviso-get proj future)))
               (proviso-put proj symbol dirs)))
         (setq dirs (proviso-finder-gather-dirs (file-remote-p default-directory)
-                                               default-directory nil all nil
+                                               default-directory nil nil
                                                proviso-uninteresting-dirs))))
     (when (seq-empty-p dirs)
       (error "No directories to open %s" desc))
@@ -356,17 +308,7 @@ OTHER-WINDOW means to open the file in the other window."
                        (setq inhibit-message t)
                        ,(async-inject-variables "load-path")
                        (require 'proviso-finder)
-                       (proviso-finder-gather-files ,remote ,root (quote ,lst) nil t
-                                                    (quote ,exclude-files)
-                                                    (quote ,exclude-dirs)
-                                                    (quote ,include-files)))))
-      (proviso-put proj :project-files-all-future
-                   (async-start
-                    `(lambda ()
-                       (setq inhibit-message t)
-                       ,(async-inject-variables "load-path")
-                       (require 'proviso-finder)
-                       (proviso-finder-gather-files ,remote ,root (quote ,lst) t t
+                       (proviso-finder-gather-files ,remote ,root (quote ,lst) t
                                                     (quote ,exclude-files)
                                                     (quote ,exclude-dirs)
                                                     (quote ,include-files)))))
@@ -376,17 +318,8 @@ OTHER-WINDOW means to open the file in the other window."
                        (setq inhibit-message t)
                        ,(async-inject-variables "load-path")
                        (require 'proviso-finder)
-                       (proviso-finder-gather-dirs ,remote ,root (quote ,lst) nil t
-                                                   (quote ,exclude-dirs)))))
-      (proviso-put proj :project-dirs-all-future
-                   (async-start
-                    `(lambda ()
-                       (setq inhibit-message t)
-                       ,(async-inject-variables "load-path")
-                       (require 'proviso-finder)
-                       (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t t
-                                                   (quote ,exclude-dirs))))))
-    ))
+                       (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t
+                                                   (quote ,exclude-dirs))))))))
 
 (add-hook 'proviso-hook-on-project-init 'proviso-finder--load-files)
 

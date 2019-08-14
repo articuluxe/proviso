@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 14:37:37 dharms>
+;; Modified Time-stamp: <2019-08-14 14:40:21 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -104,8 +104,7 @@ TODO: the project may not actually exist yet."
 ;; :registers
 ;; :tags-alist :tags-dir :tags-lastgen :tags-remote-dir
 ;; :grep-cmd :ag-cmd :rg-cmd
-;; :project-files :project-files-all
-;; :project-dirs :project-dirs-all
+;; :project-files :project-dirs
 ;; :file-cache
 ;; :deployments :deploy-file :last-deploy :deploy-id
 

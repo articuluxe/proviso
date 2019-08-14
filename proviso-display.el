@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-09 15:07:40 dharms>
+;; Modified Time-stamp: <2019-08-14 14:49:02 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -75,13 +75,9 @@ curated set of fields will be shown."
     (let ((seq (proviso-get-plist proj))
           (exclusions '(
                         :project-dirs
-                        :project-dirs-all
                         :project-files
-                        :project-files-alls
                         :project-files-future
-                        :project-files-all-future
                         :project-dirs-future
-                        :project-dirs-all-future
                         ))
           lst)
       (while seq
