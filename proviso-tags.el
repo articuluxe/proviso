@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 10:46:42 dan.harms>
+;; Modified Time-stamp: <2019-08-14 11:03:25 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso tags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -45,6 +45,8 @@ into :tags-alist."
          (tag-root (if local-scratch
                        (concat local-scratch subdir)
                      (concat scratch subdir)))
+         (remote-root (if local-scratch
+                          (concat scratch subdir)))
          tags-alist ext-dirs curr entry dir)
     ;; tag-alist is a list of lists of at least one element.  Each element is
     ;; a list of strings: the car is the regex to match filenames, the cdr the
@@ -77,6 +79,7 @@ into :tags-alist."
               tag-root (proviso-get proj :project-name) "-tags"))
             (car tags-alist)))
     (proviso-put proj :tags-dir tag-root)
+    (when remote-root (proviso-put proj :tags-remote-dir remote-root))
     (setq tags-alist (mapcar 'nreverse tags-alist))
     (mapc (lambda (dir)
             (add-to-list

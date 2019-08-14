@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-07-30 10:46:28 dharms>
+;; Modified Time-stamp: <2019-08-14 11:59:45 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -101,26 +101,22 @@ local destination automatically."
                           (proviso-gentags-exe remote)
                           "\"")
                 (proviso-gentags-exe remote)))
+         (tags-dir (proviso-get proj :tags-dir))
+         (int-dir (proviso-get proj :tags-remote-dir))
          (root (proviso-get proj :root-dir))
-         (dest-dir (proviso-get proj :tags-dir))
-         (remote-tags-dir (or (proviso-get proj :tags-subdir) ".tags/"))
-         (intermediate-dir (if (not remote) dest-dir
-                             (file-name-as-directory
-                              (if (file-name-absolute-p remote-tags-dir)
-                                  remote-tags-dir
-                                (concat root remote-tags-dir)))))
          lst)
-    (when remote
-      (make-directory (concat remote intermediate-dir) t))
-    (make-directory dest-dir t)
+    (make-directory tags-dir t)
+    (if int-dir
+        (make-directory int-dir t)
+      (setq int-dir tags-dir))
     (dolist (elt tags-alist)
       (let* ((name (plist-get elt :name))
              (dir (plist-get elt :dir))
              (dir-abs (if (and dir (file-name-absolute-p dir)) dir
                         (concat root dir)))
              (subname (concat name "-tags"))
-             (destfile (concat intermediate-dir subname))
-             (remotefile (concat dest-dir subname)) ;only used for remote
+             (destfile (concat int-dir subname))
+             (localfile (concat tags-dir subname)) ;only used for remote
              (arglist (plist-get elt :ctags-opts))
              (args (append
                     (proviso-gentags-command exe arglist)
@@ -134,7 +130,7 @@ local destination automatically."
                      ) (when copy-remote
                      (list
                       :remote-src (concat remote destfile)
-                      :remote-dst remotefile)))
+                      :remote-dst localfile)))
               lst)))
     (proviso-gentags--run (proviso-get proj :project-name)
                           (nreverse lst) remote)
