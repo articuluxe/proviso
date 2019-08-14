@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-13 16:15:36 dan.harms>
+;; Modified Time-stamp: <2019-08-14 08:47:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -195,7 +195,7 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
     (let* ((dir (file-name-directory (expand-file-name filename)))
            (remote-prefix (file-remote-p dir))
            (remote-host (file-remote-p dir 'host))
-           basename fullname)
+           basename fullname scratch)
       (if (setq fullname (proviso-find-active-project dir remote-host))
           ;; active project already exists
           (unless (setq proviso-local-proj (intern-soft fullname proviso-obarray))
@@ -245,10 +245,14 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
               (proviso-put proviso-local-proj :remote-host remote-host))
             (when remote-prefix
               (proviso-put proviso-local-proj :remote-prefix remote-prefix))
-            (proviso-put proviso-local-proj :scratch-dir
-                         (if (file-writable-p root-dir)
-                             (concat remote-prefix root-dir)
+            (setq scratch (concat remote-prefix root-dir))
+            (if (file-writable-p scratch)
+                (proviso-put proviso-local-proj :scratch-dir scratch)
+              (proviso-put proviso-local-proj :scratch-dir
                            (proviso--compute-scratch-dir root-dir remote-host)))
+            (if remote-host
+                (proviso-put proviso-local-proj :local-scratch-dir
+                             (proviso--compute-scratch-dir root-dir remote-host t)))
             (proviso-put proviso-local-proj :root-stem
                          (proviso--compute-stem proviso-local-proj)))
           )                               ;done loading new project

@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-13 15:03:45 dan.harms>
+;; Modified Time-stamp: <2019-08-14 08:52:26 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -108,6 +108,12 @@ Optional ARG allows choosing a project."
                                            (getenv "HOME") "~" dir)
                                           'face '(bold))))
                  :bindings (("d" "Goto Root" proviso-dashboard-goto-root)))
+       (:heading "Remote host"
+                 :predicate (lambda ()
+                              (proviso-get proviso-local-proj :remote-host))
+                 :content (lambda ()
+                            (propertize (proviso-get proviso-local-proj :remote-host)
+                                        'face '(bold))))
        (:heading "Scratch"
                  :content (lambda ()
                             (let ((dir (proviso-get proviso-local-proj :scratch-dir)))
@@ -115,12 +121,14 @@ Optional ARG allows choosing a project."
                                            (getenv "HOME") "~" dir)
                                           'face '())))
                  :bindings (("d" "Goto Scratch" proviso-dashboard-goto-scratch)))
-       (:heading "Remote host"
+       (:heading "Local scratch"
                  :predicate (lambda ()
-                              (proviso-get proviso-local-proj :remote-host))
+                              (proviso-get proviso-local-proj :local-scratch-dir))
                  :content (lambda ()
-                            (propertize (proviso-get proviso-local-proj :remote-host)
-                                        'face '(bold))))
+                            (let ((dir (proviso-get proviso-local-proj :local-scratch-dir)))
+                              (propertize (replace-regexp-in-string
+                                           (getenv "HOME") "~" dir)
+                                          'face '()))))
        (:heading "Tags"
                  :content (lambda ()
                             (let ((gen (proviso-get proviso-local-proj :tags-lastgen)))

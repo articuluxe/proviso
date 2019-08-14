@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-13 16:15:36 dan.harms>
+;; Modified Time-stamp: <2019-08-14 08:53:12 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -98,6 +98,7 @@ TODO: the project may not actually exist yet."
 ;;  :clang-format
 ;;   - Internal:
 ;; :root-dir :project-name :project-uid
+;; :scratch-dir :local-scratch-dir
 ;; :inited :initfun :init-errors
 ;; :remote-prefix :remote-host :root-stem
 ;; :registers
