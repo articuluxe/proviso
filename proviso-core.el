@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 11:03:58 dan.harms>
+;; Modified Time-stamp: <2019-08-14 14:37:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -505,13 +505,6 @@ location, or a writeable dir tracking a non-writeable one."
              (when (and local remote-host)
                (concat remote-host "@"))
              (replace-regexp-in-string "/\\|\\\\" "!" root-dir)))))
-
-(defun proviso--compute-stem (proj)
-  "Compute a project PROJ's stem.
-This is useful in regexp-matching.  The project's root-dir is
-probably a relative path, possibly including a `~' that
-represents the user's home directory."
-  (replace-regexp-in-string "~/" "" (proviso-get proj :root-dir)))
 
 (defun proviso-core-remote-executable-find (exe)
   "Try to find the binary associated with EXE on a remote host.
