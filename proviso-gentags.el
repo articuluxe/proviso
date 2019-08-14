@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 13:29:26 dan.harms>
+;; Modified Time-stamp: <2019-08-14 14:09:43 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -113,9 +113,7 @@ non-nil, the opposite behavior will be chosen."
     (if flip-remote (setq copy-remote (not copy-remote)))
     (setq copy-remote (and remote copy-remote))
     (make-directory tags-dir t)
-    (if int-dir
-        (make-directory int-dir t)
-      (setq int-dir tags-dir))
+    (when int-dir (make-directory int-dir t))
     (dolist (elt tags-alist)
       (let* ((name (plist-get elt :name))
              (dir (plist-get elt :dir))
@@ -123,7 +121,9 @@ non-nil, the opposite behavior will be chosen."
                         (concat root dir)))
              (subname (concat name "-tags"))
              (destfile (concat
-                        (file-remote-p int-dir 'localname)
+                        (if int-dir
+                            (file-remote-p int-dir 'localname)
+                          tags-dir)
                         subname))
              (localfile (concat tags-dir subname)) ;only used for remote
              (arglist (plist-get elt :ctags-opts))
