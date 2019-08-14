@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 11:59:45 dan.harms>
+;; Modified Time-stamp: <2019-08-14 13:13:29 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -115,7 +115,9 @@ local destination automatically."
              (dir-abs (if (and dir (file-name-absolute-p dir)) dir
                         (concat root dir)))
              (subname (concat name "-tags"))
-             (destfile (concat int-dir subname))
+             (destfile (concat
+                        (file-remote-p int-dir 'localname)
+                        subname))
              (localfile (concat tags-dir subname)) ;only used for remote
              (arglist (plist-get elt :ctags-opts))
              (args (append
