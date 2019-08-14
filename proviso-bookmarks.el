@@ -1,9 +1,9 @@
-;;; proviso-bookmarks.el --- settings for proviso bookmarks
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;;; proviso-bookmarks.el --- Settings for proviso bookmarks
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-02 17:44:14 dharms>
+;; Modified Time-stamp: <2019-08-14 14:01:16 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project bookmarks
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -39,11 +39,10 @@ bookmark file will only be created on demand.")
 
 (defun proviso--init-bookmarks (proj)
   "Set bookmarks according to PROJ's project definition."
-  (let ((remote (proviso-get proj :remote-prefix))
-        (root (proviso-get proj :root-dir))
+  (let ((dir (proviso-get proj :scratch-dir))
         (name (proviso-get proj :project-name)))
     (proviso-put proj :bookmark-file
-     (concat remote root name ".bmk"))))
+     (concat dir name ".bmk"))))
 
 (defun proviso--activate-bookmarks-maybe (proj old)
   "Maybe activate the bookmark file as defined by PROJ's settings.
