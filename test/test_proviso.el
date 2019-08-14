@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-13 08:34:10 dharms>
+;; Modified Time-stamp: <2019-08-14 08:40:23 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 
@@ -334,33 +334,37 @@
 
 (ert-deftest proviso-test-provisional-project-unwriteable ()
   (proviso-test-reset-all)
-  (let ((base "/usr/local/include/")
-        (file-contents "")
-        buffers)
+  (let* ((home (expand-file-name "~/"))
+         (base (file-name-directory (directory-file-name home)))
+         (file-contents "")
+         buffers)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
-      (proviso-define-project "neon-\\1" "/usr/local/\\(inc\\)lude/")
+      (proviso-define-project "neon" base)
       (should-not proviso-local-proj)
-      (find-file (concat base "jpeglib.h"))
-      (push "jpeglib.h" buffers)
+      (find-file (concat home ".bashrc"))
+      (push ".bashrc" buffers)
       (should proviso-local-proj)
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (eq (proviso-get proviso-local-proj :inited) t))
       (should (equal proviso-proj-alist
-                     (list (cons (concat base "")
-                                 (concat "neon-inc#" base "")))))
+                     (list (cons base
+                                 (concat "neon#" base)))))
       (should (equal proviso-path-alist
-                     '(("/usr/local/\\(inc\\)lude/" . "neon-\\1"))))
+                     (list (cons base "neon"))))
       (should (string= (concat base "")
                        (proviso-get proviso-local-proj :root-dir)))
       (should (string= (proviso-get proviso-local-proj :project-name)
-                       "neon-inc"))
+                       "neon"))
       (should (string= (proviso-get proviso-local-proj :project-uid)
-                       (concat "neon-inc#" base "")))
+                       (concat "neon#" base "")))
       (should (string= (proviso-get proviso-local-proj :scratch-dir)
-                       (concat base "")))
+                       (file-name-as-directory
+                        (concat home ".proviso.d/projects/"
+                                (replace-regexp-in-string "/\\|\\\\" "!"
+                                                          base t t)))))
       ;; clean up buffers
       (dolist (b buffers) (kill-buffer b))
       )))
