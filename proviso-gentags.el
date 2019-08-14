@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 13:13:29 dan.harms>
+;; Modified Time-stamp: <2019-08-14 13:23:40 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -80,21 +80,26 @@ REST, if not nil, is appended."
 ;;;###autoload
 (defun proviso-gentags-generate-tags (&optional arg)
   "Generate tags according to the current project.
-If ARG is non-nil any remotely-generated files will be copied
-locally."
+If ARG is 16 (C-u C-u), another project can be chosen.  If ARG is
+4 (1 universal argument), the behavior of copying
+remotely-generated files will be toggled."
   (interactive "P")
   (let ((proj (if (= (prefix-numeric-value current-prefix-arg) 16)
                   (proviso-choose-project) (proviso-current-project))))
     (unless proj
       (error "Could not generate tags: no active project"))
-    (proviso-gentags--start-gen proj arg)))
+    (proviso-gentags--start-gen
+     proj
+     (= (prefix-numeric-value current-prefix-arg) 4))))
 
-(defun proviso-gentags--start-gen (proj &optional copy-remote)
+(defun proviso-gentags--start-gen (proj &optional flip-remote)
   "Generate tags for project PROJ.
-If COPY-REMOTE is non-nil, remote tags files will be copied to a
-local destination automatically."
+Normally if the project is remote, then tags will also be
+automatically copied to a local destination.  If FLIP-REMOTE is
+non-nil, the opposite behavior will be chosen."
   (let* ((tags-alist (proviso-get proj :proj-alist))
          (remote (proviso-get proj :remote-prefix))
+         (copy-remote remote)
          (exe (if (and remote
                        (string-match-p "\\s-" remote))
                   (concat "\""
@@ -105,6 +110,7 @@ local destination automatically."
          (int-dir (proviso-get proj :tags-remote-dir))
          (root (proviso-get proj :root-dir))
          lst)
+    (if flip-remote (setq copy-remote (not copy-remote)))
     (make-directory tags-dir t)
     (if int-dir
         (make-directory int-dir t)
