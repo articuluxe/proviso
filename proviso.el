@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 10:47:02 dan.harms>
+;; Modified Time-stamp: <2019-08-15 08:38:14 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -98,6 +98,7 @@ This may or may not be for the first time."
     (unless (proviso-get proj :inited)
       (proviso-put proj :inited t)
       (run-hook-with-args 'proviso-hook-on-project-pre-init proj)
+      (proviso-load-environment-file-from-project proj)
       (condition-case err
           (proviso--safe-funcall proj :initfun proj)
         ('error (push err proviso--load-file-errors)))

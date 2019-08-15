@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 14:40:21 dharms>
+;; Modified Time-stamp: <2019-08-15 08:42:19 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -88,6 +88,7 @@ TODO: the project may not actually exist yet."
 
 ;; Project Properties:
 ;;   - External:
+;;  :env-file
 ;;  :include-files :include-ff-files
 ;;  :build-subdirs :debug-subdirs
 ;;  :compile-cmds :compile-defun
@@ -583,16 +584,30 @@ PROMPT-STRING allows customizing a special prompt."
                   :caller 'proviso-choose-project
                   )))))
 
-(defun proviso-load-environment-variables-from-file (proj name)
+;;;###autoload
+(defun proviso-load-environment-variables-from-file (name)
   "Load environment variables in root dir of PROJ from file NAME.
 Nothing is done if no such file exists in the root director of PROJ."
   (interactive "fLoad environment variables from file: ")
+  (proviso-load-environment-file name))
+
+(defun proviso-load-environment-file-from-project (proj)
+  "Load an environment variable from a file for project PROJ."
   (let* ((remote (proviso-get proj :remote-prefix))
          (root (proviso-get proj :root-dir))
-         (file (concat remote root name)))
+         (file (or (proviso-get proj :env-file) ".env")))
     (setenv "REPO_ROOT" (directory-file-name root))
-    (and (featurep 'parsenv)
-         (parsenv-load-env file))))
+    (proviso-load-environment-file
+     (if (file-name-absolute-p file)
+         (expand-file-name file)
+       (concat remote root file)))))
+
+(defun proviso-load-environment-file (file)
+  "Load environment variables from FILE, if it exists."
+    (when (and (featurep 'parsenv)
+               (file-exists-p file))
+      (parsenv-load-env file)
+      (message "Loaded environment file %s" file)))
 
 (provide 'proviso-core)
 ;;; proviso-core.el ends here
