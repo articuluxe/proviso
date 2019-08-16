@@ -1,9 +1,9 @@
-;;; proviso-clang-format.el --- utility to run clang-format
-;; Copyright (C) 2017  Dan Harms (dharms)
+;;; proviso-clang-format.el --- Utility to run clang-format
+;; Copyright (C) 2017, 2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, November 10, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-12-01 08:12:49 dharms>
+;; Modified Time-stamp: <2019-08-16 08:46:02 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -54,7 +54,7 @@ ARG is used to operate on the current region."
   (let* ((proj (proviso-current-project))
          (file (proviso-get proj :clang-format)))
     (and file
-         (f-exists? file)
+         (file-exists-p file)
          (if (region-active-p)
              (clang-format-region (region-beginning) (region-end))
            (clang-format-buffer)))))
@@ -75,24 +75,26 @@ MODE is the `major-mode'."
 
 (defun proviso-clang-format--init (proj)
   "Set up clang-format according to PROJ's project definition."
-  (let ((remote (proviso-get proj :remote-prefix))
-        (root (proviso-get proj :root-dir))
-        (name (or (proviso-get proj :clang-format)
+  (let* ((remote (proviso-get proj :remote-prefix))
+         (root (proviso-get proj :root-dir))
+         (name (or (proviso-get proj :clang-format)
                   ".clang-format"))
-        path)
-    (setq path (if (f-relative? name)
-                   (concat remote root name)
-                 (concat remote name)))
+         (path (if (file-name-absolute-p name)
+                   (expand-file-name name)
+                 (concat remote root name))))
     ;; if .clang-format doesn't exist in the root, also check the first
     ;; (privileged) src dir
-    (unless (or (f-exists? path) (f-absolute? name))
+    (unless (or (file-exists-p path)
+                (file-name-absolute-p name))
       (let ((lst (proviso-get proj :proj-alist))
-            dir)
-        (when (car lst)
-          (when (setq dir (plist-get (car lst) :dir))
-            (setq path (concat remote root
+            dir try)
+        (and (car lst)
+             (setq dir (plist-get (car lst) :dir))
+             (setq try (concat remote root
                                (file-name-as-directory dir)
-                               name))))))
+                               name))
+             (file-exists-p try)
+             (setq path try))))
     (proviso-put proj :clang-format path)))
 
 (add-hook 'proviso-hook-on-project-init #'proviso-clang-format--init)
