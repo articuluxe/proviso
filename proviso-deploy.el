@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-04 12:08:43 dharms>
+;; Modified Time-stamp: <2019-08-19 08:41:58 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -44,6 +44,9 @@
   "*%s-deploy*"
   "Buffer prefix string for `proviso-deploy'.
 This will be formatted with the project name.")
+
+(defconst proviso-deploy-subdir ".deployments/"
+  "Subdirectory within scratch-dir to store deployment files.")
 
 (defun proviso-deploy-one (spec &optional synchronous)
   "Execute a deployment represented by SPEC.
@@ -278,18 +281,17 @@ If ARG is non-nil, another project can be chosen."
 (defun proviso-deploy--save-file (proj)
   "Save deployments from PROJ to a file.
 This is an internal helper function."
-  (let ((remote (proviso-get proj :remote-prefix))
-        (root (proviso-get proj :root-dir))
+  (let ((scratch (proviso-get proj :scratch-dir))
         (store (proviso-get proj :deploy-file))
-        (defaultfile (concat (or (proviso-get proj :project-name)
-                                 "default")
-                             ".deploy"))
+        (defaultname (concat
+                      (proviso-get proj :project-name)
+                      ".deploy"))
         (lst (proviso-get proj :deployments)))
     (unless store
       (setq store
             (read-file-name "Save deployments to: "
-                            (concat remote root)
-                            nil nil defaultfile))
+                            (concat scratch proviso-deploy-subdir)
+                            nil nil defaultname)))
       (proviso-put proj :deploy-file store))
     (async-start
      `(lambda ()
@@ -319,19 +321,17 @@ If ARG is non-nil, another project can be chosen."
 
 (defun proviso-deploy--save-file-as (proj)
   "Save deployments from PROJ to a new file."
-  (let* ((remote (proviso-get proj :remote-prefix))
-         (root (proviso-get proj :root-dir))
-         (store (proviso-get proj :deploy-file))
-         (defaultfile (or store
-                          (concat (or (proviso-get proj :project-name)
-                                      "default")
-                                  ".deploy")))
-         (lst (proviso-get proj :deployments))
-         file)
+  (let ((scratch (proviso-get proj :scratch-dir))
+        (store (proviso-get proj :deploy-file))
+        (defaultname (concat
+                      (proviso-get proj :project-name)
+                      ".deploy"))
+        (lst (proviso-get proj :deployments))
+        file)
     (setq file
           (read-file-name "Save deployments to: "
-                          (concat remote root)
-                          nil nil defaultfile))
+                          (concat scratch proviso-deploy-subdir)
+                          nil nil defaultname))
     (if file
         (progn
           (proviso-put proj :deploy-file file)
@@ -355,12 +355,11 @@ If ARG is non-nil, another project can be chosen."
   (interactive "P")
   (let* ((proj (if arg (proviso-choose-project)
                  (proviso-current-project)))
-         (remote (proviso-get proj :remote-prefix))
-         (root (proviso-get proj :root-dir))
+         (scratch (proviso-get proj :scratch-dir))
          specs file)
     (setq file
           (read-file-name "Load deployment file: "
-                          (concat remote root)
+                          (concat scratch proviso-deploy-subdir)
                           nil t nil #'proviso-deploy--file-predicate))
     (if (and file
              (setq specs (proviso-deploy-read-from-file proj file)))
