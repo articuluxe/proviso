@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-19 08:44:41 dharms>
+;; Modified Time-stamp: <2019-08-20 08:39:08 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -359,6 +359,7 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (scratch (proviso-get proj :scratch-dir))
          specs file)
+    (make-directory (concat scratch proviso-deploy-subdir) t)
     (setq file
           (read-file-name "Load deployment file: "
                           (concat scratch proviso-deploy-subdir)
