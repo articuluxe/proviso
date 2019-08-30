@@ -301,6 +301,8 @@ This is an internal helper function."
             (read-file-name "Save deployments to: "
                             (concat scratch proviso-deploy-subdir)
                             nil nil defaultname))
+      (unless (string-equal (file-name-extension store) "deploy")
+        (setq store (concat store ".deploy"))))
     (proviso-put proj :deploy-file store)
     (async-start
      `(lambda ()
@@ -342,6 +344,8 @@ If ARG is non-nil, another project can be chosen."
           (read-file-name "Save deployments to: "
                           (concat scratch proviso-deploy-subdir)
                           nil nil defaultname))
+    (unless (string-equal (file-name-extension file) "deploy")
+      (setq file (concat file ".deploy")))
     (if file
         (progn
           (proviso-put proj :deploy-file file)
