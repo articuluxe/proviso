@@ -119,34 +119,42 @@ ID is an optional id."
     (list :env cmd :type 'env)))
 
 (defun proviso-deploy-choose-deploy (specs &optional prompt)
-  "Let user select a deployment from SPECS.
+  "Let user select a deployment from deployment list SPECS.
 PROMPT is an optional prompt."
   (when specs
     (let* ((home (getenv "HOME"))
            (prompt (or prompt "Choose deployment: "))
-           (max 0) len
-           type cmd src dst
-           (lst (mapcar (lambda (spec)
-                          (setq type (plist-get spec :type))
-                          (cond ((eq type 'command)
-                                 (setq cmd (plist-get spec :command))
-                                 (cons (substitute-env-vars cmd t)
-                                       (plist-get spec :id)))
-                                ((eq type 'env)
-                                 (setq cmd (plist-get spec :env))
-                                 (cons (substitute-env-vars cmd t)
-                                       (plist-get spec :id)))
-                                ((eq type 'deploy)
-                                 (setq src (substitute-env-vars (plist-get spec :source) t))
-                                 (setq dst (substitute-env-vars (plist-get spec :destination) t))
-                                 (cons
-                                  (if (string-empty-p home)
-                                      (cons src dst)
-                                    (cons
-                                     (replace-regexp-in-string home "~" src)
-                                     (replace-regexp-in-string home "~" dst)))
-                                  (plist-get spec :id)))))
-                        specs)))
+           lst (max 0) len)
+      (dolist (spec specs)
+        (cond ((eq (plist-get spec :type) 'command)
+               (push (cons (substitute-env-vars
+                            (plist-get spec :command) t)
+                           (plist-get spec :id))
+                     lst))
+              ((eq (plist-get spec :type) 'env)
+               (push (cons (substitute-env-vars
+                            (plist-get spec :env) t)
+                           (plist-get spec :id))
+                     lst))
+              ((eq (plist-get spec :type) 'deploy)
+               (let ((source (substitute-env-vars (plist-get spec :source) t))
+                     (dest (substitute-env-vars (plist-get spec :destination) t)))
+                 (unless (string-empty-p home)
+                   (setq source (replace-regexp-in-string home "~" source))
+                   (setq dest (replace-regexp-in-string home "~" dest)))
+                 (push (cons (cons source dest)
+                             (cons (plist-get spec :id)
+                                   t))
+                       lst)
+                 (dolist (subspec (plist-get spec :real-sources))
+                   (let ((src (substitute-env-vars (cdr subspec) t)))
+                     (push (cons
+                            (propertize
+                             (concat "  " (file-name-nondirectory src))
+                             'face 'shadow)
+                            (cons (plist-get spec :id)
+                                  (car subspec)))
+                           lst)))))))
       (dolist (elt lst)
         (when (consp (car elt))
           (setq len (string-width (caar elt)))
@@ -164,9 +172,9 @@ PROMPT is an optional prompt."
                               (car (car elt))
                               (cdr (car elt))))
                             ((stringp (car elt))
-                             (substitute-env-vars (car elt) t)))
+                             (car elt)))
                       (cdr elt)))
-                   lst)
+                   (nreverse lst))
                   :action (lambda (x)
                             (throw 'exit (cdr x)))
                   :caller 'proviso-deploy-choose-deploy
