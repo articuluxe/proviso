@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-30 09:00:21 dharms>
+;; Modified Time-stamp: <2019-09-02 07:26:29 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -97,9 +97,10 @@ ID is an optional id."
   (interactive "FSource: \nFDestination: ")
   (set-text-properties 0 (- (length source) 1) nil source)
   (set-text-properties 0 (- (length dest) 1) nil dest)
-  (if id
-      (list :source source :destination dest :type 'deploy :id id)
-    (list :source source :destination dest :type 'deploy)))
+  (let ((lst (list :source source :destination dest :type 'deploy)))
+    (if id (setq lst (append lst (list :id id))))
+    (proviso-deploy-compute-real-sources lst)
+    lst))
 
 (defun proviso-deploy-create-cmd (cmd &optional id)
   "Add a deployment command CMD.
@@ -405,6 +406,24 @@ WHICH could be an id, or a cons cell (ID . SUBID) identifying a
 sub-deployment."
   (let ((specs (proviso-get proj :deployments)))
     (proviso-deploy--get-deploy-by-id specs which)))
+
+(defun proviso-deploy-compute-real-sources (spec)
+  "Return a list of the real sources contained in deployment SPEC.
+Real sources have had wildcards and environment variables
+resolved."
+  (let* ((substitute-env-vars (source (plist-get spec :source)) t)
+         (sources (cond ((string-match-p "[$^.*]" source)
+                         (directory-files
+                          (file-name-directory source)
+                          t
+                          (file-name-nondirectory source)))
+                        ((file-directory-p source)
+                         (directory-files source t))
+                        (t (list source))))
+         (indices (number-sequence 0 (1- (length sources)))))
+    (mapcar (lambda (x)
+              (cons x (nth x sources)))
+            indices)))
 
 (defun proviso-deploy-get-real-source-by-id (spec id)
   "Fetch the real source from SPEC by ID."
@@ -1084,21 +1103,7 @@ Optional argument ARG allows choosing a project."
                                               (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
                                :section 'pre) t))
                 ((eq type 'deploy)
-                 (setq source (plist-get spec :source))
-                 (setq dest (plist-get spec :destination))
-                 (cond ((string-match-p "[$^.*]" source)
-                        (setq deployments (directory-files
-                                           (file-name-directory source)
-                                           t
-                                           (file-name-nondirectory source))))
-                       ((file-directory-p source)
-                        (setq deployments (directory-files
-                                           source t)))
-                       (t (push source deployments)))
-                 (let* ((indices (number-sequence 0 (1- (length deployments))))
-                        (real-sources (mapcar (lambda (x)
-                                                (cons x (nth x deployments)))
-                                              indices)))
+                 (let* ((real-sources (proviso-deploy-compute-real-sources spec)))
                    (plist-put spec :real-sources real-sources)
                    (dolist (elt real-sources)
                      (lexical-let ((subid (car elt)))
