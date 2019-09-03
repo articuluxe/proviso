@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-03 06:24:01 dharms>
+;; Modified Time-stamp: <2019-09-03 08:59:31 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -80,7 +80,7 @@ spawned."
                   (plist-get spec :destination)
                   synchronous))
              (proviso-deploy--execute
-              (alist-get subid sources) ;TODO subid is 1, not 0
+              (alist-get subid sources)
               (plist-get spec :destination)
               synchronous))))))
 
@@ -884,6 +884,24 @@ If ARG is non-nil, another project can be chosen."
                    (proviso-deploy-create src dst id))))))
 
 ;;;###autoload
+(defun proviso-deploy-edit-deploy-file (&optional arg)
+  "Edit the current deployments file.
+If ARG is non-nil, another project can be chosen."
+  (interactive "P")
+  (let* ((proj (if arg (proviso-choose-project)
+                 (proviso-current-project))))
+    (if proj
+        (proviso-deploy--edit-deploy-file proj)
+      (user-error "No project chosen"))))
+
+(defun proviso-deploy--edit-deploy-file (proj)
+  "Open the deployment file from project PROJ in a new buffer."
+  (let ((file (proviso-get proj :deploy-file)))
+    (if (and file (file-exists-p file))
+        (find-file file)
+      (user-error "No deployment file"))))
+
+;;;###autoload
 (defun proviso-deploy-find-file (&optional arg)
   "Edit the deployed file.
 If ARG is non-nil, another project can be chosen."
@@ -1071,8 +1089,11 @@ Optional argument ARG allows choosing a project."
                                             (replace-regexp-in-string (getenv "HOME") "~" file)
                                             'face '(shadow)))
                                           (t
-                                           (propertize "None" 'face '(shadow)))))))
-             ) width))                  ;TODO add a find file
+                                           (propertize "None" 'face '(shadow))))))
+                       :bindings (("f" "Find file"
+                                   (lambda ()
+                                     (proviso-deploy--edit-deploy-file proviso-local-proj)))))
+             ) width))
     (dolist (spec (proviso-get proj :deployments))
       (let ((type (plist-get spec :type))
             command source dest deployments subid)
