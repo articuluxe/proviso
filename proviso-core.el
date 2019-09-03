@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-15 08:42:19 dharms>
+;; Modified Time-stamp: <2019-09-03 10:20:54 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -524,7 +524,7 @@ Note that `executable-find' operates on the local host."
                                       maxwidth-dir)
   "Return a prettified description of PROJ.
 MAXWIDTH-NAME is an optional max width for the name parameter.
-MAXWIDTH-DIr is an optional max width for the dir parameter."
+MAXWIDTH-DIR is an optional max width for the dir parameter."
   (let ((name (proviso-get proj :project-name))
         (dir (proviso-get proj :root-dir))
         (host (proviso-get proj :remote-host)))
