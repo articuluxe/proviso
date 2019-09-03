@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-02 07:26:29 dharms>
+;; Modified Time-stamp: <2019-09-03 06:24:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -419,7 +419,7 @@ sub-deployment."
   "Return a list of the real sources contained in deployment SPEC.
 Real sources have had wildcards and environment variables
 resolved."
-  (let* ((substitute-env-vars (source (plist-get spec :source)) t)
+  (let* ((source (substitute-env-vars (plist-get spec :source) t))
          (sources (cond ((string-match-p "[$^.*]" source)
                          (directory-files
                           (file-name-directory source)
