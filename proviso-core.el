@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-03 10:20:54 dan.harms>
+;; Modified Time-stamp: <2019-09-05 08:16:06 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -467,21 +467,6 @@ See also `proviso-project-signifiers'."
       (file-name-nondirectory
        (directory-file-name
         (file-name-directory name))))))
-
-(defun proviso--compute-remote-props (dir)
-  "Compute the remote properties associated with DIR.
-DIR may be remote."
-  (and dir (file-remote-p dir)
-       (with-parsed-tramp-file-name dir rem
-         (list rem-host rem-localname
-               (apply #'tramp-make-tramp-file-name
-                      rem-method rem-user
-                      (if (vectorp rem)
-                          (list rem-host "" rem-hop)
-                        (condition-case nil
-                            (list rem-domain rem-host
-                                  rem-port "" rem-hop)
-                          (error (list "" rem-host rem-port "" rem-hop)))))))))
 
 (defun proviso--compute-proviso-dir (&optional remote)
   "Compute the proviso directory.
