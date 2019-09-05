@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 11:03:25 dan.harms>
+;; Modified Time-stamp: <2019-09-05 08:24:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso tags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -42,10 +42,10 @@ into :tags-alist."
          (scratch (proviso-get proj :scratch-dir))
          (local-scratch (proviso-get proj :local-scratch-dir))
          (subdir ".tags/")
-         (tag-root (if local-scratch
+         (tag-root (if (and remote local-scratch)
                        (concat local-scratch subdir)
                      (concat scratch subdir)))
-         (remote-root (if local-scratch
+         (remote-root (if (and remote local-scratch)
                           (concat scratch subdir)))
          tags-alist ext-dirs curr entry dir)
     ;; tag-alist is a list of lists of at least one element.  Each element is
