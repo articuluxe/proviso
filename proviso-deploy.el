@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-03 08:59:31 dharms>
+;; Modified Time-stamp: <2019-09-05 08:36:46 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -390,6 +390,23 @@ If ARG is non-nil, another project can be chosen."
         (progn
           (proviso-put proj :deployments specs)
           (proviso-put proj :deploy-file file)))))
+
+;;;###autoload
+(defun proviso-deploy-import-file (&optional arg)
+  "Import a deployment file.
+If ARG is non-nil, another project can be chosen."
+  (interactive "P")
+  (let* ((proj (if arg (proviso-choose-project)
+                 (proviso-current-project)))
+         (base (proviso-compute-proviso-dir))
+         specs file)
+    (setq file
+          (read-file-name "Import deployment file: "
+                          (concat base proviso-deploy-subdir)
+                          nil t nil #'proviso-deploy--file-predicate))
+    (if (and file
+             (setq specs (proviso-deploy-read-from-file proj file)))
+        (proviso-put proj :deployments specs))))
 
 (defun proviso-deploy-get-next-id (proj)
   "Get the next :deploy-id from PROJ."
@@ -1056,7 +1073,7 @@ Optional argument ARG allows choosing a project."
      '(("s" "Save" proviso-deploy-save-file-current-project file)
        ("S" "Save as" proviso-deploy-save-file-as-current-project file)
        ("o" "Open file" proviso-deploy-open-file buffer)
-       ;; TODO add Import file
+       ("I" "Import file" proviso-deploy-import-file buffer)
        ("R" "Run all" proviso-deploy-run-all-deploys-current-project deployment)
        ("." "Run last" proviso-deploy-run-last-current-project deployment)
        ("X" "Delete all" proviso-deploy-delete-all-current-project buffer)
