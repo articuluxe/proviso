@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-05 08:16:06 dharms>
+;; Modified Time-stamp: <2019-09-05 08:16:20 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -468,7 +468,7 @@ See also `proviso-project-signifiers'."
        (directory-file-name
         (file-name-directory name))))))
 
-(defun proviso--compute-proviso-dir (&optional remote)
+(defun proviso-compute-proviso-dir (&optional remote)
   "Compute the proviso directory.
 REMOTE, if non-nil, signifies a remote host of interest."
   (let ((home (concat (or (getenv "HOME") ;TODO handle remote
@@ -485,7 +485,7 @@ there's a remote host.  This may be a local dir tracking a remote
 location, or a writeable dir tracking a non-writeable one."
   (let ((sub "projects/"))
     (file-name-as-directory
-     (concat (proviso--compute-proviso-dir (and (not local) remote-host))
+     (concat (proviso-compute-proviso-dir (and (not local) remote-host))
              sub
              (when (and local remote-host)
                (concat remote-host "@"))
