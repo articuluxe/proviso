@@ -1,9 +1,9 @@
-;;; proviso-core.el --- proviso core functionality
+;;; proviso-core.el --- Core functionality for proviso.
 ;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-05 08:16:20 dharms>
+;; Modified Time-stamp: <2019-09-05 08:17:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
