@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-06 11:57:06 dharms>
+;; Modified Time-stamp: <2019-09-06 12:33:55 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -437,8 +437,11 @@ sub-deployment."
   "Return a list of the real sources contained in deployment SPEC.
 Real sources have had wildcards and environment variables
 resolved."
-  (let* ((source (substitute-env-vars (plist-get spec :source) t))
-         (sources (cond ((string-match-p "[$^.*]" source)
+  (let ((source (substitute-env-vars (plist-get spec :source) t))
+        sources indices)
+    (if (file-exists-p (file-name-directory source))
+        (progn
+          (setq sources (cond ((string-match-p "[$^.*]" source)
                          (directory-files
                           (file-name-directory source)
                           t
@@ -446,10 +449,11 @@ resolved."
                         ((file-directory-p source)
                          (directory-files source t))
                         (t (list source))))
-         (indices (number-sequence 0 (1- (length sources)))))
-    (mapcar (lambda (x)
-              (cons x (nth x sources)))
-            indices)))
+          (setq indices (number-sequence 0 (1- (length sources))))
+          (mapcar (lambda (x)
+                    (cons x (nth x sources)))
+                  indices))
+      nil)))
 
 (defun proviso-deploy-get-real-source-by-id (spec id)
   "Fetch the real source from SPEC by ID."
