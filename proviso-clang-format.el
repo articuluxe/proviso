@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, November 10, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-17 16:51:59 dharms>
+;; Modified Time-stamp: <2019-09-06 15:33:24 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -75,13 +75,12 @@ MODE is the `major-mode'."
 
 (defun proviso-clang-format--init (proj)
   "Set up clang-format according to PROJ's project definition."
-  (let* ((remote (proviso-get proj :remote-prefix))
-         (root (proviso-get proj :scratch-dir))
+  (let* ((root (proviso-get proj :scratch-dir))
          (name (or (proviso-get proj :clang-format)
                   ".clang-format"))
          (path (if (file-name-absolute-p name)
                    (expand-file-name name)
-                 (concat remote root name))))
+                 (concat root name))))
     ;; if .clang-format doesn't exist in the root, also check the first
     ;; (privileged) src dir
     (unless (or (file-exists-p path)
@@ -90,7 +89,7 @@ MODE is the `major-mode'."
             dir try)
         (and (car lst)
              (setq dir (plist-get (car lst) :dir))
-             (setq try (concat remote root
+             (setq try (concat root
                                (file-name-as-directory dir)
                                name))
              (file-exists-p try)
