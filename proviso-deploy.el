@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-05 08:36:46 dharms>
+;; Modified Time-stamp: <2019-09-06 11:57:06 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -400,6 +400,7 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (base (proviso-compute-proviso-dir))
          specs file)
+    (make-directory (concat base proviso-deploy-subdir) t)
     (setq file
           (read-file-name "Import deployment file: "
                           (concat base proviso-deploy-subdir)
