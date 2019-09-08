@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-08 11:51:11 dharms>
+;; Modified Time-stamp: <2019-09-08 12:03:10 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -443,6 +443,10 @@ sub-deployment."
   (let ((specs (proviso-get proj :deployments)))
     (proviso-deploy--get-deploy-by-id specs which)))
 
+(defun proviso-deploy-contains-regexp-p (str)
+  "Return non-nil if there is a regexp inside STR."
+  (string-match-p "[$^.*]" str))
+
 (defun proviso-deploy-compute-real-sources (spec)
   "Return a list of the real sources contained in deployment SPEC.
 Real sources have had wildcards and environment variables
@@ -451,14 +455,14 @@ resolved."
         sources indices)
     (if (file-exists-p (file-name-directory source))
         (progn
-          (setq sources (cond ((string-match-p "[$^.*]" source)
-                         (directory-files
-                          (file-name-directory source)
-                          t
-                          (file-name-nondirectory source)))
-                        ((file-directory-p source)
-                         (directory-files source t))
-                        (t (list source))))
+          (setq sources (cond ((proviso-deploy-contains-regexp-p source)
+                               (directory-files
+                                (file-name-directory source)
+                                t
+                                (file-name-nondirectory source)))
+                              ((file-directory-p source)
+                               (directory-files source t))
+                              (t (list source))))
           (setq indices (number-sequence 0 (1- (length sources))))
           (mapcar (lambda (x)
                     (cons x (nth x sources)))
