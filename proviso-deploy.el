@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-08 12:03:10 dharms>
+;; Modified Time-stamp: <2019-09-09 08:57:21 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -1170,6 +1170,30 @@ Optional argument ARG allows choosing a project."
                 ((eq type 'deploy)
                  (let* ((real-sources (proviso-deploy-compute-real-sources spec)))
                    (plist-put spec :real-sources real-sources)
+                   (when (proviso-deploy-contains-regexp-p (plist-get spec :source))
+                     (add-to-list 'lst
+                                  (list
+                                   :heading "Deployment"
+                                   :category 'buffer
+                                   :parent-id id
+                                   :content (lambda ()
+                                              (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
+                                                     (src (plist-get spec :source))
+                                                     (realsrc (proviso-deploy-substitute-env-vars src))
+                                                     (home (getenv "HOME")))
+                                                (propertize
+                                                 (if home
+                                                     (replace-regexp-in-string home "~" realsrc)
+                                                   realsrc)
+                                                 'face '(bold)
+                                                 'help-echo src)))
+                                   :bindings `(("r" "Run"
+                                                (lambda ()
+                                                  (proviso-deploy--run-deploy-by-id proviso-local-proj (cons ,id t))))
+                                               ("t" "Edit"
+                                                (lambda ()
+                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
+                                   :section 'pre) t))
                    (dolist (elt real-sources)
                      (lexical-let ((subid (car elt)))
                        (add-to-list 'lst
