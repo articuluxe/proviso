@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-05 08:17:15 dharms>
+;; Modified Time-stamp: <2019-09-10 08:59:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -27,6 +27,7 @@
 ;;
 
 ;;; Code:
+(require 'xfer-util)
 (require 'ivy)
 (require 'seq)
 (require 'tramp)
@@ -471,8 +472,8 @@ See also `proviso-project-signifiers'."
 (defun proviso-compute-proviso-dir (&optional remote)
   "Compute the proviso directory.
 REMOTE, if non-nil, signifies a remote host of interest."
-  (let ((home (concat (or (getenv "HOME") ;TODO handle remote
-                          (expand-file-name "~"))))
+  (let ((home (or (xfer-util-remote-homedir-find "/")
+                  (expand-file-name "~")))
         (base (or (getenv "PROVISO_BASE")
                   ".proviso.d")))
     (concat (file-name-as-directory home)
