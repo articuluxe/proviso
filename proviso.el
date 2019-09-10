@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-15 08:38:14 dharms>
+;; Modified Time-stamp: <2019-09-10 11:18:59 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -250,10 +250,10 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
             (if (file-writable-p scratch)
                 (proviso-put proviso-local-proj :scratch-dir scratch)
               (proviso-put proviso-local-proj :scratch-dir
-                           (proviso--compute-scratch-dir root-dir remote-host)))
+                           (proviso--compute-scratch-dir root-dir remote-host remote-prefix)))
             (if remote-host
                 (proviso-put proviso-local-proj :local-scratch-dir
-                             (proviso--compute-scratch-dir root-dir remote-host t))))
+                             (proviso--compute-scratch-dir root-dir remote-host remote-prefix t))))
           )                               ;done loading new project
         (proviso--loaded proviso-local-proj)
         ))))

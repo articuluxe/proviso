@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-10 08:59:32 dharms>
+;; Modified Time-stamp: <2019-09-10 11:27:34 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -471,22 +471,25 @@ See also `proviso-project-signifiers'."
 
 (defun proviso-compute-proviso-dir (&optional remote)
   "Compute the proviso directory.
-REMOTE, if non-nil, signifies a remote host of interest."
-  (let ((home (or (xfer-util-remote-homedir-find "/")
+REMOTE, if non-nil, signifies a remote path of interest."
+  (let ((home (or (and remote (xfer-util-remote-homedir-find remote))
                   (expand-file-name "~")))
         (base (or (getenv "PROVISO_BASE")
                   ".proviso.d")))
     (concat (file-name-as-directory home)
             (file-name-as-directory base))))
 
-(defun proviso--compute-scratch-dir (root-dir &optional remote-host local)
-  "Compute scratch dir for a project at ROOT-DIR, at optional REMOTE-HOST.
+(defun proviso--compute-scratch-dir (root-dir &optional remote-host remote-prefix local)
+  "Compute scratch dir for a project at ROOT-DIR.
+Remote files may optionally include host REMOTE-HOST and REMOTE-PREFIX.
 LOCAL signifies the scratch dir should be local, even when
 there's a remote host.  This may be a local dir tracking a remote
 location, or a writeable dir tracking a non-writeable one."
   (let ((sub "projects/"))
     (file-name-as-directory
-     (concat (proviso-compute-proviso-dir (and (not local) remote-host))
+     (concat (unless local remote-prefix)
+             (proviso-compute-proviso-dir (and (not local)
+                                               (concat remote-prefix root-dir)))
              sub
              (when (and local remote-host)
                (concat remote-host "@"))
