@@ -1100,6 +1100,7 @@ Optional argument ARG allows choosing a project."
        ("S" "Save as" proviso-deploy-save-file-as-current-project file)
        ("o" "Open file" proviso-deploy-open-file buffer)
        ("I" "Import file" proviso-deploy-import-file buffer)
+       ("V" "Revert file" proviso-deploy-revert-file buffer)
        ("R" "Run all" proviso-deploy-run-all-deploys-current-project deployment)
        ("." "Run last" proviso-deploy-run-last-current-project deployment)
        ("X" "Delete all" proviso-deploy-delete-all-current-project buffer)
