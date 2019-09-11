@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-11 06:30:07 dharms>
+;; Modified Time-stamp: <2019-09-11 06:37:46 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -1089,6 +1089,10 @@ Optional argument ARG allows choosing a project."
       (kill-local-variable 'process-environment)
       (proviso-deploy-mode)
       (make-local-variable 'process-environment)
+      (push (format "PROJECT=%s" (proviso-get proj :project-name))
+            process-environment)
+      (push (format "SCRATCH=%s" (proviso-get proj :scratch-dir))
+            process-environment)
       (proviso-deploy--process-env proj))
     (proviso-gui-add-global-cb
      buffer
