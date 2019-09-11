@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-11 09:04:19 dharms>
+;; Modified Time-stamp: <2019-09-11 09:04:36 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -101,15 +101,32 @@ spawned."
           (proviso-deploy-one spec t t))
         specs))
 
-(defun proviso-deploy-create (source dest &optional id)
-  "Add a deployment from SOURCE to DEST.
+(defun proviso-deploy-create (proj &optional source dest id)
+  "Add a deployment in project PROJ from SOURCE to DEST.
+If SOURCE or DEST are not provided, they will be queried.
 ID is an optional id."
-  (interactive "FSource: \nFDestination: ")
-  (set-text-properties 0 (- (length source) 1) nil source)
-  (set-text-properties 0 (- (length dest) 1) nil dest)
-  (let ((lst (list :source source :destination dest :type 'deploy)))
+  (interactive)
+  (let ((root (concat (proviso-get proj :remote-prefix)
+                      (proviso-get proj :root-dir)))
+        lst)
+    (unless source
+      (setq source
+            (read-file-name "Source: " root)))
+    (unless dest
+      (setq dest
+            (read-file-name "Destination: " root)))
+    (if (file-in-directory-p source root)
+        (setq source (file-relative-name source root)))
+    (if (file-in-directory-p dest root)
+        (setq dest (file-relative-name dest root)))
+    (set-text-properties 0 (- (length source) 1) nil source)
+    (set-text-properties 0 (- (length dest) 1) nil dest)
+    (setq lst (list :source source :destination dest :type 'deploy))
     (if id (setq lst (append lst (list :id id))))
-    (proviso-deploy-compute-real-sources lst)
+    (proviso-deploy-compute-real-sources
+     lst
+     (proviso-get proj :remote-prefix)
+     (proviso-get proj :root-dir))
     lst))
 
 (defun proviso-deploy-create-cmd (cmd &optional id)
@@ -453,12 +470,15 @@ sub-deployment."
   "Return non-nil if there is a regexp inside STR."
   (string-match-p "[$^*]" str))
 
-(defun proviso-deploy-compute-real-sources (spec)
+(defun proviso-deploy-compute-real-sources (spec prefix root)
   "Return a list of the real sources contained in deployment SPEC.
+PREFIX is an optional remote-prefix, with ROOT the project's root directory.
 Real sources have had wildcards and environment variables
 resolved."
   (let ((source (proviso-deploy-substitute-env-vars (plist-get spec :source)))
         sources indices)
+    (unless (file-name-absolute-p source)
+      (setq source (concat prefix root source)))
     (if (file-exists-p (file-name-directory source))
         (progn
           (setq sources (cond ((proviso-deploy-contains-regexp-p source)
@@ -506,8 +526,7 @@ If ARG is non-nil, another project can be chosen."
 (defun proviso-deploy--add-deploy (proj)
   "Add a deployment to project PROJ."
   (let* ((specs (proviso-get proj :deployments))
-         (spec (call-interactively
-                #'proviso-deploy-create)))
+         (spec (proviso-deploy-create proj)))
     (if spec
         (progn
           (setq spec
@@ -923,7 +942,7 @@ If ARG is non-nil, another project can be chosen."
                     nil nil
                     (file-name-nondirectory dst))))
            (setcar (nthcdr n specs)
-                   (proviso-deploy-create src dst id))))))
+                   (proviso-deploy-create proj src dst id))))))
 
 ;;;###autoload
 (defun proviso-deploy-edit-deploy-file (&optional arg)
@@ -1179,7 +1198,9 @@ Optional argument ARG allows choosing a project."
                                               (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
                                :section 'pre) t))
                 ((eq type 'deploy)
-                 (let* ((real-sources (proviso-deploy-compute-real-sources spec)))
+                 (let* ((real-sources (proviso-deploy-compute-real-sources spec
+                                                                           (proviso-get proviso-local-proj :remote-prefix)
+                                                                           (proviso-get proviso-local-proj :root-dir))))
                    (plist-put spec :real-sources real-sources)
                    (when (proviso-deploy-contains-regexp-p (plist-get spec :source))
                      (add-to-list 'lst
