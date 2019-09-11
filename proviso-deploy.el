@@ -451,7 +451,7 @@ sub-deployment."
 
 (defun proviso-deploy-contains-regexp-p (str)
   "Return non-nil if there is a regexp inside STR."
-  (string-match-p "[$^.*]" str))
+  (string-match-p "[$^*]" str))
 
 (defun proviso-deploy-compute-real-sources (spec)
   "Return a list of the real sources contained in deployment SPEC.
