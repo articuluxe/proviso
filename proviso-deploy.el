@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-09 08:57:21 dharms>
+;; Modified Time-stamp: <2019-09-11 06:30:07 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -417,7 +417,10 @@ If ARG is non-nil, another project can be chosen."
                           nil t nil #'proviso-deploy--file-predicate))
     (if (and file
              (setq specs (proviso-deploy-read-from-file proj file)))
-        (proviso-put proj :deployments specs))))
+        (proviso-put proj :deployments
+                     (append
+                      (proviso-get proj :deployments)
+                      specs)))))
 
 (defun proviso-deploy-get-next-id (proj)
   "Get the next :deploy-id from PROJ."
