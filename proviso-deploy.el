@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-11 06:37:46 dharms>
+;; Modified Time-stamp: <2019-09-11 09:04:19 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -314,21 +314,24 @@ This is an internal helper function."
                       (proviso-get proj :project-name)
                       ".deploy"))
         (lst (proviso-get proj :deployments)))
-    (unless store
-      (make-directory (concat scratch proviso-deploy-subdir) t)
-      (setq store
-            (read-file-name "Save deployments to: "
-                            (concat scratch proviso-deploy-subdir)
-                            nil nil defaultname))
-      (unless (string-equal (file-name-extension store) "deploy")
-        (setq store (concat store ".deploy"))))
-    (proviso-put proj :deploy-file store)
-    (async-start
-     `(lambda ()
-        (setq inhibit-message t)
-        (with-temp-buffer
-          (insert ,(proviso-deploy-write-to-string lst))
-          (write-file ,store))))))
+    (if lst
+        (progn
+          (unless store
+            (make-directory (concat scratch proviso-deploy-subdir) t)
+            (setq store
+                  (read-file-name "Save deployments to: "
+                                  (concat scratch proviso-deploy-subdir)
+                                  nil nil defaultname))
+            (unless (string-equal (file-name-extension store) "deploy")
+              (setq store (concat store ".deploy"))))
+          (proviso-put proj :deploy-file store)
+          (async-start
+           `(lambda ()
+              (setq inhibit-message t)
+              (with-temp-buffer
+                (insert ,(proviso-deploy-write-to-string lst))
+                (write-file ,store)))))
+      (user-error "No deployments to save"))))
 
 (defun proviso-deploy-save-file-as-current-project ()
   "Save deployments from current project to new file."
