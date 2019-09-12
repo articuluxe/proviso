@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-12 00:46:02 dharms>
+;; Modified Time-stamp: <2019-09-12 00:54:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -1216,13 +1216,22 @@ Optional argument ARG allows choosing a project."
                                               (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                      (src (plist-get spec :source))
                                                      (realsrc (proviso-deploy-substitute-env-vars src))
+                                                     (dst (proviso-deploy-substitute-env-vars (plist-get spec :destination)))
                                                      (home (getenv "HOME")))
-                                                (propertize
-                                                 (if home
-                                                     (replace-regexp-in-string home "~" realsrc)
-                                                   realsrc)
-                                                 'face '(bold)
-                                                 'help-echo src)))
+                                                (concat
+                                                 (propertize
+                                                  (if home
+                                                      (replace-regexp-in-string home "~" realsrc)
+                                                    realsrc)
+                                                  'face '(bold)
+                                                  'help-echo src)
+                                                 " -> "
+                                                 (propertize
+                                                  (if home
+                                                      (replace-regexp-in-string home "~" dst)
+                                                    dst)
+                                                  'face '(bold)
+                                                  'help-echo dst))))
                                    :bindings `(("r" "Run"
                                                 (lambda ()
                                                   (proviso-deploy--run-deploy-by-id proviso-local-proj (cons ,id t))))
