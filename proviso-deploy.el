@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-11 09:04:36 dharms>
+;; Modified Time-stamp: <2019-09-12 00:46:02 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -728,12 +728,16 @@ If ARG is non-nil, another project can be chosen."
                            specs "Delete deployment: "))
                  (setq spec
                        (proviso-deploy--get-deploy-by-id specs id)))
-            (proviso-put
-             proj :deployments
-             (delete spec
-                     (proviso-get proj :deployments)))
+            (proviso-deploy--delete-deploy-spec proj id)
           (user-error "No deployment chosen"))
       (user-error "No deployments"))))
+
+(defun proviso-deploy--delete-deploy-spec (proj id)
+  "Delete the deployment with id ID, belonging to project PROJ."
+  (let* ((specs (proviso-get proj :deployments))
+         (spec (proviso-deploy-get-deploy-by-id proj id)))
+    (proviso-put proj :deployments
+                 (delete spec (proviso-get proj :deployments)))))
 
 ;;;###autoload
 (defun proviso-deploy-delete-all-deploy (&optional arg)
@@ -1224,7 +1228,11 @@ Optional argument ARG allows choosing a project."
                                                   (proviso-deploy--run-deploy-by-id proviso-local-proj (cons ,id t))))
                                                ("t" "Edit"
                                                 (lambda ()
-                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
+                                                  (proviso-deploy--edit-deploy-spec proviso-local-proj ,id)))
+                                               ("x" "Delete"
+                                                (lambda ()
+                                                  (proviso-deploy--delete-deploy-spec proviso-local-proj ,id)))
+                                               )
                                    :section 'pre) t))
                    (dolist (elt real-sources)
                      (lexical-let ((subid (car elt)))
