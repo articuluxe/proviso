@@ -1,9 +1,9 @@
-;;; proviso-dashboard.el --- a dashboard for proviso projects
+;;; proviso-dashboard.el --- A dashboard for proviso projects
 ;; Copyright (C) 2018-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 08:52:26 dharms>
+;; Modified Time-stamp: <2019-09-11 23:57:02 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -119,7 +119,7 @@ Optional ARG allows choosing a project."
                             (let ((dir (proviso-get proviso-local-proj :scratch-dir)))
                               (propertize (replace-regexp-in-string
                                            (getenv "HOME") "~" dir)
-                                          'face '())))
+                                          'face '() 'help-echo dir)))
                  :bindings (("d" "Goto Scratch" proviso-dashboard-goto-scratch)))
        (:heading "Local scratch"
                  :predicate (lambda ()
@@ -128,7 +128,7 @@ Optional ARG allows choosing a project."
                             (let ((dir (proviso-get proviso-local-proj :local-scratch-dir)))
                               (propertize (replace-regexp-in-string
                                            (getenv "HOME") "~" dir)
-                                          'face '()))))
+                                          'face '() 'help-echo dir))))
        (:heading "Tags"
                  :content (lambda ()
                             (let ((gen (proviso-get proviso-local-proj :tags-lastgen)))
@@ -145,7 +145,8 @@ Optional ARG allows choosing a project."
                                            (getenv "HOME") "~" bmk)
                                           'face
                                           (if (and bmk (file-exists-p bmk))
-                                              '(bold) '(shadow))))))
+                                              '(bold) '(shadow))
+                                          'help-echo bmk))))
        (:heading "Deployments"
                  :predicate (lambda () (proviso-get proviso-local-proj :deploy-file))
                  :content (lambda ()
