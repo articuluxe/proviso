@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 14:59:52 dharms>
+;; Modified Time-stamp: <2019-09-12 08:59:16 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 
@@ -105,12 +105,19 @@
   )
 
 (ert-deftest proviso-core-test-add-active-projects ()
-  (proviso-test-reset-all)
-  (should-not (proviso-find-active-project "/a/b/" "rem-host"))
-  (proviso-add-active-project-path "a/b/" "neon#/a/b/@rem-host" "rem-host")
-  (should (equal (proviso-find-active-project "/a/b/" "rem-host")
-                 "neon#/a/b/@rem-host"))
-  )
+  (let (proj)
+    (proviso-test-reset-all)
+    (should-not (proviso-find-active-project "/a/b/" "rem-host"))
+    (proviso-add-active-project-path "a/b/" "neon#/a/b/@rem-host" "rem-host")
+    (setq proj (proviso-find-active-project "/a/b/" "rem-host"))
+    (should proj)
+    (proviso-define-active-project proj) ;so that proviso-put works
+    (should (equal proj "neon#/a/b/@rem-host"))
+    ;; test hack: normally the load process would set this
+    (proviso-put proj :remote-host "rem-host")
+    (proviso-hard-reset proj)
+    (should (not (proviso-find-active-project "/a/b/" "rem-host")))
+    ))
 
 (ert-deftest proviso-core-find-root-test ()
   (let ((base (file-name-directory load-file-name))

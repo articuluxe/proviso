@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-10 11:27:34 dan.harms>
+;; Modified Time-stamp: <2019-09-12 09:03:42 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -49,7 +49,7 @@
 This is a provisional mapping of potential projects.
 A project is used for a file if that file's path matches REGEXP.")
 
-(defvar proviso-projects
+(defvar proviso-remote-projects
   (ht-create 'equal)
   "Registry of active remote projects keyed by host.")
 
@@ -266,7 +266,7 @@ If found, returns a cons cell (PATH . project)."
   "Return an active project for DIR.
 HOST defaults to nil for localhost."
   (if host
-      (let ((alist (ht-get proviso-projects host)))
+      (let ((alist (ht-get proviso-remote-projects host)))
         (when alist
           (proviso-find-active-proj--alist dir alist)))
     (proviso-find-active-proj--alist dir proviso-proj-alist)))
@@ -279,8 +279,8 @@ HOST defaults to nil for localhost."
   "Add project UID centered at absolute path DIR.
 HOST defaults to nil for localhost."
   (if host
-      (let ((alist (ht-get proviso-projects host)))
-        (ht-set! proviso-projects host
+      (let ((alist (ht-get proviso-remote-projects host)))
+        (ht-set! proviso-remote-projects host
                  (proviso-add-active-proj-path--alist alist dir uid)))
     (setq proviso-proj-alist
           (proviso-add-active-proj-path--alist proviso-proj-alist dir uid))))
@@ -364,10 +364,12 @@ This does not otherwise remove any projects from memory."
   (setq proviso-curr-proj nil)
   (setq proviso-local-proj (default-value 'proviso-local-proj)))
 
-(defun proviso-hard-reset (&optional project)
+(defun proviso-hard-reset (project)
   "Remove all traces of PROJECT."
   (interactive)
-  (proviso--remove-proviso-from-alist project)
+  (proviso--remove-proviso-from-alist
+   project
+   (proviso-get project :remote-host))
   (proviso--remove-proj project)
   (proviso-soft-reset))
 
@@ -375,14 +377,23 @@ This does not otherwise remove any projects from memory."
   "Delete the project PROJECT, which can be a symbol or string (name)."
   (unintern project proviso-obarray))
 
-(defun proviso--remove-proviso-from-alist (project)
-  "Remove project PROJECT from the internal data structure."
-  (setq proviso-proj-alist
-        (seq-remove
-         (lambda (elt)
-           ;; string-equal handles a symbol using its print-name
-           (string-equal (cdr elt) project))
-         proviso-proj-alist)))
+(defun proviso--remove-proviso-from-alist (project &optional host)
+  "Remove project PROJECT from the internal data structure.
+HOST is an optional remote host."
+  (if host
+      (if-let ((alist (ht-get proviso-remote-projects host)))
+          (progn
+            (ht-set! proviso-remote-projects host
+                     (seq-remove
+                      (lambda (elt)
+                        (string-equal (cdr elt) project))
+                      alist))))
+    (setq proviso-proj-alist
+          (seq-remove
+           (lambda (elt)
+             ;; string-equal handles a symbol using its print-name
+             (string-equal (cdr elt) project))
+           proviso-proj-alist))))
 
 (defun proviso-find-file-upwards-helper (path file)
   "Helper function to search upward from PATH for FILE."
