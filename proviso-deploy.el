@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-12 00:54:41 dharms>
+;; Modified Time-stamp: <2019-09-13 08:21:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -1260,7 +1260,7 @@ Optional argument ARG allows choosing a project."
                                                    (if home
                                                        (replace-regexp-in-string home "~" src)
                                                      src)
-                                                   'help-echo realsrc)))
+                                                   'help-echo (plist-get spec :source))))
                                      :bindings `(("r" "Run"
                                                   (lambda ()
                                                     (proviso-deploy--run-deploy-by-id proviso-local-proj (cons ,id ,subid))))
