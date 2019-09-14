@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-13 08:21:41 dharms>
+;; Modified Time-stamp: <2019-09-14 10:28:27 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -468,7 +468,7 @@ sub-deployment."
 
 (defun proviso-deploy-contains-regexp-p (str)
   "Return non-nil if there is a regexp inside STR."
-  (string-match-p "[$^*]" str))
+  (string-match-p "[^*]" str))
 
 (defun proviso-deploy-compute-real-sources (spec prefix root)
   "Return a list of the real sources contained in deployment SPEC.
@@ -1206,7 +1206,8 @@ Optional argument ARG allows choosing a project."
                                                                            (proviso-get proviso-local-proj :remote-prefix)
                                                                            (proviso-get proviso-local-proj :root-dir))))
                    (plist-put spec :real-sources real-sources)
-                   (when (proviso-deploy-contains-regexp-p (plist-get spec :source))
+                   (when (and (proviso-deploy-contains-regexp-p (plist-get spec :source))
+                              (not (eq (length real-sources) 1)))
                      (add-to-list 'lst
                                   (list
                                    :heading "Deployment"
