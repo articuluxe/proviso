@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-16 15:37:24 dan.harms>
+;; Modified Time-stamp: <2019-09-16 16:40:43 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -497,12 +497,12 @@ resolved."
   (let ((srcs (plist-get spec :real-sources)))
     (alist-get id srcs)))
 
-(defun proviso-deploy--process-env (proj)
-  "Process environment variable directives from PROJ."
+(defun proviso-deploy--process-env (proj env)
+  "Process environment variable directives from PROJ into ENV."
   (let ((specs (proviso-get proj :deployments)))
     (dolist (spec specs)
       (when (eq (plist-get spec :type) 'env)
-        (push (plist-get spec :env) process-environment)))))
+        (push (plist-get spec :env) env)))))
 
 ;;;###autoload
 (defun proviso-deploy-add-deploy (&optional arg)
@@ -608,17 +608,19 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
          id spec)
-    (if specs
-        (if (and (setq id (proviso-deploy-choose-deploy
-                           specs
-                           "Run deployment: "))
-                 (setq spec
-                       (proviso-deploy--get-deploy-by-id specs id)))
-            (proviso-deploy--run-deploy
-             spec
-             (if (consp id) (cdr id) id))
-          (user-error "No deployment chosen"))
-      (user-error "No deployments"))))
+    (let ((process-environment
+           (proviso-deploy--modify-environment proj process-environment)))
+      (if specs
+          (if (and (setq id (proviso-deploy-choose-deploy
+                             specs
+                             "Run deployment: "))
+                   (setq spec
+                         (proviso-deploy--get-deploy-by-id specs id)))
+              (proviso-deploy--run-deploy
+               spec
+               (if (consp id) (cdr id) id))
+            (user-error "No deployment chosen"))
+        (user-error "No deployments")))))
 
 (defun proviso-deploy--run-deploy-by-id (proj which)
   "Run a deployment from PROJ identified by WHICH.
@@ -720,14 +722,16 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
          id spec)
-    (if specs
-        (if (and (setq id (proviso-deploy-choose-deploy
-                           specs "Delete deployment: "))
-                 (setq spec
-                       (proviso-deploy--get-deploy-by-id specs id)))
-            (proviso-deploy--delete-deploy-spec proj id)
-          (user-error "No deployment chosen"))
-      (user-error "No deployments"))))
+    (let ((process-environment
+           (proviso-deploy--modify-environment proj process-environment)))
+      (if specs
+          (if (and (setq id (proviso-deploy-choose-deploy
+                             specs "Delete deployment: "))
+                   (setq spec
+                         (proviso-deploy--get-deploy-by-id specs id)))
+              (proviso-deploy--delete-deploy-spec proj id)
+            (user-error "No deployment chosen"))
+        (user-error "No deployments")))))
 
 (defun proviso-deploy--delete-deploy-spec (proj id)
   "Delete the deployment with id ID, belonging to project PROJ."
@@ -767,15 +771,17 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
          id spec)
-    (if specs
-        (if (and (setq id (proviso-deploy-choose-deploy
-                           specs
-                           "Check deployment: "))
-                 (setq spec
-                       (proviso-deploy--get-deploy-by-id specs id)))
-            (proviso-deploy--check-file-spec spec (cdr id))
-          (user-error "No deployment chosen"))
-      (user-error "No deployments"))))
+    (let ((process-environment
+           (proviso-deploy--modify-environment proj process-environment)))
+      (if specs
+          (if (and (setq id (proviso-deploy-choose-deploy
+                             specs
+                             "Check deployment: "))
+                   (setq spec
+                         (proviso-deploy--get-deploy-by-id specs id)))
+              (proviso-deploy--check-file-spec spec (cdr id))
+            (user-error "No deployment chosen"))
+        (user-error "No deployments")))))
 
 (defun proviso-deploy--check-file-spec (spec &optional subid)
   "Check the deployment SPEC.
@@ -818,15 +824,17 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
          id spec)
-    (if specs
-        (if (and (setq id (proviso-deploy-choose-deploy
-                           specs
-                           "Diff deployment: "))
-                 (setq spec
-                       (proviso-deploy--get-deploy-by-id specs id)))
-            (proviso-deploy--diff-file-spec spec (cdr id))
-          (user-error "No deployment chosen"))
-      (user-error "No deployments"))))
+    (let ((process-environment
+           (proviso-deploy--modify-environment proj process-environment)))
+      (if specs
+          (if (and (setq id (proviso-deploy-choose-deploy
+                             specs
+                             "Diff deployment: "))
+                   (setq spec
+                         (proviso-deploy--get-deploy-by-id specs id)))
+              (proviso-deploy--diff-file-spec spec (cdr id))
+            (user-error "No deployment chosen"))
+        (user-error "No deployments")))))
 
 (defun proviso-deploy--diff-file-spec (spec &optional subid)
   "Diff the deployment SPEC.
@@ -855,15 +863,17 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
          id spec)
-    (if specs
-        (if (and (setq id (proviso-deploy-choose-deploy
-                           specs
-                           "Ediff deployment: "))
-                 (setq spec
-                       (proviso-deploy--get-deploy-by-id specs id)))
-            (proviso-deploy--ediff-file-spec spec (cdr id))
-          (user-error "No deployment chosen"))
-      (user-error "No deployments"))))
+    (let ((process-environment
+           (proviso-deploy--modify-environment proj process-environment)))
+      (if specs
+          (if (and (setq id (proviso-deploy-choose-deploy
+                             specs
+                             "Ediff deployment: "))
+                   (setq spec
+                         (proviso-deploy--get-deploy-by-id specs id)))
+              (proviso-deploy--ediff-file-spec spec (cdr id))
+            (user-error "No deployment chosen"))
+        (user-error "No deployments")))))
 
 (defun proviso-deploy--ediff-file-spec (spec &optional subid)
   "Ediff the deployment SPEC.
@@ -892,15 +902,17 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
          id spec)
-    (if specs
-        (if (and (setq id (proviso-deploy-choose-deploy
-                           specs
-                           "Edit deployment: "))
-                 (setq spec
-                       (proviso-deploy--get-deploy-by-id specs id)))
-            (proviso-deploy--edit-deploy-spec proj id)
-          (user-error "No deployment chosen"))
-      (user-error "No deployments"))))
+    (let ((process-environment
+           (proviso-deploy--modify-environment proj process-environment)))
+      (if specs
+          (if (and (setq id (proviso-deploy-choose-deploy
+                             specs
+                             "Edit deployment: "))
+                   (setq spec
+                         (proviso-deploy--get-deploy-by-id specs id)))
+              (proviso-deploy--edit-deploy-spec proj id)
+            (user-error "No deployment chosen"))
+        (user-error "No deployments")))))
 
 (defun proviso-deploy--edit-deploy-spec (proj id)
   "Edit the deployment with ID, belonging to project PROJ."
@@ -971,14 +983,16 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
          id spec)
-    (if specs
-        (if (and (setq id (proviso-deploy-choose-deploy
-                           specs
-                           "Find deployed file: "))
-                 (setq spec (proviso-deploy--get-deploy-by-id specs id)))
-            (proviso-deploy--find-file-spec spec (cdr id))
-          (user-error "No deployment chosen"))
-      (user-error "No deployments"))))
+    (let ((process-environment
+           (proviso-deploy--modify-environment proj process-environment)))
+      (if specs
+          (if (and (setq id (proviso-deploy-choose-deploy
+                             specs
+                             "Find deployed file: "))
+                   (setq spec (proviso-deploy--get-deploy-by-id specs id)))
+              (proviso-deploy--find-file-spec spec (cdr id))
+            (user-error "No deployment chosen"))
+        (user-error "No deployments")))))
 
 (defun proviso-deploy--find-file-spec (spec &optional subid)
   "Visit the deployment SPEC.
@@ -1008,26 +1022,28 @@ If ARG is non-nil, another project can be chosen."
                  (proviso-current-project)))
          (specs (proviso-get proj :deployments))
          id spec)
-    (if specs
-        (if (and (setq id (proviso-deploy-choose-deploy
-                           specs
-                           "Find deployed file in other window: "))
-                 (setq spec (proviso-deploy--get-deploy-by-id specs id)))
-            (if (eq (plist-get spec :type) 'deploy)
-                (let ((src (proviso-deploy-substitute-env-vars (plist-get spec :source)))
-                      (dst (proviso-deploy-substitute-env-vars (plist-get spec :destination))))
-                  (if dst
-                      (progn
-                        (when (file-directory-p dst)
-                          (setq dst (expand-file-name
-                                     (file-name-nondirectory src) dst)))
-                        (if (file-exists-p dst)
-                            (find-file-other-window dst)
-                          (user-error "File '%s' does not exist" dst)))
-                    (user-error "No deployed file to edit")))
-              (user-error "Not a deployment"))
-          (user-error "No deployment chosen"))
-      (user-error "No deployments"))))
+    (let ((process-environment
+           (proviso-deploy--modify-environment proj process-environment)))
+      (if specs
+          (if (and (setq id (proviso-deploy-choose-deploy
+                             specs
+                             "Find deployed file in other window: "))
+                   (setq spec (proviso-deploy--get-deploy-by-id specs id)))
+              (if (eq (plist-get spec :type) 'deploy)
+                  (let ((src (proviso-deploy-substitute-env-vars (plist-get spec :source)))
+                        (dst (proviso-deploy-substitute-env-vars (plist-get spec :destination))))
+                    (if dst
+                        (progn
+                          (when (file-directory-p dst)
+                            (setq dst (expand-file-name
+                                       (file-name-nondirectory src) dst)))
+                          (if (file-exists-p dst)
+                              (find-file-other-window dst)
+                            (user-error "File '%s' does not exist" dst)))
+                      (user-error "No deployed file to edit")))
+                (user-error "Not a deployment"))
+            (user-error "No deployment chosen"))
+        (user-error "No deployments")))))
 
 (defun proviso-deploy-revert-buffer ()
   "Reverts (recreates) the deployment buffer."
@@ -1098,14 +1114,22 @@ Optional argument ARG allows choosing a project."
                             (nth o specs))))))))
 
 (defun proviso-deploy-set-environment (proj)
-  "Set current buffer's environment according to project PROJ's deployments."
-  (with-current-buffer (proviso-get proj :deploy-buffer)
-    (setq-local process-environment (default-value 'process-environment))
-    (push (format "PROJECT=%s" (proviso-get proj :project-name))
-          process-environment)
-    (push (format "SCRATCH=%s" (proviso-get proj :scratch-dir))
-          process-environment)
-    (proviso-deploy--process-env proj)))
+  "Set current buffer's environment according to project PROJ's deployments.
+This only has an effect if there is a current deployment buffer."
+  (if-let ((buf (get-buffer (proviso-get proj :deploy-buffer))))
+      (with-current-buffer buf
+        (setq-local
+         process-environment
+         (proviso-deploy--modify-environment
+          proj
+          (default-value 'process-environment))))))
+
+(defun proviso-deploy--modify-environment (proj env)
+  "Modify environment ENV according to project PROJ."
+  (push (format "PROJECT=%s" (proviso-get proj :project-name)) env)
+  (push (format "SCRATCH=%s" (proviso-get proj :scratch-dir)) env)
+  (proviso-deploy--process-env proj env)
+  env)
 
 (defun proviso-deploy-create-buffer (proj)
   "Create a deployment buffer for project PROJ."
