@@ -924,6 +924,7 @@ If ARG is non-nil, another project can be chosen."
                    (proviso-deploy-create-env
                     (read-string "New environment directive: "
                                  (plist-get spec :env)) id))
+           (proviso-deploy-set-environment proj))
           ((eq type 'deploy)
            (setq src (plist-get spec :source))
            (setq dst (plist-get spec :destination))
@@ -1099,6 +1100,15 @@ Optional argument ARG allows choosing a project."
                     (setcar (nthcdr n specs)
                             (nth o specs))))))))
 
+(defun proviso-deploy-set-environment (proj)
+  "Set current buffer's environment according to project PROJ's deployments."
+  (setq-local process-environment (default-value process-environment))
+  (push (format "PROJECT=%s" (proviso-get proj :project-name))
+        process-environment)
+  (push (format "SCRATCH=%s" (proviso-get proj :scratch-dir))
+        process-environment)
+  (proviso-deploy--process-env proj))
+
 (defun proviso-deploy-create-buffer (proj)
   "Create a deployment buffer for project PROJ."
   (interactive)
@@ -1113,11 +1123,7 @@ Optional argument ARG allows choosing a project."
       (kill-local-variable 'process-environment)
       (proviso-deploy-mode)
       (make-local-variable 'process-environment)
-      (push (format "PROJECT=%s" (proviso-get proj :project-name))
-            process-environment)
-      (push (format "SCRATCH=%s" (proviso-get proj :scratch-dir))
-            process-environment)
-      (proviso-deploy--process-env proj))
+      (proviso-deploy-set-environment proj))
     (proviso-gui-add-global-cb
      buffer
      '(("s" "Save" proviso-deploy-save-file-current-project file)
