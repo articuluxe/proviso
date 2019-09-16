@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-14 10:28:27 dharms>
+;; Modified Time-stamp: <2019-09-16 15:15:36 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -1202,9 +1202,10 @@ Optional argument ARG allows choosing a project."
                                               (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
                                :section 'pre) t))
                 ((eq type 'deploy)
-                 (let* ((real-sources (proviso-deploy-compute-real-sources spec
-                                                                           (proviso-get proviso-local-proj :remote-prefix)
-                                                                           (proviso-get proviso-local-proj :root-dir))))
+                 (let* ((real-sources (with-current-buffer buffer (proviso-deploy-compute-real-sources
+                                                                   spec
+                                                                   (proviso-get proviso-local-proj :remote-prefix)
+                                                                   (proviso-get proviso-local-proj :root-dir)))))
                    (plist-put spec :real-sources real-sources)
                    (when (and (proviso-deploy-contains-regexp-p (plist-get spec :source))
                               (not (eq (length real-sources) 1)))
