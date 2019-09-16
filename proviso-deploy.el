@@ -280,7 +280,7 @@ If PROJ is not supplied, no `:id' parameter will be present."
                          (append
                           `(:id ,(proviso-deploy-get-next-id proj))
                           obj)))
-                 (add-to-list 'specs obj t))))
+                 (push obj specs))))
             ((and (consp spec)
                   (eq (car spec) 'deploy))
              (dolist (elt (cdr spec))
@@ -290,12 +290,12 @@ If PROJ is not supplied, no `:id' parameter will be present."
                          (append
                           `(:id ,(proviso-deploy-get-next-id proj))
                           obj)))
-                 (add-to-list 'specs obj t))))
+                 (push obj specs))))
             (t
              (and
               (setq obj (proviso-deploy--read-elt spec 'command))
-              (add-to-list 'specs obj t)))))
-    specs))
+              (push obj specs)))))
+    (nreverse specs)))
 
 (defun proviso-deploy-read-from-file (proj filename)
   "Read a deployment specification from FILENAME, intended for PROJ."
