@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-16 15:28:32 dan.harms>
+;; Modified Time-stamp: <2019-09-16 15:37:24 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -36,9 +36,6 @@
 (require 'diff)
 (require 'ediff-diff)
 (require 'cl-lib)
-
-(defvar-local proviso-deploy-buffer-name nil
-  "Buffer name for `proviso-deploy' mode.")
 
 (defconst proviso-deploy-buffer-name-prefix
   "*%s-deploy*"
@@ -1061,7 +1058,7 @@ Optional argument ARG allows choosing a project."
     (if proj
         (progn
           (proviso-deploy-create-buffer proj)
-          (pop-to-buffer proviso-deploy-buffer-name))
+          (pop-to-buffer (proviso-get proj :deploy-buffer)))
       (user-error "No project"))))
 
 (defun proviso-deploy-move-deployment-up ()
@@ -1102,19 +1099,20 @@ Optional argument ARG allows choosing a project."
 
 (defun proviso-deploy-set-environment (proj)
   "Set current buffer's environment according to project PROJ's deployments."
-  (setq-local process-environment (default-value process-environment))
-  (push (format "PROJECT=%s" (proviso-get proj :project-name))
-        process-environment)
-  (push (format "SCRATCH=%s" (proviso-get proj :scratch-dir))
-        process-environment)
-  (proviso-deploy--process-env proj))
+  (with-current-buffer (proviso-get proj :deploy-buffer)
+    (setq-local process-environment (default-value 'process-environment))
+    (push (format "PROJECT=%s" (proviso-get proj :project-name))
+          process-environment)
+    (push (format "SCRATCH=%s" (proviso-get proj :scratch-dir))
+          process-environment)
+    (proviso-deploy--process-env proj)))
 
 (defun proviso-deploy-create-buffer (proj)
   "Create a deployment buffer for project PROJ."
   (interactive)
-  (setq proviso-deploy-buffer-name
-        (format proviso-deploy-buffer-name-prefix proj))
-  (let ((buffer (get-buffer-create proviso-deploy-buffer-name))
+  (proviso-put proj :deploy-buffer
+               (format proviso-deploy-buffer-name-prefix (proviso-get proj :project-name)))
+  (let ((buffer (get-buffer-create (proviso-get proj :deploy-buffer)))
         (width (string-width "Destination"))
         lst)
     (proviso-gui-init-buffer buffer proviso-deploy-mode-map)
