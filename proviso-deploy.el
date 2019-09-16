@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-16 15:15:36 dan.harms>
+;; Modified Time-stamp: <2019-09-16 15:28:32 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -910,22 +910,20 @@ If ARG is non-nil, another project can be chosen."
   (let* ((specs (proviso-get proj :deployments))
          (spec (proviso-deploy-get-deploy-by-id proj id))
          (type (plist-get spec :type))
-         cmd src dst
+         src dst
          (n (seq-position specs id
                           (lambda (lst elt)
                             (eq elt (plist-get lst :id))))))
     (cond ((eq type 'command)
-           (setq cmd (plist-get spec :command))
            (setcar (nthcdr n specs)
                    (proviso-deploy-create-cmd
                     (read-string "New command: "
-                                 cmd) id)))
+                                 (plist-get spec :command)) id)))
           ((eq type 'env)
-           (setq cmd (plist-get spec :env))
            (setcar (nthcdr n specs)
                    (proviso-deploy-create-env
                     (read-string "New environment directive: "
-                                 cmd) id)))
+                                 (plist-get spec :env)) id))
           ((eq type 'deploy)
            (setq src (plist-get spec :source))
            (setq dst (plist-get spec :destination))
