@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-12 08:59:16 dharms>
+;; Modified Time-stamp: <2019-09-17 15:55:20 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 
@@ -77,31 +77,31 @@
   (let ((proviso-path-alist '(("path/" . "neon"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path/" . "neon"))))
+             '("~/src/path/" "neon"))))
   (let ((proviso-path-alist '(("path" . "neon"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path" . "neon"))))
+             '("~/src/path" "neon"))))
   (let ((proviso-path-alist '(("path2/" . "neon"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path/path2/" . "neon"))))
+             '("~/src/path/path2/" "neon"))))
   (let ((proviso-path-alist '(("\\(path2\\)/" . "neon-\\1"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path/path2/" . "neon-path2"))))
+             '("~/src/path/path2/" "neon-path2"))))
   (let ((proviso-path-alist '(("\\(path\\)/\\(path\\(.*\\)\\)/" . "neon-\\3"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path/path2/" . "neon-2"))))
+             '("~/src/path/path2/" "neon-2"))))
   (let ((proviso-path-alist '(("\\(path\\)\\(unused\\)?/\\(path2\\)/" . "neon-\\3"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path/path2/" . "neon-path2"))))
+             '("~/src/path/path2/" "neon-path2"))))
   (let ((proviso-path-alist '(("src/\\(.+?\\)/\\(.+?\\)/" . "\\1-\\2"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path/path2/" . "path-path2"))))
+             '("~/src/path/path2/" "path-path2"))))
   )
 
 (ert-deftest proviso-core-test-add-active-projects ()

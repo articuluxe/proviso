@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 08:40:23 dharms>
+;; Modified Time-stamp: <2019-09-17 16:19:50 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 
@@ -417,34 +417,35 @@
                (lambda (_)
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
-      (proviso-define-project "hidden" "a/b" :tag "overridden" :tag2 "none")
+      (proviso-define-project "actual" "a/b" :tag "real" :tag2 "present")
       (should-not proviso-local-proj)
       ;; open first file, init new project.
       ;; Real project files override provisional projects
       ;; this provisional project is overridden by the real project file
-      (setq file-contents "(:tag \"real\" :tag1 \"present\")")
+      (setq file-contents "(:tag \"overridden\" :tag1 \"also\")")
       (should (not proviso-local-proj))
       (find-file (concat base "a/b/c/d/dfile1"))
       (push "dfile1" buffers)
       (should proviso-local-proj)
       (should (equal proviso-proj-alist
-                     (list (cons (concat base "a/b/c/")
-                                 (concat "c#" base "a/b/c/")))))
+                     (list (cons (concat base "a/b/")
+                                 (concat "actual#" base "a/b/")))))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (eq (proviso-get proviso-local-proj :inited) t))
-      (should (string= (concat base "a/b/c/")
+      (should (string= (concat base "a/b/")
                        (proviso-get proviso-local-proj :root-dir)))
       (should (string= (proviso-get proviso-local-proj :project-name)
-                       "c"))
+                       "actual"))
       (should (string= (proviso-get proviso-local-proj :project-uid)
-                       (concat "c#" base "a/b/c/")))
+                       (concat "actual#" base "a/b/")))
       (should (string= (proviso-get proviso-local-proj :scratch-dir)
-                       (concat base "a/b/c/")))
+                       (concat base "a/b/")))
       (should (string= (proviso-get proviso-local-proj :tag)
                        "real"))
-      (should (string= (proviso-get proviso-local-proj :tag1)
+      ;; (should (string= (proviso-get proviso-local-proj :tag1)
+      ;;                  "also"))
+      (should (string= (proviso-get proviso-local-proj :tag2)
                        "present"))
-      (should-not (proviso-get proviso-local-proj :tag2))
       ;; clean up buffers
       (dolist (b buffers) (kill-buffer b))
       )))

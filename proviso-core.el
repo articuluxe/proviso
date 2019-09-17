@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-16 15:33:17 dan.harms>
+;; Modified Time-stamp: <2019-09-17 15:55:45 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -245,13 +245,13 @@ matched sub-expressions contained within ORIG, according to
 
 (defun proviso-find-provisional-project (&optional filename)
   "Scan `proviso-path-alist' for an entry to match FILENAME.
-If found, returns a cons cell (PATH . project)."
+If found, returns a list '(PATH project)."
   (let ((file (or filename (buffer-file-name) (buffer-name))))
     (catch 'exit
       (mapc (lambda (elt)
               (if (string-match (car elt) file)
                   (throw 'exit
-                         (cons
+                         (list
                           (substring file 0 (match-end 0))
                           (seq-let [str md]
                               (proviso--get-provisonal-match-data file (match-data))

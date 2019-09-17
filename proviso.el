@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-10 11:18:59 dan.harms>
+;; Modified Time-stamp: <2019-09-17 16:05:32 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -196,7 +196,7 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
     (let* ((dir (file-name-directory (expand-file-name filename)))
            (remote-prefix (file-remote-p dir))
            (remote-host (file-remote-p dir 'host))
-           basename fullname scratch)
+           basename fullname scratch props)
       (if (setq fullname (proviso-find-active-project dir remote-host))
           ;; active project already exists
           (unless (setq proviso-local-proj (intern-soft fullname proviso-obarray))
@@ -204,39 +204,40 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
         ;; no current project; so look for new project
         (seq-let [root-file root-dir] (proviso--find-root dir t)
           (unless root-dir (setq root-dir dir))
-          (if root-file               ;found a project file
-              (progn
-                (when remote-host
-                  (setq root-dir (file-remote-p root-dir 'localname)))
-                (let ((props (proviso--eval-file root-file)))
-                  ;; project name defaults to filename, unless overridden
-                  (unless (setq basename (plist-get props :project-name))
-                    (setq basename (proviso-compute-basename-from-file root-file)))
-                  (setq fullname (proviso-create-project-uid basename root-dir remote-host))
+          ;; first check for a provisional project
+          (seq-let [provisional-path provisional-project]
+              (proviso-find-provisional-project root-dir)
+            (if provisional-project
+                (progn
+                  (setq root-dir (file-name-as-directory provisional-path))
+                  (setq basename provisional-project)
+                  (setq props (intern-soft basename proviso-provisional-obarray))
+                  (setq fullname
+                        (proviso-create-project-uid basename root-dir remote-host))
                   (proviso-add-active-project-path root-dir fullname remote-host)
                   (unless (setq proviso-local-proj
-                                (proviso-define-active-project fullname props))
-                    (error "Unable to set project %s from %s for %s"
-                           fullname root-file filename))))
-            ;; else no project file; check proviso-path-alist
-            (let ((cell (proviso-find-provisional-project root-dir))
-                  props)
-              (if cell
+                                (proviso-define-active-project fullname
+                                                               (if props
+                                                                   (symbol-plist props)
+                                                                 nil)))
+                    (error "Unable to set project %s from provisional %s for %s"
+                           fullname basename filename)))
+              ;; no provisional project, look for a project file
+              (if root-file
                   (progn
-                    (setq root-dir (file-name-as-directory (car cell)))
-                    (setq basename (cdr cell))
-                    (setq props (intern-soft basename proviso-provisional-obarray))
-                    (setq fullname
-                          (proviso-create-project-uid basename root-dir remote-host))
+                    (when remote-host
+                      (setq root-dir (file-remote-p root-dir 'localname)))
+                    (setq props (proviso--eval-file root-file))
+                    ;; project name defaults to filename, unless overridden
+                    (unless (setq basename (plist-get props :project-name))
+                      (setq basename (proviso-compute-basename-from-file root-file)))
+                    (setq fullname (proviso-create-project-uid basename root-dir remote-host))
                     (proviso-add-active-project-path root-dir fullname remote-host)
                     (unless (setq proviso-local-proj
-                                  (proviso-define-active-project fullname
-                                                                 (if props
-                                                                     (symbol-plist props)
-                                                                   nil)))
-                      (error "Unable to set project %s from provisional %s for %s"
-                             fullname basename filename)))
-                ;; else no project here
+                                  (proviso-define-active-project fullname props))
+                      (error "Unable to set project %s from %s for %s"
+                             fullname root-file filename)))
+                ;; otherwise no project file either
                 )))
           (when proviso-local-proj
             (proviso-put proviso-local-proj :root-dir root-dir)
