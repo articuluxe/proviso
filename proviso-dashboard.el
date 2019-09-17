@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-11 23:57:02 dharms>
+;; Modified Time-stamp: <2019-09-17 06:47:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -33,7 +33,7 @@
 (defvar-local proviso-dashboard-buffer-name nil
   "Buffer name for `proviso-dashboard' mode.")
 
-(defconst proviso-dashboard-buffer-name-prefix "*%s-project*"
+(defconst proviso-dashboard-buffer-name-prefix "*%s-dashboard*"
   "Buffer prefix string for `proviso-dashboard'.
 This will be formatted with the project name.")
 
@@ -88,7 +88,8 @@ Optional ARG allows choosing a project."
   "Create a dashboard for project PROJ."
   (interactive)
   (setq proviso-dashboard-buffer-name
-        (format proviso-dashboard-buffer-name-prefix proj))
+        (format proviso-dashboard-buffer-name-prefix
+                (proviso-get proj :project-name)))
   (let ((buffer (get-buffer-create proviso-dashboard-buffer-name)))
     (proviso-gui-init-buffer buffer proviso-dashboard-mode-map)
     (with-current-buffer buffer
