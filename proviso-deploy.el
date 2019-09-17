@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-16 16:40:43 dan.harms>
+;; Modified Time-stamp: <2019-09-17 09:35:31 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -502,7 +502,8 @@ resolved."
   (let ((specs (proviso-get proj :deployments)))
     (dolist (spec specs)
       (when (eq (plist-get spec :type) 'env)
-        (push (plist-get spec :env) env)))))
+        (push (plist-get spec :env) env))))
+  env)
 
 ;;;###autoload
 (defun proviso-deploy-add-deploy (&optional arg)
@@ -1128,8 +1129,7 @@ This only has an effect if there is a current deployment buffer."
   "Modify environment ENV according to project PROJ."
   (push (format "PROJECT=%s" (proviso-get proj :project-name)) env)
   (push (format "SCRATCH=%s" (proviso-get proj :scratch-dir)) env)
-  (proviso-deploy--process-env proj env)
-  env)
+  (proviso-deploy--process-env proj env))
 
 (defun proviso-deploy-create-buffer (proj)
   "Create a deployment buffer for project PROJ."
