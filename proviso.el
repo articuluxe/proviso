@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-17 16:05:32 dan.harms>
+;; Modified Time-stamp: <2019-09-18 06:44:53 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -200,7 +200,8 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
       (if (setq fullname (proviso-find-active-project dir remote-host))
           ;; active project already exists
           (unless (setq proviso-local-proj (intern-soft fullname proviso-obarray))
-            (error "Unable to open existing project %s for %s" fullname filename))
+            (error "Unable to open existing project \'%s\' for %s" fullname
+                   (abbreviate-file-name filename)))
         ;; no current project; so look for new project
         (seq-let [root-file root-dir] (proviso--find-root dir t)
           (unless root-dir (setq root-dir dir))
@@ -223,8 +224,9 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
                              basename
                              (abbreviate-file-name filename)))
                   (unless (setq proviso-local-proj
-                    (error "Unable to set project %s from provisional %s for %s"
-                           fullname basename filename)))
+                                (proviso-define-active-project fullname props))
+                    (error "Unable to set project \'%s\' from provisional \'%s\' for %s"
+                           fullname basename (abbreviate-file-name filename))))
               ;; no provisional project, look for a project file
               (if root-file
                   (progn
@@ -238,8 +240,10 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
                     (proviso-add-active-project-path root-dir fullname remote-host)
                     (unless (setq proviso-local-proj
                                   (proviso-define-active-project fullname props))
-                      (error "Unable to set project %s from %s for %s"
-                             fullname root-file filename)))
+                      (error "Unable to set project \'%s\' from %s for %s"
+                             fullname
+                             (abbreviate-file-name root-file)
+                             (abbreviate-file-name filename))))
                 ;; otherwise no project file either
                 )))
           (when proviso-local-proj
