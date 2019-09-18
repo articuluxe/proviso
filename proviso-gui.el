@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-24 08:50:13 dan.harms>
+;; Modified Time-stamp: <2019-09-18 09:04:14 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -48,7 +48,7 @@
   "An optional policy directing how to select the cursor.
 Possible values:
  - new: will select a newly-created row
- - id : will maintain selection based on 'parent-id
+ - id : will maintain selection based on 'source-id
  - nil: first row will be selected if buffer is redrawn
 
 Otherwise the current row is usually maintained.")
@@ -230,18 +230,18 @@ If WHERE is non-nil, it provides the current line."
           (throw 'found elt)))
       nil)))
 
-(defun proviso-gui-lookup-by-parent-id (id)
-  "Return the GUI element corresponding to parent id ID."
+(defun proviso-gui-lookup-by-source-id (id)
+  "Return the GUI element corresponding to source id ID."
   (let ((cell))
     (catch 'found
       (dolist (elt proviso-gui-markers)
-        (when (eq id (cdr (assq 'parent-id elt)))
+        (when (eq id (cdr (assq 'source-id elt)))
           (throw 'found elt)))
       nil)))
 
 (defun proviso-gui-cb (cb &optional where)
   "Execute callback CB, for gui element corresponding to WHERE.
-CELL can be a symbol representing a category, the special symbol 'buffer,
+WHERE can be a symbol representing a category, the special symbol 'buffer,
 which will redraw the entire buffer after executing the callback, an alist of
 properties representing a particular cell or row, or nil."
   (interactive)
@@ -313,7 +313,7 @@ FUTURE may be nil, or a process sentinel to wait upon completion."
           (lambda() (interactive)
             (if (eq policy 'id)
                 (if-let* ((cell (proviso-gui-lookup-by-id proviso-gui--cursor))
-                          (id (cdr (assq 'parent-id cell))))
+                          (id (cdr (assq 'source-id cell))))
                     (setq proviso-gui--cursor-policy id))
               (setq proviso-gui--cursor-policy policy))
             (proviso-gui-cb cb category)))))))
@@ -324,7 +324,7 @@ Returns a sorted list of markers in the buffer.
 MAXWIDTH allows specifying the minimum length of the headings."
   (let ((inhibit-read-only t)
         (max-heading (or maxwidth 0))
-        heading category pred id parent-id content)
+        heading category pred id source-id content)
     (with-current-buffer buffer
       (setq lst (seq-remove (lambda (elt)
                               (setq pred (plist-get elt :predicate))
@@ -343,7 +343,7 @@ MAXWIDTH allows specifying the minimum length of the headings."
         (setq pred (plist-get entry :content))
         (setq id (or (plist-get entry :id)
                      (proviso-gui-get-next-entry-id buffer)))
-        (setq parent-id (plist-get entry :parent-id))
+        (setq source-id (plist-get entry :source-id))
         (when (eq (plist-get entry :section) 'pre)
           (proviso-gui--insert-section-break))
         (setq heading
@@ -363,7 +363,7 @@ MAXWIDTH allows specifying the minimum length of the headings."
                       (cons 'pos marker)
                       (cons 'create create)
                       (cons 'buffer buffer)
-                      (cons 'parent-id parent-id)
+                      (cons 'source-id source-id)
                       ))
           (when category (push (cons 'category category) cell))
           (and (eq proviso-gui--cursor-policy 'new)
@@ -410,7 +410,7 @@ MAXWIDTH allows specifying the minimum length of the headings."
       (if cell
           (progn
             (if-let ((integerp proviso-gui--cursor-policy)
-                     (cell2 (proviso-gui-lookup-by-parent-id
+                     (cell2 (proviso-gui-lookup-by-source-id
                              proviso-gui--cursor-policy))
                      (id (cdr (assq 'id cell2))))
                 (progn
