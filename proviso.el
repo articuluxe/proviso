@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-18 06:44:53 dharms>
+;; Modified Time-stamp: <2019-09-18 08:55:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -209,7 +209,7 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
           (seq-let [provisional-path provisional-project]
               (proviso-find-provisional-project root-dir)
             (if provisional-project
-                (let (proj)
+                (let (proj other-props)
                   (setq root-dir (file-name-as-directory provisional-path))
                   (setq basename provisional-project)
                   (setq proj (intern-soft basename proviso-provisional-obarray))
@@ -217,12 +217,12 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
                         (proviso-create-project-uid basename root-dir remote-host))
                   (proviso-add-active-project-path root-dir fullname remote-host)
                   (setq props (if proj (symbol-plist proj) nil))
-                  (when root-file
-                    (setq props (append props (proviso--eval-file root-file)))
-                    (message "Adding properties from project file %s to provisional project \'%s\' at %s"
+                  (when (and root-file
+                             (setq other-props (proviso--eval-file root-file)))
+                    (setq props (append props other-props))
+                    (message "Adding properties from project file %s to provisional project \'%s\'"
                              (abbreviate-file-name root-file)
-                             basename
-                             (abbreviate-file-name filename)))
+                             basename))
                   (unless (setq proviso-local-proj
                                 (proviso-define-active-project fullname props))
                     (error "Unable to set project \'%s\' from provisional \'%s\' for %s"
