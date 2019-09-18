@@ -208,18 +208,21 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
           (seq-let [provisional-path provisional-project]
               (proviso-find-provisional-project root-dir)
             (if provisional-project
-                (progn
+                (let (proj)
                   (setq root-dir (file-name-as-directory provisional-path))
                   (setq basename provisional-project)
-                  (setq props (intern-soft basename proviso-provisional-obarray))
+                  (setq proj (intern-soft basename proviso-provisional-obarray))
                   (setq fullname
                         (proviso-create-project-uid basename root-dir remote-host))
                   (proviso-add-active-project-path root-dir fullname remote-host)
+                  (setq props (if proj (symbol-plist proj) nil))
+                  (when root-file
+                    (setq props (append props (proviso--eval-file root-file)))
+                    (message "Adding properties from project file %s to provisional project \'%s\' at %s"
+                             (abbreviate-file-name root-file)
+                             basename
+                             (abbreviate-file-name filename)))
                   (unless (setq proviso-local-proj
-                                (proviso-define-active-project fullname
-                                                               (if props
-                                                                   (symbol-plist props)
-                                                                 nil)))
                     (error "Unable to set project %s from provisional %s for %s"
                            fullname basename filename)))
               ;; no provisional project, look for a project file

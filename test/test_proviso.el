@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-17 16:19:50 dan.harms>
+;; Modified Time-stamp: <2019-09-18 06:30:55 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 
@@ -442,8 +442,8 @@
                        (concat base "a/b/")))
       (should (string= (proviso-get proviso-local-proj :tag)
                        "real"))
-      ;; (should (string= (proviso-get proviso-local-proj :tag1)
-      ;;                  "also"))
+      (should (string= (proviso-get proviso-local-proj :tag1)
+                       "also"))
       (should (string= (proviso-get proviso-local-proj :tag2)
                        "present"))
       ;; clean up buffers
