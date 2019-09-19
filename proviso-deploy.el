@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-19 12:08:24 dan.harms>
+;; Modified Time-stamp: <2019-09-19 12:18:11 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -1084,7 +1084,7 @@ Optional argument ARG allows choosing a project."
 (defun proviso-deploy-move-deployment-up ()
   "Move the selected deployment up in the list, if possible."
   (if-let* ((cell (proviso-gui-find-current-cell))
-            (id (cdr (assq 'parent-id cell)))
+            (id (cdr (assq 'source-id cell)))
             (proj proviso-local-proj)
             (specs (proviso-get proj :deployments))
             (n (seq-position specs id
@@ -1102,7 +1102,7 @@ Optional argument ARG allows choosing a project."
 (defun proviso-deploy-move-deployment-down ()
   "Move the selected deployment down in the list, if possible."
   (if-let* ((cell (proviso-gui-find-current-cell))
-            (id (cdr (assq 'parent-id cell)))
+            (id (cdr (assq 'source-id cell)))
             (proj proviso-local-proj)
             (specs (proviso-get proj :deployments))
             (n (seq-position specs id
@@ -1203,7 +1203,7 @@ This only has an effect if there is a current deployment buffer."
                               (list
                                :heading "Command"
                                :category 'command
-                               :parent-id id
+                               :source-id id
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                  (cmd (plist-get spec :command)))
@@ -1221,7 +1221,7 @@ This only has an effect if there is a current deployment buffer."
                               (list
                                :heading "Environment"
                                :category 'buffer
-                               :parent-id id
+                               :source-id id
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                  (cmd (plist-get spec :env)))
@@ -1242,7 +1242,7 @@ This only has an effect if there is a current deployment buffer."
                                   (list
                                    :heading "Deployment"
                                    :category 'buffer
-                                   :parent-id id
+                                   :source-id id
                                    :content (lambda ()
                                               (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                      (src (plist-get spec :source))
@@ -1280,7 +1280,7 @@ This only has an effect if there is a current deployment buffer."
                                     (list
                                      :heading "Source"
                                      :category 'deployment
-                                     :parent-id id
+                                     :source-id id
                                      :content (lambda ()
                                                 (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj
                                                                                               (cons id subid)))
@@ -1315,7 +1315,7 @@ This only has an effect if there is a current deployment buffer."
                        (add-to-list 'lst
                                     (list
                                      :category 'deployment
-                                     :parent-id id
+                                     :source-id id
                                      :content (lambda ()
                                                 (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj
                                                                                               (cons id subid)))
@@ -1359,7 +1359,7 @@ This only has an effect if there is a current deployment buffer."
                                     (list
                                      :heading "Destination"
                                      :category 'deployment
-                                     :parent-id id
+                                     :source-id id
                                      :content (lambda ()
                                                 (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj (cons id subid)))
                                                        (realsrc (proviso-deploy-get-real-source-by-id spec subid))
@@ -1397,7 +1397,7 @@ This only has an effect if there is a current deployment buffer."
                        (add-to-list 'lst
                                     (list
                                      :category 'deployment
-                                     :parent-id id
+                                     :source-id id
                                      :content (lambda ()
                                                 (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj (cons id subid)))
                                                        (realsrc (proviso-deploy-get-real-source-by-id spec subid))
