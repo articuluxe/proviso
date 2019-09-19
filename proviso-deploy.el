@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-17 09:35:31 dan.harms>
+;; Modified Time-stamp: <2019-09-19 12:08:24 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -72,22 +72,20 @@ SUBID should reference an actual sub-deployment (see
 :real-sources).  Usually the deployment occurs asynchronously; if
 optional SYNCHRONOUS is non-nil, another process will not be
 spawned."
-  (let ((type (plist-get spec :type))
-        cmd src dst sources)
+  (let ((type (plist-get spec :type)))
     (cond ((eq type 'command)
-           (setq cmd (substitute-env-vars
-                      (plist-get spec :command) t))
-           (shell-command cmd))
+           (shell-command
+            (proviso-deploy-substitute-env-vars
+             (plist-get spec :command))))
           ((eq type 'deploy)
-           (setq sources (plist-get spec :real-sources))
            (if (eq subid t)
-               (dolist (source sources)
+               (dolist (source (plist-get spec :real-sources))
                  (proviso-deploy--execute
                   (cdr source)
                   (plist-get spec :destination)
                   synchronous))
              (proviso-deploy--execute
-              (alist-get subid sources)
+              (alist-get subid (plist-get spec :real-sources))
               (plist-get spec :destination)
               synchronous))))))
 
@@ -126,18 +124,22 @@ ID is an optional id."
      (proviso-get proj :root-dir))
     lst))
 
-(defun proviso-deploy-create-cmd (cmd &optional id)
+(defun proviso-deploy-create-cmd (&optional cmd id)
   "Add a deployment command CMD.
 ID is an optional id."
-  (interactive "sCommand: ")
+  (interactive)
+  (unless cmd
+    (setq cmd (read-shell-command "Shell command: " nil 'shell-history)))
   (if id
       (list :command cmd :type 'command :id id)
     (list :command cmd :type 'command)))
 
-(defun proviso-deploy-create-env (cmd &optional id)
+(defun proviso-deploy-create-env (&optional cmd id)
   "Add an environment directive CMD.
 ID is an optional id."
-  (interactive "sEnvironment export: ")
+  (interactive)
+  (unless cmd
+    (setq cmd (read-string "Environment: ")))
   (if id
       (list :env cmd :type 'env :id id)
     (list :env cmd :type 'env)))
@@ -151,14 +153,16 @@ PROMPT is an optional prompt."
            lst (max 0) len)
       (dolist (spec specs)
         (cond ((eq (plist-get spec :type) 'command)
-               (push (cons (substitute-env-vars
-                            (plist-get spec :command) t)
-                           (plist-get spec :id))
+               (push (cons
+                      (proviso-deploy-substitute-env-vars
+                       (plist-get spec :command))
+                      (plist-get spec :id))
                      lst))
               ((eq (plist-get spec :type) 'env)
-               (push (cons (substitute-env-vars
-                            (plist-get spec :env) t)
-                           (plist-get spec :id))
+               (push (cons
+                      (proviso-deploy-substitute-env-vars
+                       (plist-get spec :env))
+                      (plist-get spec :id))
                      lst))
               ((eq (plist-get spec :type) 'deploy)
                (let ((source (proviso-deploy-substitute-env-vars (plist-get spec :source)))
@@ -555,8 +559,7 @@ If ARG is non-nil, another project can be chosen."
 (defun proviso-deploy--add-deploy-cmd (proj)
   "Add a deployment command to PROJ."
   (let* ((specs (proviso-get proj :deployments))
-         (spec (call-interactively
-                #'proviso-deploy-create-cmd)))
+         (spec (proviso-deploy-create-cmd)))
     (if spec
         (progn
           (setq spec
@@ -587,8 +590,7 @@ If ARG is non-nil, another project can be chosen."
 (defun proviso-deploy--add-deploy-env (proj)
   "Add an environment directive to PROJ."
   (let* ((specs (proviso-get proj :deployments))
-         (spec (call-interactively
-                #'proviso-deploy-create-env)))
+         (spec (proviso-deploy-create-env)))
     (if spec
         (progn
           (setq spec
@@ -927,12 +929,13 @@ If ARG is non-nil, another project can be chosen."
     (cond ((eq type 'command)
            (setcar (nthcdr n specs)
                    (proviso-deploy-create-cmd
-                    (read-string "New command: "
-                                 (plist-get spec :command)) id)))
+                    (read-shell-command "Shell command: "
+                                        (plist-get spec :command)
+                                        'shell-history) id)))
           ((eq type 'env)
            (setcar (nthcdr n specs)
                    (proviso-deploy-create-env
-                    (read-string "New environment directive: "
+                    (read-string "Environment: "
                                  (plist-get spec :env)) id))
            (proviso-deploy-set-environment proj))
           ((eq type 'deploy)
