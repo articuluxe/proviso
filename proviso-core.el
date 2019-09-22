@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-17 15:55:45 dan.harms>
+;; Modified Time-stamp: <2019-09-21 21:57:24 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -248,19 +248,21 @@ matched sub-expressions contained within ORIG, according to
 If found, returns a list '(PATH project)."
   (let ((file (or filename (buffer-file-name) (buffer-name))))
     (catch 'exit
-      (mapc (lambda (elt)
-              (if (string-match (car elt) file)
-                  (throw 'exit
-                         (list
-                          (substring file 0 (match-end 0))
-                          (seq-let [str md]
-                              (proviso--get-provisonal-match-data file (match-data))
-                            (if (and str md)
-                                (progn
-                                  (set-match-data md)
-                                  (replace-match (cdr elt) t nil str 0))
-                              (cdr elt)))))))
-            proviso-path-alist))))
+      (progn
+        (mapc (lambda (elt)
+                (if (string-match (car elt) file)
+                    (throw 'exit
+                           (list
+                            (substring file 0 (match-end 0))
+                            (seq-let [str md]
+                                (proviso--get-provisonal-match-data file (match-data))
+                              (if (and str md)
+                                  (progn
+                                    (set-match-data md)
+                                    (replace-match (cdr elt) t nil str 0))
+                                (cdr elt)))))))
+              proviso-path-alist)
+        nil))))
 
 (defun proviso-find-active-project (dir &optional host)
   "Return an active project for DIR.
