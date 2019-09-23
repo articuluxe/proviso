@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-18 08:55:41 dharms>
+;; Modified Time-stamp: <2019-09-23 16:15:20 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -208,7 +208,7 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
           ;; first check for a provisional project
           (seq-let [provisional-path provisional-project]
               (proviso-find-provisional-project root-dir)
-            (if provisional-project
+            (if (and provisional-project (file-directory-p provisional-path))
                 (let (proj other-props)
                   (setq root-dir (file-name-as-directory provisional-path))
                   (setq basename provisional-project)

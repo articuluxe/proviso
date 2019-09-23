@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-18 06:30:55 dharms>
+;; Modified Time-stamp: <2019-09-23 16:12:32 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 
@@ -273,7 +273,7 @@
       (write-region "" nil (concat base "p/q/qfile1"))
       ;; open first file, init new project
       (proviso-define-project "neon" (concat "/m/"))
-      (proviso-define-project "fog" (concat "/p/"))
+      (proviso-define-project "fog" (concat "/p"))
       (should-not proviso-local-proj)
       (find-file (concat base "m/n/nfile1"))
       (push "nfile1" buffers)
@@ -285,7 +285,7 @@
                                  (concat "neon#" base "m/")))))
       (should (equal proviso-path-alist
                      (list
-                      (cons "/p/" "fog")
+                      (cons "/p" "fog")
                       (cons "/m/" "neon"))))
       (should (string= (concat base "m/")
                        (proviso-get proviso-local-proj :root-dir)))
