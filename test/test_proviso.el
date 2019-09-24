@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-23 16:12:32 dan.harms>
+;; Modified Time-stamp: <2019-09-23 23:49:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 
@@ -328,6 +328,62 @@
       (should (string= (proviso-get proviso-local-proj :scratch-dir)
                        (concat base "p/")))
       (should (eq (proviso-get proviso-local-proj :inited) t))
+      ;; clean up buffers
+      (dolist (b buffers) (kill-buffer b))
+      )))
+
+(ert-deftest proviso-test-open-provisional-project-invalid-stem ()
+  (proviso-test-reset-all)
+  (let ((base (temporary-file-directory))
+        (file-contents "")
+        buffers)
+    (cl-letf (((symbol-function 'proviso--eval-file)
+               (lambda (_)
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
+      (delete-directory (concat base "main") t)
+      (delete-directory (concat base "secondary") t)
+      (make-directory (concat base "main/n") t)
+      (make-directory (concat base "secondary/q") t)
+      (write-region "" nil (concat base "main/n/nfile1"))
+      (write-region "" nil (concat base "main/n/nfile2"))
+      (write-region "" nil (concat base "secondary/q/qfile1"))
+      ;; open first file, init new project
+      (proviso-define-project "neon" (concat "/main"))
+      (proviso-define-project "fog" (concat "/second")) ;intentional error
+      (should-not proviso-local-proj)
+      (find-file (concat base "main/n/nfile1"))
+      (push "nfile1" buffers)
+      (should proviso-local-proj)
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (equal proviso-proj-alist
+                     (list (cons (concat base "main/")
+                                 (concat "neon#" base "main/")))))
+      ;; note that provisional project "secondary" has an invalid stem
+      ;; "/second" specified; these stems need to match an entire directory
+      ;; path, since they are used to determine the root directory.
+      ;; For this reason, the project "secondary" will not be found.
+      (should (equal proviso-path-alist
+                     (list
+                      (cons "/second" "fog")
+                      (cons "/main" "neon"))))
+      (should (string= (concat base "main/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "neon"))
+      (should (string= (proviso-get proviso-local-proj :project-uid)
+                       (concat "neon#" base "main/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "main/")))
+      ;; open up file from other project
+      (find-file (concat base "secondary/qfile1"))
+      (push "qfile1" buffers)
+      (should (equal proviso-proj-alist
+                     (list
+                      (cons (concat base "main/")
+                            (concat "neon#" base "main/")))))
+      (should (not proviso-local-proj))
       ;; clean up buffers
       (dolist (b buffers) (kill-buffer b))
       )))
