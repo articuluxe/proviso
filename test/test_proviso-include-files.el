@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-07-30 06:36:27 dharms>
+;; Modified Time-stamp: <2019-09-24 08:39:57 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: proviso project include files test
 
@@ -101,6 +101,33 @@
    (proviso-put proj :proj-alist
                '( (:name \"base\" :dir \"d/\")
                   )))
+)")
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (proviso-get proviso-local-proj :include-files)
+                  (list (concat base "a/b/c/d/"))))
+      (should (equal (proviso-get proviso-local-proj :include-ff-files)
+                     (list "." (concat base "a/b/c/d")
+                           (concat base "a/b/c"))))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-include-open-project-relative-dir-environment-var ()
+  (proviso-test-reset-all)
+  (let ((base (file-name-directory load-file-name))
+        (process-environment '("TEMP=d"))
+        file-contents)
+    (cl-letf (((symbol-function 'proviso--eval-file)
+               (lambda (_)
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
+      ;; open file
+      (setq file-contents "(
+:proj-alist ((:name \"base\" :dir \"$TEMP/\"))
 )")
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)

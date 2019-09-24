@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 14:09:43 dan.harms>
+;; Modified Time-stamp: <2019-09-23 08:41:40 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -116,7 +116,7 @@ non-nil, the opposite behavior will be chosen."
     (when int-dir (make-directory int-dir t))
     (dolist (elt tags-alist)
       (let* ((name (plist-get elt :name))
-             (dir (plist-get elt :dir))
+             (dir (proviso-substitute-env-vars (plist-get elt :dir)))
              (dir-abs (if (and dir (file-name-absolute-p dir)) dir
                         (concat root dir)))
              (subname (concat name "-tags"))

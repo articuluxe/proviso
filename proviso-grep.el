@@ -1,9 +1,9 @@
 ;;; proviso-grep.el --- setup proviso grep
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-07-04 14:45:32 dan.harms>
+;; Modified Time-stamp: <2019-09-23 08:40:13 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -42,7 +42,7 @@
         (lst (proviso-get proj :proj-alist))
         elt entry dirs)
     (dolist (element lst)
-      (setq entry (plist-get element :dir))
+      (setq entry (proviso-substitute-env-vars (plist-get element :dir)))
       (setq elt (if (and entry (file-name-absolute-p entry))
                     entry
                   (concat root entry)))

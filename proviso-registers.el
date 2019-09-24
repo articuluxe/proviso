@@ -1,9 +1,9 @@
 ;;; proviso-registers.el --- setup proviso registers
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017, 2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April  4, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-22 08:09:04 dharms>
+;; Modified Time-stamp: <2019-09-23 08:39:45 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project register
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -38,14 +38,14 @@
         dir reg lst)
     (dolist (element srcdirs)
       (setq reg (plist-get element :register))
-      (setq dir (plist-get element :dir))
+      (setq dir (proviso-substitute-env-vars (plist-get element :dir)))
       (unless (and dir (file-name-absolute-p dir))
         (setq dir (concat root dir)))
       (when (and reg (characterp reg))
         (push (cons reg (cons 'file (concat remote dir))) lst)))
     (dolist (element blddirs)
       (setq reg (plist-get element :register))
-      (setq dir (plist-get element :dir))
+      (setq dir (proviso-substitute-env-vars (plist-get element :dir)))
       (unless (and dir (file-name-absolute-p dir))
         (setq dir (concat root dir)))
       (when (and reg (characterp reg))

@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 14:56:34 dharms>
+;; Modified Time-stamp: <2019-09-23 08:44:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -68,7 +68,7 @@ passed on to `proviso-fulledit-gather-files'."
     (unwind-protect
         (catch 'done
           (dolist (element lst)
-            (setq entry (plist-get element :dir))
+            (setq entry (proviso-substitute-env-vars (plist-get element :dir)))
             (setq dir
                   (concat
                    remote
@@ -109,7 +109,7 @@ optional exclusion list."
     (unwind-protect
         (catch 'done
           (dolist (element lst)
-            (setq entry (plist-get element :dir))
+            (setq entry (proviso-substitute-env-vars (plist-get element :dir)))
             (setq dir
                   (concat
                    remote

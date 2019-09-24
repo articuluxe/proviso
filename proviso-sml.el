@@ -1,9 +1,9 @@
 ;;; proviso-sml.el --- add support to profiles for smart-mode-line
-;; Copyright (C) 2017  Dan Harms (dharms)
+;; Copyright (C) 2017, 2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January  6, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2017-09-22 08:09:36 dharms>
+;; Modified Time-stamp: <2019-09-23 08:38:19 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso smart-mode-line
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -45,7 +45,7 @@
         title elt entry result)
     (dolist (element lst)
       (setq title (plist-get element :name))
-      (setq entry (plist-get element :dir))
+      (setq entry (proviso-substitute-env-vars (plist-get element :dir)))
       (setq elt (if (and entry (file-name-absolute-p entry))
                     entry (concat root entry)))
       ;; ensure a trailing slash

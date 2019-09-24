@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-21 22:11:31 dharms>
+;; Modified Time-stamp: <2019-09-23 08:46:06 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -401,11 +401,12 @@ HOST is an optional remote host."
   "Substitute environment variables contained in STR.
 Differs with `substitute-env-vars' because multiple embedded
 layers of substitutions are allowed."
-  (let ((s (substitute-env-vars str t)))
-    (while (not (string-equal s str))
-      (setq str s)
-      (setq s (substitute-env-vars s t)))
-    str))
+  (if str
+      (let ((s (substitute-env-vars str t)))
+        (while (not (string-equal s str))
+          (setq str s)
+          (setq s (substitute-env-vars s t)))
+        str)))
 
 (defun proviso-find-file-upwards-helper (path file)
   "Helper function to search upward from PATH for FILE."

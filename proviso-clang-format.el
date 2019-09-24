@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, November 10, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-06 15:33:24 dharms>
+;; Modified Time-stamp: <2019-09-23 08:38:53 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -88,7 +88,8 @@ MODE is the `major-mode'."
       (let ((lst (proviso-get proj :proj-alist))
             dir try)
         (and (car lst)
-             (setq dir (plist-get (car lst) :dir))
+             (setq dir (proviso-substitute-env-vars
+                        (plist-get (car lst) :dir)))
              (setq try (concat root
                                (file-name-as-directory dir)
                                name))

@@ -1,9 +1,9 @@
 ;;; proviso-include-files.el --- setup proviso project include files
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-11-20 06:22:26 dharms>
+;; Modified Time-stamp: <2019-09-24 08:37:49 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -45,7 +45,8 @@
     (setq proviso--ignore-load-errors nil)
     (setq lst
           (seq-filter (lambda (elt)
-                        (setq entry (plist-get elt :dir))
+                        (setq entry (proviso-substitute-env-vars
+                                     (plist-get elt :dir)))
                         (setq path
                               (concat
                                remote
@@ -71,7 +72,7 @@
         (lst (proviso-get proj :proj-alist))
         elt entry includes ff-includes)
     (dolist (element lst)
-      (setq entry (plist-get element :dir))
+      (setq entry (proviso-substitute-env-vars (plist-get element :dir)))
       (setq elt (concat (when (or (null entry) (f-relative? entry)) root) entry))
       (push (file-name-as-directory elt) includes) ;ensure trailing slash
       (push (concat remote elt) ff-includes))
