@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-23 08:40:13 dharms>
+;; Modified Time-stamp: <2019-09-27 11:41:42 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -99,7 +99,7 @@
        (concat "\"(\" -name \""
                (proviso-grep--create-inclusion-str include-files)
                "\" \")\" "))
-     "-print0 | xargs -0 grep " proviso-grep-args " ")))
+     "-print0 | xargs -0 grep ")))
 
 (defun proviso-grep--create-command (&optional arg)
   "Create a command suitable for grep to search for a string.
@@ -137,6 +137,7 @@ ARG allows customizing the selection of the root search directory."
             ;; some grep variants barf on trailing slashes
             (directory-file-name dir)
             cmd
+            proviso-grep-args " "
             (when search-string
               (proviso-grep--sanitize-search-str search-string)))))
 
