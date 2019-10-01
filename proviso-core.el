@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-23 08:46:06 dharms>
+;; Modified Time-stamp: <2019-10-01 14:05:20 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -444,11 +444,20 @@ Returns a list (ROOT FILE)."
               (locate-dominating-file
                dir
                (lambda (parent)
-                 (setq file
-                       (car (directory-files
-                             parent t
-                             (concat "\\sw*" pattern)
-                             t)))))
+                 (let ((files (directory-files
+                               parent t
+                               (concat "\\sw*" pattern)
+                               t)))
+                   (setq file (car
+                               (seq-remove
+                                (lambda (f)
+                                  (and
+                                   (string-match-p "\\.git$" f)
+                                   (not (file-directory-p f))
+                                   ;; a .git file (not directory): this should
+                                   ;; be sufficient to ignore submodules.
+                                   ))
+                                files))))))
             (proviso-find-file-upwards
              dir
              (concat "\\sw*" pattern))))
@@ -462,7 +471,8 @@ will be absolute.  Project files can look like any of the following:
     1) .proviso
     2) proj.proviso
     3) .proj.proviso
-    4) .git
+    4) .git          (please note git submodules are explicitly ignored)
+    5) .svn
 These are tried in order until one is matched.  Note that the car, FILE, may
 be a directory."
   (catch 'found
