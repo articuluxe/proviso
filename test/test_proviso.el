@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-23 23:49:41 dharms>
+;; Modified Time-stamp: <2019-10-03 09:01:00 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 
@@ -272,8 +272,8 @@
       (write-region "" nil (concat base "m/n/nfile2"))
       (write-region "" nil (concat base "p/q/qfile1"))
       ;; open first file, init new project
-      (proviso-define-project "neon" (concat "/m/"))
-      (proviso-define-project "fog" (concat "/p"))
+      (proviso-define-project "neon" '(("/m/")))
+      (proviso-define-project "fog" '(("/p")))
       (should-not proviso-local-proj)
       (find-file (concat base "m/n/nfile1"))
       (push "nfile1" buffers)
@@ -285,8 +285,8 @@
                                  (concat "neon#" base "m/")))))
       (should (equal proviso-path-alist
                      (list
-                      (cons "/p" "fog")
-                      (cons "/m/" "neon"))))
+                      (list "/p" "fog")
+                      (list "/m/" "neon"))))
       (should (string= (concat base "m/")
                        (proviso-get proviso-local-proj :root-dir)))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -349,8 +349,8 @@
       (write-region "" nil (concat base "main/n/nfile2"))
       (write-region "" nil (concat base "secondary/q/qfile1"))
       ;; open first file, init new project
-      (proviso-define-project "neon" (concat "/main"))
-      (proviso-define-project "fog" (concat "/second")) ;intentional error
+      (proviso-define-project "neon" '(("/main")))
+      (proviso-define-project "fog" '(("/second"))) ;intentional error
       (should-not proviso-local-proj)
       (find-file (concat base "main/n/nfile1"))
       (push "nfile1" buffers)
@@ -366,8 +366,8 @@
       ;; For this reason, the project "secondary" will not be found.
       (should (equal proviso-path-alist
                      (list
-                      (cons "/second" "fog")
-                      (cons "/main" "neon"))))
+                      (list "/second" "fog")
+                      (list "/main" "neon"))))
       (should (string= (concat base "main/")
                        (proviso-get proviso-local-proj :root-dir)))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -398,7 +398,7 @@
                (lambda (_)
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
-      (proviso-define-project "neon" base)
+      (proviso-define-project "neon" (list (list base)))
       (should-not proviso-local-proj)
       (find-file (concat home ".bashrc"))
       (push ".bashrc" buffers)
@@ -409,7 +409,7 @@
                      (list (cons base
                                  (concat "neon#" base)))))
       (should (equal proviso-path-alist
-                     (list (cons base "neon"))))
+                     (list (list base "neon"))))
       (should (string= (concat base "")
                        (proviso-get proviso-local-proj :root-dir)))
       (should (string= (proviso-get proviso-local-proj :project-name)
@@ -438,7 +438,7 @@
       (make-directory (concat base "m/n") t)
       (write-region "" nil (concat base "m/n/nfile1"))
       ;; open first file, init new project
-      (proviso-define-project "neon" "/m/" :tag1 'value1)
+      (proviso-define-project "neon" '(("/m/")) :tag1 'value1)
       (should-not proviso-local-proj)
       (find-file (concat base "m/n/nfile1"))
       (push "nfile1" buffers)
@@ -446,7 +446,7 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (eq (proviso-get proviso-local-proj :inited) t))
       (should (equal proviso-path-alist
-                     (list (cons "/m/" "neon"))))
+                     (list (list "/m/" "neon"))))
       (should (equal proviso-proj-alist
                      (list (cons (concat base "m/")
                                  (concat "neon#" base "m/")))))
@@ -473,7 +473,7 @@
                (lambda (_)
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
-      (proviso-define-project "actual" "a/b" :tag "real" :tag2 "present")
+      (proviso-define-project "actual" '(("a/b")) :tag "real" :tag2 "present")
       (should-not proviso-local-proj)
       ;; open first file, init new project.
       ;; Real project files override provisional projects

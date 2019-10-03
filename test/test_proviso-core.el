@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-17 15:55:20 dan.harms>
+;; Modified Time-stamp: <2019-10-03 08:41:29 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 
@@ -32,7 +32,7 @@
 ;; tests
 (ert-deftest proviso-core-manipulate-properties-test ()
   (proviso-test-reset-all)
-  (proviso-define-project "test" "path")
+  (proviso-define-project "test" '(("path")))
   (let* ((prov (intern-soft "test" proviso-provisional-obarray))
          (proj (proviso-define-active-project "test" (symbol-plist prov))))
     (should (proviso-provisional-proj-p prov))
@@ -46,8 +46,8 @@
 
 (ert-deftest proviso-core-manipulate-properties-derived-test ()
   (proviso-test-reset-all)
-  (proviso-define-project "parent" "path" :p 'value)
-  (proviso-define-project-derived "child" "parent" "path")
+  (proviso-define-project "parent" '(("path")) :p 'value)
+  (proviso-define-project-derived "child" "parent" '(("path")))
   (let* ((prov (intern-soft "child" proviso-provisional-obarray))
          (proj (proviso-define-active-project "child" (symbol-plist prov))))
     (should (proviso-provisional-proj-p prov))
@@ -74,34 +74,34 @@
 (ert-deftest proviso-core-find-provisional-project-test ()
   (let ((proviso-path-alist '()))
     (should-not (proviso-find-provisional-project "~/src/path/path2/file")))
-  (let ((proviso-path-alist '(("path/" . "neon"))))
+  (let ((proviso-path-alist '(("path/" "neon"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path/" "neon"))))
-  (let ((proviso-path-alist '(("path" . "neon"))))
+             '("~/src/path/" "neon" "neon"))))
+  (let ((proviso-path-alist '(("path" "neon"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path" "neon"))))
-  (let ((proviso-path-alist '(("path2/" . "neon"))))
+             '("~/src/path" "neon" "neon"))))
+  (let ((proviso-path-alist '(("path2/" "neon"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path/path2/" "neon"))))
-  (let ((proviso-path-alist '(("\\(path2\\)/" . "neon-\\1"))))
+             '("~/src/path/path2/" "neon" "neon"))))
+  (let ((proviso-path-alist '(("\\(path2\\)/" "neon" "neon-\\1"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path/path2/" "neon-path2"))))
-  (let ((proviso-path-alist '(("\\(path\\)/\\(path\\(.*\\)\\)/" . "neon-\\3"))))
+             '("~/src/path/path2/" "neon" "neon-path2"))))
+  (let ((proviso-path-alist '(("\\(path\\)/\\(path\\(.*\\)\\)/" "neon" "neon-\\3"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path/path2/" "neon-2"))))
-  (let ((proviso-path-alist '(("\\(path\\)\\(unused\\)?/\\(path2\\)/" . "neon-\\3"))))
+             '("~/src/path/path2/" "neon" "neon-2"))))
+  (let ((proviso-path-alist '(("\\(path\\)\\(unused\\)?/\\(path2\\)/" "neon" "neon-\\3"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path/path2/" "neon-path2"))))
-  (let ((proviso-path-alist '(("src/\\(.+?\\)/\\(.+?\\)/" . "\\1-\\2"))))
+             '("~/src/path/path2/" "neon" "neon-path2"))))
+  (let ((proviso-path-alist '(("src/\\(.+?\\)/\\(.+?\\)/" "neon" "\\1-\\2"))))
     (should (equal
              (proviso-find-provisional-project "~/src/path/path2/file")
-             '("~/src/path/path2/" "path-path2"))))
+             '("~/src/path/path2/" "neon" "path-path2"))))
   )
 
 (ert-deftest proviso-core-test-add-active-projects ()

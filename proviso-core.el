@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-01 14:05:20 dan.harms>
+;; Modified Time-stamp: <2019-10-03 08:58:28 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -45,9 +45,11 @@
   "Array of provisional project objects.")
 
 (defvar proviso-path-alist nil
-  "Alist of pairs of strings (REGEXP . PROJECT-NAME).
-This is a provisional mapping of potential projects.
-A project is used for a file if that file's path matches REGEXP.")
+  "Alist of strings mapping potential projects.
+Each element is a list of the form (REGEXP PROJECT NAME).  REGEXP
+is used to match the path.  PROJECT is the resulting project.
+NAME is an optional NAME to apply to the project for display
+purposes; if NAME is nil, PROJECT is used for the display name.")
 
 (defvar proviso-remote-projects
   (ht-create 'equal)
@@ -154,27 +156,49 @@ PROJ is not simply a basename but includes a path."
                                      )
   "A list of patterns that signify project roots.")
 
-(defun proviso-define-project (project path &rest plist)
-  "Create a provisional project named PROJECT located at PATH.
-Add to it the property list PLIST."
+(defun proviso-define-project (project forms &rest plist)
+  "Create a provisional project named PROJECT with path FORMS.
+FORMS is an alist with each element of the format (PATH . NAME),
+where PATH is a regexp to match a file path, and NAME is an
+optional name given to the resultant project.  If NAME is not
+supplied, the project name itself is used.  To the project is
+added the property list PLIST."
   (let ((proj (intern project proviso-provisional-obarray)))
     (when plist
       (setplist proj plist))
-    (setq proviso-path-alist
-          (cons (cons path project) proviso-path-alist))
+    (dolist (form forms)
+      (setq proviso-path-alist
+            (cons (append
+                   (list (car form)
+                         project)
+                   (if (cdr form)
+                       (list (cdr form))
+                     nil))
+                  proviso-path-alist)))
     proj))
 
-(defun proviso-define-project-derived (project parent path &rest plist)
-  "Create a provisional project named PROJECT located at PATH.
-Its parent is PARENT.  Add to it the property list PLIST."
+(defun proviso-define-project-derived (project parent forms &rest plist)
+  "Create a provisional project PROJECT with parent PARENT at path FORMS.
+FORMS is an alist with each element of the format (PATH . NAME),
+where PATH is a regexp to match a file path, and NAME is an
+optional name given to the resultant project.  If NAME is not
+supplied, the project name itself is used.  To the project is
+added the property list PLIST."
   (let ((parent (intern-soft parent proviso-provisional-obarray))
         (child (intern project proviso-provisional-obarray)))
     (setplist child
               (append
                (list :parent parent)
                plist))
-    (setq proviso-path-alist
-          (cons (cons path project) proviso-path-alist))
+    (dolist (form forms)
+      (setq proviso-path-alist
+            (cons (append
+                   (list (car form)
+                         project)
+                   (if (cdr form)
+                       (list (cdr form))
+                     nil))
+                  proviso-path-alist)))
     child))
 
 (defun proviso-define-active-project (project &optional plist)
@@ -245,22 +269,23 @@ matched sub-expressions contained within ORIG, according to
 
 (defun proviso-find-provisional-project (&optional filename)
   "Scan `proviso-path-alist' for an entry to match FILENAME.
-If found, returns a list '(PATH project)."
+If found, returns a list '(PATH project name)."
   (let ((file (or filename (buffer-file-name) (buffer-name))))
     (catch 'exit
       (progn
         (mapc (lambda (elt)
-                (if (string-match (car elt) file)
+                (if (string-match (nth 0 elt) file)
                     (throw 'exit
                            (list
                             (substring file 0 (match-end 0))
+                            (nth 1 elt)
                             (seq-let [str md]
                                 (proviso--get-provisonal-match-data file (match-data))
                               (if (and str md)
                                   (progn
                                     (set-match-data md)
-                                    (replace-match (cdr elt) t nil str 0))
-                                (cdr elt)))))))
+                                    (replace-match (nth 2 elt) t nil str 0))
+                                (nth 1 elt)))))))
               proviso-path-alist)
         nil))))
 
