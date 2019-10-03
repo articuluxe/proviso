@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-23 16:15:20 dan.harms>
+;; Modified Time-stamp: <2019-10-03 10:36:06 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -206,7 +206,7 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
         (seq-let [root-file root-dir] (proviso--find-root dir t)
           (unless root-dir (setq root-dir dir))
           ;; first check for a provisional project
-          (seq-let [provisional-path provisional-project]
+          (seq-let [provisional-path provisional-project provisional-name]
               (proviso-find-provisional-project root-dir)
             (if (and provisional-project (file-directory-p provisional-path))
                 (let (proj other-props)
@@ -223,6 +223,7 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
                     (message "Adding properties from project file %s to provisional project \'%s\'"
                              (abbreviate-file-name root-file)
                              basename))
+                  (setq basename provisional-name) ;basename used for display name here on
                   (unless (setq proviso-local-proj
                                 (proviso-define-active-project fullname props))
                     (error "Unable to set project \'%s\' from provisional \'%s\' for %s"

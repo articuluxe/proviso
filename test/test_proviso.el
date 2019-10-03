@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-03 09:01:00 dharms>
+;; Modified Time-stamp: <2019-10-03 10:34:18 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 
@@ -255,7 +255,7 @@
       (dolist (b buffers) (kill-buffer b))
       )))
 
-(ert-deftest proviso-open-provisional-project-test ()
+(ert-deftest proviso-open-provisional-project-test-simple ()
   (proviso-test-reset-all)
   (let ((base (temporary-file-directory))
         (file-contents "")
@@ -325,6 +325,90 @@
                        (proviso-get proviso-local-proj :root-dir)))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "fog"))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "p/")))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      ;; clean up buffers
+      (dolist (b buffers) (kill-buffer b))
+      )))
+
+(ert-deftest proviso-open-provisional-project-test-namechanged ()
+  (proviso-test-reset-all)
+  (let ((base (temporary-file-directory))
+        (file-contents "")
+        buffers)
+    (cl-letf (((symbol-function 'proviso--eval-file)
+               (lambda (_)
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
+      (delete-directory (concat base "m") t)
+      (delete-directory (concat base "p") t)
+      (make-directory (concat base "m/left") t)
+      (make-directory (concat base "m/right") t)
+      (make-directory (concat base "p/") t)
+      (write-region "" nil (concat base "m/left/nfile1"))
+      (write-region "" nil (concat base "m/right/nfile2"))
+      (write-region "" nil (concat base "p/qfile1"))
+      ;; open first file, init new project
+      (proviso-define-project "neon" '(("/m/le\\(.+?\\)/" . "m-so\\1")
+                                       ("/m/\\(.+?\\)ght/" . "m-easy\\1der")))
+      (proviso-define-project "fog" '(("/\\(p\\)" . "\\1resent")))
+      (should-not proviso-local-proj)
+      (find-file (concat base "m/left/nfile1"))
+      (push "nfile1" buffers)
+      (should proviso-local-proj)
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (equal proviso-proj-alist
+                     (list (cons (concat base "m/left/")
+                                 (concat "neon#" base "m/left/")))))
+      (should (equal proviso-path-alist
+                     (list
+                      (list "/\\(p\\)" "fog" "\\1resent")
+                      (list "/m/\\(.+?\\)ght/" "neon" "m-easy\\1der")
+                      (list "/m/le\\(.+?\\)/" "neon" "m-so\\1"))))
+      (should (string= (concat base "m/left/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "m-soft"))
+      (should (string= (proviso-get proviso-local-proj :project-uid)
+                       (concat "neon#" base "m/left/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "m/left/")))
+      ;; open 2nd file, different actual project from same provisional project
+      (find-file (concat base "m/right/nfile2"))
+      (push "nfile2" buffers)
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (equal proviso-proj-alist
+                     (list (cons (concat base "m/right/")
+                                 (concat "neon#" base "m/right/"))
+                           (cons (concat base "m/left/")
+                                 (concat "neon#" base "m/left/")))))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (string= (concat base "m/right/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "m-easyrider"))
+      (should (string= (proviso-get proviso-local-proj :project-uid)
+                       (concat "neon#" base "m/right/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "m/right/")))
+      ;; open 3rd file, different actual and provisional project
+      (setq file-contents " ")
+      (find-file (concat base "p/qfile1"))
+      (push "qfile1" buffers)
+      (should (equal proviso-proj-alist
+                     (list (cons (concat base "p/")
+                                 (concat "fog#" base "p/"))
+                           (cons (concat base "m/right/")
+                                 (concat "neon#" base "m/right/"))
+                           (cons (concat base "m/left/")
+                                 (concat "neon#" base "m/left/")))))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (string= (concat base "p/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "present"))
       (should (string= (proviso-get proviso-local-proj :scratch-dir)
                        (concat base "p/")))
       (should (eq (proviso-get proviso-local-proj :inited) t))
