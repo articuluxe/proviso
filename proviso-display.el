@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-24 21:06:17 dharms>
+;; Modified Time-stamp: <2019-10-03 10:51:06 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -192,11 +192,11 @@ longest root dir."
                (list elt
                      (vconcat
                       (list
-                       (propertize (cdr elt) 'face '(shadow italic))
-                       (propertize (car elt) 'face '(shadow italic))
+                       (propertize (nth 1 elt) 'face '(shadow italic))
+                       (propertize (nth 0 elt) 'face '(shadow italic))
                        ""))))
              (sort (copy-tree proviso-path-alist) (lambda (one two)
-                                        (string< (cdr one) (cdr two))))))))
+                                        (string< (nth 1 one) (nth 1 two))))))))
 
 (define-derived-mode proviso-display-mode
   tabulated-list-mode "Proviso"
