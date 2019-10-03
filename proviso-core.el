@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-03 08:58:28 dharms>
+;; Modified Time-stamp: <2019-10-03 10:40:02 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -652,10 +652,10 @@ Nothing is done if no such file exists in the root director of PROJ."
 
 (defun proviso-load-environment-file (file)
   "Load environment variables from FILE, if it exists."
-    (when (and (featurep 'parsenv)
-               (file-exists-p file))
-      (parsenv-load-env file)
-      (message "Loaded environment file %s" file)))
+  (when (and (featurep 'parsenv)
+             (file-exists-p file))
+    (parsenv-load-env file)
+    (message "Loaded environment file %s" file)))
 
 (provide 'proviso-core)
 ;;; proviso-core.el ends here
