@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-03 10:37:59 dan.harms>
+;; Modified Time-stamp: <2019-10-03 12:35:33 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -210,6 +210,8 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
               (proviso-find-provisional-project root-dir)
             (if (and provisional-project (file-directory-p provisional-path))
                 (let (proj other-props)
+                  (when remote-host
+                    (setq provisional-path (file-remote-p provisional-path 'localname)))
                   (setq root-dir (file-name-as-directory provisional-path))
                   (setq basename provisional-project)
                   (setq proj (intern-soft basename proviso-provisional-obarray))
