@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  2, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-27 11:45:09 dan.harms>
+;; Modified Time-stamp: <2019-10-07 06:44:43 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project ag silver searcher
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -126,6 +126,17 @@ ARG allows customizing the selection of the root search directory."
         " "
         (directory-file-name dir))
        (1+ idx))))
+
+(defun proviso-ag--create-search-cmd (proj)
+  "Create a command to search in project PROJ."
+  (let* ((dir (proviso-get proj :root-dir))
+         (remote (proviso-get proj :remote-prefix))
+         (cmd (proviso-ag--create-ag-str proj)))
+    (setq dir (if remote
+                  (replace-regexp-in-string (regexp-quote remote) "" dir)
+                (expand-file-name dir)))
+    (list (concat "ag" cmd)
+          (directory-file-name dir))))
 
 (defun proviso-ag--sanitize-search-string (search-string)
   "Sanitize SEARCH-STRING."

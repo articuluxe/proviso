@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-01 08:39:29 dharms>
+;; Modified Time-stamp: <2019-10-07 06:44:44 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -142,9 +142,9 @@ ARG allows customizing the selection of the root search directory."
               (proviso-grep--sanitize-search-str search-string)))))
 
 (defun proviso-grep--create-search-cmd (proj)
-  "Create a command to search for STR in project PROJ."
+  "Create a command to search in project PROJ."
   (let* ((dir (proviso-get proj :root-dir))
-         (remote (file-remote-p dir))
+         (remote (proviso-get proj :remote-prefix))
          (cmd (proviso-grep--create-grep-str proj)))
     (setq dir (if remote
                   (replace-regexp-in-string (regexp-quote remote) "" dir)
