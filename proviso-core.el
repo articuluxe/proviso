@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-03 10:40:02 dan.harms>
+;; Modified Time-stamp: <2019-10-07 22:45:36 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -274,18 +274,21 @@ If found, returns a list '(PATH project name)."
     (catch 'exit
       (progn
         (mapc (lambda (elt)
-                (if (string-match (nth 0 elt) file)
-                    (throw 'exit
-                           (list
-                            (substring file 0 (match-end 0))
-                            (nth 1 elt)
-                            (seq-let [str md]
-                                (proviso--get-provisonal-match-data file (match-data))
-                              (if (and str md)
-                                  (progn
-                                    (set-match-data md)
-                                    (replace-match (nth 2 elt) t nil str 0))
-                                (nth 1 elt)))))))
+                (let ((path (proviso-substitute-env-vars (nth 0 elt)))
+                      (project (proviso-substitute-env-vars (nth 1 elt)))
+                      (name (proviso-substitute-env-vars (nth 2 elt))))
+                  (if (string-match path file)
+                      (throw 'exit
+                             (list
+                              (substring file 0 (match-end 0))
+                              project
+                              (seq-let [str md]
+                                  (proviso--get-provisonal-match-data file (match-data))
+                                (if (and str md)
+                                    (progn
+                                      (set-match-data md)
+                                      (replace-match name t nil str 0))
+                                  project)))))))
               proviso-path-alist)
         nil))))
 
