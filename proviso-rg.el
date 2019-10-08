@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-27 11:47:24 dan.harms>
+;; Modified Time-stamp: <2019-10-09 08:51:14 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project rg ripgrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -133,6 +133,20 @@ ARG allows customizing the selection of the root search directory."
         " "
         (directory-file-name dir))
        (1+ idx))))
+
+(defun proviso-rg-create-search-cmd (proj str args)
+  "Return a command line to search for STR with args ARGS in project PROJ."
+  (let* ((dir (proviso-get proj :root-dir))
+         (remote (proviso-get proj :remote-prefix))
+         (cmd (proviso-rg--create-rg-str
+               proj
+               (proviso-rg--compute-quote-char remote))))
+    (setq dir (if remote
+                  (replace-regexp-in-string (regexp-quote remote) "" dir)
+                (expand-file-name dir)))
+    (concat "rg " cmd args " "
+            (proviso-rg--sanitize-search-string str) " "
+            (directory-file-name dir))))
 
 (defun proviso-rg--sanitize-search-string (search-string)
   "Sanitize SEARCH-STRING."

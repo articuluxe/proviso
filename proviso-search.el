@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 25, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-03 21:03:23 dharms>
+;; Modified Time-stamp: <2019-10-09 08:56:11 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -28,138 +28,101 @@
 
 ;;; Code:
 (require 'proviso-grep)
+(require 'proviso-ag)
+(require 'xref)
 
 ;;;###autoload
-(defun proviso-search (&optional arg)
-  "Search through multiple projects.
+(defun proviso-search-grep (&optional arg)
+  "Search through multiple projects using grep.
 ARG allows customizing search parameters."
   (interactive "P")
   (let ((str (if (region-active-p)
                  (buffer-substring (region-beginning) (region-end))
                (thing-at-point 'symbol)))
         lst)
+    (setq str (read-string "Search projects for: " str))
+    ;; todo arguments
     (mapatoms (lambda (atom)
                 (push atom lst))
               proviso-obarray)
-    (proviso-search-projects str (nreverse lst))))
+    (proviso-search-projects (nreverse lst)
+                             (list #'proviso-grep-create-search-cmd
+                                   str
+                                   proviso-grep-args))))
 
-(defun proviso-search-projects (search-str projects)
-  "Run a search for SEARCH-STR through projects PROJECTS."
+;;;###autoload
+(defun proviso-search-ag (&optional arg)
+  "Search through multiple projects using the silver searcher.
+ARG allows customizing search parameters."
+  (interactive "P")
+  (let ((str (if (region-active-p)
+                 (buffer-substring (region-beginning) (region-end))
+               (thing-at-point 'symbol)))
+        lst)
+    (setq str (read-string "Search projects for: " str))
+    ;; todo arguments
+    (mapatoms (lambda (atom)
+                (push atom lst))
+              proviso-obarray)
+    (proviso-search-projects (nreverse lst)
+                             (list #'proviso-ag-create-search-cmd
+                                   str
+                                   proviso-ag-args))))
+
+;;;###autoload
+(defun proviso-search-rg (&optional arg)
+  "Search through multiple projects using ripgrep.
+ARG allows customizing search parameters."
+  (interactive "P")
+  (let ((str (if (region-active-p)
+                 (buffer-substring (region-beginning) (region-end))
+               (thing-at-point 'symbol)))
+        lst)
+    (setq str (read-string "Search projects for: " str))
+    ;; todo arguments
+    (mapatoms (lambda (atom)
+                (push atom lst))
+              proviso-obarray)
+    (proviso-search-projects (nreverse lst)
+                             (list #'proviso-rg-create-search-cmd
+                                   str
+                                   proviso-rg-args))))
+
+(defun proviso-search-projects (projects spec)
+  "Run a search through PROJECTS (a list of projects) for SPEC.
+SPEC is a list (FORM STR ARGS), where FORM is a function called
+.
+"
   (let ((buffer (get-buffer-create " *proviso-search*"))
         (grep-re (first (car grep-regexp-alist)))
         (file-group (second (car grep-regexp-alist)))
         (line-group (third (car grep-regexp-alist)))
-        command status hits matches)
-    (setq search-str (read-string
-                      "Search projects for: " search-str))
-    ;; todo arguments
-    (setq command (concat proviso-grep-args " "
-                          (proviso-grep--sanitize-search-str search-str)))
+        status hits matches)
     (with-current-buffer buffer
       (erase-buffer)
       (dolist (project projects)
-        (setq status (proviso-search--project project command))
-        )
+        (setq status (proviso-search--project project spec)))
       (goto-char (point-min))
       (while (re-search-forward grep-re nil t)
         (push (list (string-to-number (match-string line-group))
                     (match-string file-group)
                     (buffer-substring-no-properties (point) (line-end-position)))
-              hits))
-        ;; (message "drh grep found %s" hits)
-      )
+              hits)))
     (if (setq matches
-              (xref--convert-hits (nreverse hits) search-str))
+              (xref--convert-hits (nreverse hits) (nth 1 spec)))
         (xref--show-xrefs matches nil t)
       (user-error "No results"))))
 
-(defun proviso-search--project (proj substr)
-  "Search for a substring SUBSTR in project PROJ."
-  (let* ((stem (proviso-grep--create-search-cmd proj))
-         (default-directory (proviso-get proj :root-dir))
-         (command (concat stem substr)))
+(defun proviso-search--project (proj spec)
+  "Search for a string in project PROJ according to SPEC.
+SPEC is a list (FORM STR ARGS), with STR the search string and
+ARGS the desired command line switches.  FORM is a method to call
+to create the final command line, of the signature (PROJ STR
+ARGS), where PROJ is the project, STR is the search string, and
+ARGS are the desired command line switches."
+  (let ((command (funcall (nth 0 spec) proj (nth 1 spec) (nth 2 spec)))
+         (default-directory (proviso-get proj :root-dir)))
     (call-process-shell-command command nil t)))
-
-(defun proviso-search--last (str)
-  "Return the last identifier (possibly escaped) in STR."
-  (let ((pos (1- (string-width str))))
-    (while (not (or (eq (aref str pos) ?\s)
-                    (eq pos 0)))
-      (decf pos))
-	(if (and (eq (aref str pos) ?\s)
-			 (< pos (1- (string-width str))))
-		(incf pos))
-    (list (substring str pos))
-    (substring str pos)))
-
-
-
-;;   (interactive)
-;;   (let* ((proviso-local-proj (car projects))
-;;          (cmd (proviso-grep--create-command))
-;;          (buffer (get-buffer-create "*proviso-search*"))
-;;          (proc (get-buffer-process buffer))
-;;          )
-;;     (with-current-buffer buffer
-;;       ;; TODO handle current proc
-;;       ;; TODO set revert buffer func
-;;       (erase-buffer)
-;;       (setq buffer-read-only nil)
-;;       (insert "-*- mode: grep-mode; default-directory: "
-;;               (abbreviate-file-name default-directory)
-;;               (format " -*-\ngrep started at %s\n\n"
-;;                       (substring (current-time-string) 0 19))
-;;               cmd "\n")
-;;       (setq next-error-last-buffer buffer)
-;;       (set-buffer-modified-p nil)
-;;       ;; TODO pop up window
-;;       (let* ((process-environment (append compilation-environment
-;;                                           (list
-;;                                            (format "INSIDE_EMACS=%s,compile"
-;;                                                    emacs-version)
-;;                                            "TERM=emacs-grep"
-;;                                            "GREP_COLOR=01;31"
-;;                                            "GREP_COLORS=mt=01;31:fn=:ln=:bn=:se=:sl=:cx=:ne"
-;;                                            )
-;;                                           (copy-sequence process-environment)))
-;;              (proc (start-file-process-shell-command "search" buffer cmd)))
-;;         (set-process-sentinel proc 'proviso-search-sentinel)
-;;         (set-process-filter proc 'proviso-search-filter)
-;;         ))))
-
-;; (defun proviso-search-sentinel (proc msg)
-;;   "Search process PROC has changed state according to MSG."
-;;   (when (memq (process-status proc) '(exit signal))
-;;     (let ((buffer (process-buffer proc)))
-;;       (if (null (buffer-name buffer))
-;;           (set-process-buffer proc nil)
-;;         (with-current-buffer buffer
-;;           t
-;;           )
-;;         (delete-process proc)))))
-
-;; (defun proviso-search-filter (proc msg)
-;;   "Filter method for search results from process PROC with status MSG.
-;; Match highlighting escape sequences in grep results."
-;;   (when (buffer-live-p (process-buffer proc))
-;;     (with-current-buffer (process-buffer proc)
-;;       (let ((start (marker-position (process-mark proc)))
-;;             (inhibit-read-only t)
-;;             beg end)
-;;         (goto-char start)
-;;         (insert msg)
-;;         (set-marker (process-mark proc) (point))
-;;         (save-excursion
-;;           (forward-line 0)
-;;           (setq end (point))
-;;           (goto-char start)
-;;           (setq beg (point))
-;;           ;; todo
-
-;;         )
-;;       )
-;;     )
-;;   )
 
 (provide 'proviso-search)
 ;;; proviso-search.el ends here
