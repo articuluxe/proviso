@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-03 08:41:29 dharms>
+;; Modified Time-stamp: <2019-10-09 06:44:07 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 
@@ -105,18 +105,26 @@
   )
 
 (ert-deftest proviso-core-test-add-active-projects ()
-  (let (proj)
+  (let (proj proj2)
     (proviso-test-reset-all)
     (should-not (proviso-find-active-project "/a/b/" "rem-host"))
+    (should-not (proviso-find-active-project "/a/c/" "rem-host"))
     (proviso-add-active-project-path "a/b/" "neon#/a/b/@rem-host" "rem-host")
+    (proviso-add-active-project-path "a/c/" "gold#/a/c/@rem-host" "rem-host")
     (setq proj (proviso-find-active-project "/a/b/" "rem-host"))
     (should proj)
     (proviso-define-active-project proj) ;so that proviso-put works
     (should (equal proj "neon#/a/b/@rem-host"))
     ;; test hack: normally the load process would set this
     (proviso-put proj :remote-host "rem-host")
+    (setq proj2 (proviso-find-active-project "/a/c/" "rem-host"))
+    (should proj2)
+    (proviso-define-active-project proj2) ;so that proviso-put works
+    (should (equal proj2 "gold#/a/c/@rem-host"))
+    (proviso-put proj2 :remote-host "rem-host")
     (proviso-hard-reset proj)
     (should (not (proviso-find-active-project "/a/b/" "rem-host")))
+    (should (proviso-find-active-project "/a/c/" "rem-host"))
     ))
 
 (ert-deftest proviso-core-find-root-test ()
