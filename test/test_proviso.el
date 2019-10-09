@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-03 10:34:18 dan.harms>
+;; Modified Time-stamp: <2019-10-09 16:07:54 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 
@@ -412,6 +412,90 @@
       (should (string= (proviso-get proviso-local-proj :scratch-dir)
                        (concat base "p/")))
       (should (eq (proviso-get proviso-local-proj :inited) t))
+      ;; clean up buffers
+      (dolist (b buffers) (kill-buffer b))
+      )))
+
+(ert-deftest proviso-open-provisional-project-test-multiple-same ()
+  (proviso-test-reset-all)
+  (let ((base (temporary-file-directory))
+        (file-contents "")
+        buffers)
+    (cl-letf (((symbol-function 'proviso--eval-file)
+               (lambda (_)
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
+      (delete-directory (concat base "base") t)
+      (make-directory (concat base "base/stem-one") t)
+      (make-directory (concat base "base/stem-two") t)
+      (write-region "" nil (concat base "base/stem-one/file1"))
+      (write-region "" nil (concat base "base/stem-one/file3"))
+      (write-region "" nil (concat base "base/stem-two/file2"))
+      ;; open first file, init new project
+      (proviso-define-project "neon" '(("base/stem-\\(.+?\\)/" . "neon-\\1")))
+      (should-not proviso-local-proj)
+      (find-file (concat base "base/stem-one/file1"))
+      (push "file1" buffers)
+      (should proviso-local-proj)
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (equal proviso-proj-alist
+                     (list (cons (concat base "base/stem-one/")
+                                 (concat "neon#" base "base/stem-one/")))))
+      (should (equal proviso-path-alist
+                     (list
+                      (list "base/stem-\\(.+?\\)/" "neon" "neon-\\1"))))
+      (should (string= (concat base "base/stem-one/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "neon-one"))
+      (should (string= (proviso-get proviso-local-proj :project-uid)
+                       (concat "neon#" base "base/stem-one/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "base/stem-one/")))
+      ;; open 2nd file, different actual project from same provisional project
+      (find-file (concat base "base/stem-two/file2"))
+      (push "file2" buffers)
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (equal proviso-proj-alist
+                     (list (cons (concat base "base/stem-two/")
+                                 (concat "neon#" base "base/stem-two/"))
+                           (cons (concat base "base/stem-one/")
+                                 (concat "neon#" base "base/stem-one/")))))
+      (should (equal proviso-path-alist
+                     (list
+                      (list "base/stem-\\(.+?\\)/" "neon" "neon-\\1"))))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (string= (concat base "base/stem-two/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "neon-two"))
+      (should (string= (proviso-get proviso-local-proj :project-uid)
+                       (concat "neon#" base "base/stem-two/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "base/stem-two/")))
+      ;; open up file from 1st project again
+      (find-file (concat base "base/stem-one/file3"))
+      (push "file3" buffers)
+      (should proviso-local-proj)
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (equal proviso-proj-alist
+                     (list (cons (concat base "base/stem-two/")
+                                 (concat "neon#" base "base/stem-two/"))
+                           (cons (concat base "base/stem-one/")
+                                 (concat "neon#" base "base/stem-one/")))))
+      (should (equal proviso-path-alist
+                     (list
+                      (list "base/stem-\\(.+?\\)/" "neon" "neon-\\1"))))
+      (should (string= (concat base "base/stem-one/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "neon-one"))
+      (should (string= (proviso-get proviso-local-proj :project-uid)
+                       (concat "neon#" base "base/stem-one/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base "base/stem-one/")))
       ;; clean up buffers
       (dolist (b buffers) (kill-buffer b))
       )))
