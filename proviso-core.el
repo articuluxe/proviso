@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-07 22:45:36 dharms>
+;; Modified Time-stamp: <2019-10-09 11:42:52 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -284,7 +284,7 @@ If found, returns a list '(PATH project name)."
                               project
                               (seq-let [str md]
                                   (proviso--get-provisonal-match-data file (match-data))
-                                (if (and str md)
+                                (if (and str md name)
                                     (progn
                                       (set-match-data md)
                                       (replace-match name t nil str 0))
