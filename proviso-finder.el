@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-07 10:58:41 dan.harms>
+;; Modified Time-stamp: <2019-09-23 08:44:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -300,9 +300,7 @@ OTHER-WINDOW means to open the file in the other window."
         (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
                           proviso-uninteresting-dirs))
         (include-files (or (proviso-get proj :grep-include-files)
-                           proviso-interesting-files))
-        (start-time (current-time))
-        (name (proviso-get proj :project-name)))
+                           proviso-interesting-files)))
     (when (proviso-finder--file-cache-enabled proj)
       (proviso-put proj :project-files-future
                    (async-start
@@ -313,14 +311,7 @@ OTHER-WINDOW means to open the file in the other window."
                        (proviso-finder-gather-files ,remote ,root (quote ,lst) t
                                                     (quote ,exclude-files)
                                                     (quote ,exclude-dirs)
-                                                    (quote ,include-files)))
-                    `(lambda (_)
-                       (message "It took %s to gather files for project %s"
-                                (format-seconds "%H, %M and %Z%S"
-                                                (float-time
-                                                 (time-subtract
-                                                  (current-time) (quote ,start-time))))
-                                ,name))))
+                                                    (quote ,include-files)))))
       (proviso-put proj :project-dirs-future
                    (async-start
                     `(lambda ()
@@ -328,15 +319,7 @@ OTHER-WINDOW means to open the file in the other window."
                        ,(async-inject-variables "load-path")
                        (require 'proviso-finder)
                        (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t
-                                                   (quote ,exclude-dirs)))
-                    `(lambda (_)
-                       (message "It took %s to gather dirs for project %s"
-                                (format-seconds "%H, %M and %Z%S"
-                                                (float-time
-                                                 (time-subtract
-                                                  (current-time) (quote ,start-time))))
-                                ,name))))
-      )))
+                                                   (quote ,exclude-dirs))))))))
 
 (add-hook 'proviso-hook-on-project-init 'proviso-finder--load-files)
 
