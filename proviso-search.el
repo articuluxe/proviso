@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 25, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-09 11:17:12 dan.harms>
+;; Modified Time-stamp: <2019-10-10 16:11:24 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -76,7 +76,10 @@ NAME is a descriptive term for the search driver."
     (setq str (read-string
                (format "Search projects (using %s) for: " name)
                str))
-    ;; todo arguments
+    (if arg
+        (setq args (read-string
+                   (format "%s arguments: " name)
+                   args)))
     (if (and str (not (string-empty-p str)))
         (progn
           (mapatoms (lambda (atom) (push atom lst)) proviso-obarray)
