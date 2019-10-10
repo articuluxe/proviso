@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-09 16:44:55 dan.harms>
+;; Modified Time-stamp: <2019-10-07 23:00:07 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -198,7 +198,7 @@ longest root dir."
                            (propertize (nth 2 elt) 'face '(shadow italic))
                          "")))))
              (sort (copy-tree proviso-path-alist) (lambda (one two)
-                                                    (string< (nth 1 one) (nth 1 two))))))))
+                                        (string< (nth 1 one) (nth 1 two))))))))
 
 (define-derived-mode proviso-display-mode
   tabulated-list-mode "Proviso"
@@ -218,12 +218,9 @@ longest root dir."
   "Display proviso projects."
   (interactive)
   (let ((buf (get-buffer-create proviso-display-buffer-name)))
-    (with-current-buffer buf
-      (setq buffer-read-only nil)
-      (erase-buffer)
-      (proviso-display-mode)
-      (tabulated-list-print))
-    (display-buffer buf)))
+    (pop-to-buffer buf)
+    (proviso-display-mode)
+    (tabulated-list-print)))
 
 (define-key proviso-display-mode-map "d" #'proviso-display-open-root-dired)
 (define-key proviso-display-mode-map "x" #'proviso-display-erase-project)
