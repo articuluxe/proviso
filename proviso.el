@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-09 16:43:28 dan.harms>
+;; Modified Time-stamp: <2019-10-10 08:51:36 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -219,7 +219,7 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
                   (setq fullname
                         (proviso-create-project-uid basename root-dir remote-host))
                   (proviso-add-active-project-path root-dir fullname remote-host)
-                  (setq props (if proj (symbol-plist proj) nil))
+                  (setq props (if proj (copy-tree (symbol-plist proj)) nil))
                   (when (and root-file
                              (setq other-props (proviso--eval-file root-file)))
                     (setq props (append props other-props))
