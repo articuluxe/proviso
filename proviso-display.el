@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-07 23:00:07 dharms>
+;; Modified Time-stamp: <2019-10-10 16:08:35 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -192,7 +192,8 @@ longest root dir."
                (list elt
                      (vconcat
                       (list
-                       (propertize (nth 1 elt) 'face '(shadow italic))
+                       (propertize (concat "-" (nth 1 elt) "-")
+                                   'face '(shadow italic))
                        (propertize (nth 0 elt) 'face '(shadow italic))
                        (if (nth 2 elt)
                            (propertize (nth 2 elt) 'face '(shadow italic))
@@ -206,7 +207,7 @@ longest root dir."
 \\{proviso-display-mode-map\}"
   (setq tabulated-list-format [("Project" 15 t)
                                ("Root" 55 t)
-                               ("Remote" 30 t)
+                               ("Remote/Name" 30 t)
                                ])
   (setq tabulated-list-sort-key nil)
   (setq tabulated-list-padding 2)

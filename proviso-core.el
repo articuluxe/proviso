@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-09 11:42:52 dan.harms>
+;; Modified Time-stamp: <2019-10-10 16:02:17 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -45,7 +45,7 @@
   "Array of provisional project objects.")
 
 (defvar proviso-path-alist nil
-  "Alist of strings mapping potential projects.
+  "Alist of lists mapping potential projects.
 Each element is a list of the form (REGEXP PROJECT NAME).  REGEXP
 is used to match the path.  PROJECT is the resulting project.
 NAME is an optional NAME to apply to the project for display
@@ -269,7 +269,7 @@ matched sub-expressions contained within ORIG, according to
 
 (defun proviso-find-provisional-project (&optional filename)
   "Scan `proviso-path-alist' for an entry to match FILENAME.
-If found, returns a list '(PATH project name)."
+If found, returns a list '(PATH PROJECT NAME)."
   (let ((file (or filename (buffer-file-name) (buffer-name))))
     (catch 'exit
       (progn
