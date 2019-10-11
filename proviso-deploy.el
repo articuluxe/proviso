@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-21 22:11:30 dharms>
+;; Modified Time-stamp: <2019-10-11 06:36:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -640,7 +640,9 @@ If ARG is non-nil, another project can be chosen."
   (let ((proj (if arg (proviso-choose-project)
                 (proviso-current-project))))
     (if proj
-        (proviso-deploy--run-all-deploys proj)
+        (let ((process-environment
+               (proviso-deploy--modify-environment proj process-environment)))
+          (proviso-deploy--run-all-deploys proj))
       (user-error "No project"))))
 
 (defun proviso-deploy--run-all-deploys (proj)
@@ -668,7 +670,9 @@ If ARG is non-nil, another project can be chosen."
   (let ((proj (if arg (proviso-choose-project)
                 (proviso-current-project))))
     (if proj
-        (proviso-deploy--run-last proj)
+        (let ((process-environment
+               (proviso-deploy--modify-environment proj process-environment)))
+          (proviso-deploy--run-last proj))
       (user-error "No project"))))
 
 (defun proviso-deploy--run-last (proj)
