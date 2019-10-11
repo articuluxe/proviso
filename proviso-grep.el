@@ -1,13 +1,13 @@
-;;; proviso-grep.el --- setup proviso grep
+;;; proviso-grep.el --- Utilities to support grep for proviso
 ;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-09 08:49:19 dharms>
+;; Modified Time-stamp: <2019-10-11 16:34:08 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
-;; Package-Requires: ((emacs "24.4"))
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

@@ -1,13 +1,13 @@
-;;; proviso-tags.el --- add tags functionality to profiles
+;;; proviso-tags.el --- Add tags functionality to proviso
 ;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-23 08:44:15 dharms>
+;; Modified Time-stamp: <2019-10-11 16:30:50 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso tags
 ;; URL: https://github.com/articuluxe/proviso.git
-;; Package-Requires: ((emacs "24.4"))
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

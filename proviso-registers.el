@@ -1,13 +1,13 @@
-;;; proviso-registers.el --- setup proviso registers
+;;; proviso-registers.el --- Setup proviso registers
 ;; Copyright (C) 2017, 2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April  4, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-23 08:39:45 dharms>
+;; Modified Time-stamp: <2019-10-11 16:29:44 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project register
 ;; URL: https://github.com/articuluxe/proviso.git
-;; Package-Requires: ((emacs "24.4"))
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

@@ -1,13 +1,13 @@
-;;; proviso-gud.el --- proviso gud utilities
+;;; proviso-gud.el --- Debugging utilities for proviso
 ;; Copyright (C) 2018-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-06-14 08:58:09 dharms>
+;; Modified Time-stamp: <2019-10-11 16:34:26 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools gdb proviso
 ;; URL: https://github.com/articuluxe/proviso.git
-;; Package-Requires: ((emacs "24.4"))
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

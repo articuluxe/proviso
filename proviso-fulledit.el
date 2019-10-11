@@ -1,13 +1,13 @@
-;;; proviso-fulledit.el --- full-edit for proviso
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;;; proviso-fulledit.el --- A full-edit utility for proviso
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-28 06:53:13 dharms>
+;; Modified Time-stamp: <2019-10-11 16:33:43 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
-;; Package-Requires: ((emacs "24.4"))
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
