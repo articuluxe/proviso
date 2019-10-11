@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 10:44:47 dan.harms>
+;; Modified Time-stamp: <2019-10-11 11:04:06 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -108,10 +108,11 @@ ID is an optional id."
     (set-text-properties 0 (- (length dest) 1) nil dest)
     (setq lst (list :source source :destination dest :type 'deploy))
     (if id (setq lst (append lst (list :id id))))
-    (proviso-deploy-compute-real-sources
-     lst
-     (proviso-get proj :remote-prefix)
-     (proviso-get proj :root-dir))
+    (plist-put lst :real-sources
+               (proviso-deploy-compute-real-sources
+                lst
+                (proviso-get proj :remote-prefix)
+                (proviso-get proj :root-dir)))
     lst))
 
 (defun proviso-deploy-create-cmd (&optional cmd id)
