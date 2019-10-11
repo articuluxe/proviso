@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 11:04:06 dan.harms>
+;; Modified Time-stamp: <2019-10-11 11:36:13 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -72,11 +72,11 @@ spawned."
                (dolist (source (plist-get spec :real-sources))
                  (proviso-deploy--execute
                   (cdr source)
-                  (plist-get spec :destination)
+                  (plist-get spec :real-dest)
                   synchronous))
              (proviso-deploy--execute
               (alist-get subid (plist-get spec :real-sources))
-              (plist-get spec :destination)
+              (plist-get spec :real-dest)
               synchronous))))))
 
 (defun proviso-deploy-all (specs)
@@ -110,6 +110,11 @@ ID is an optional id."
     (if id (setq lst (append lst (list :id id))))
     (plist-put lst :real-sources
                (proviso-deploy-compute-real-sources
+                lst
+                (proviso-get proj :remote-prefix)
+                (proviso-get proj :root-dir)))
+    (plist-put lst :real-dest
+               (proviso-deploy-compute-real-dest
                 lst
                 (proviso-get proj :remote-prefix)
                 (proviso-get proj :root-dir)))
@@ -417,8 +422,12 @@ If ARG is non-nil, another project can be chosen."
                                               (proviso-deploy-compute-real-sources
                                                spec
                                                (proviso-get proj :remote-prefix)
-                                               (proviso-get proj :root-dir))))
-                                 spec)
+                                               (proviso-get proj :root-dir)))
+                                   (plist-put spec :real-dest
+                                              (proviso-deploy-compute-real-dest
+                                               spec
+                                               (proviso-get proj :remote-prefix)
+                                               (proviso-get proj :root-dir)))))
                                specs))
           (proviso-put proj :deploy-file file)))))
 
@@ -447,8 +456,12 @@ If ARG is non-nil, another project can be chosen."
                                               (proviso-deploy-compute-real-sources
                                                spec
                                                (proviso-get proj :remote-prefix)
-                                               (proviso-get proj :root-dir))))
-                                 spec)
+                                               (proviso-get proj :root-dir)))
+                                   (plist-put spec :real-dest
+                                              (proviso-deploy-compute-real-dest
+                                               spec
+                                               (proviso-get proj :remote-prefix)
+                                               (proviso-get proj :root-dir)))))
                                specs))))))
 
 (defun proviso-deploy-get-next-id (proj)
@@ -505,6 +518,16 @@ resolved."
                     (cons x (nth x sources)))
                   indices))
       nil)))
+
+(defun proviso-deploy-compute-real-dest (spec prefix root)
+  "Compute the real destination of deployment SPEC.
+PREFIX is an optional remote-prefix, with ROOT the project's root directory.
+The real destination will have its path adjusted and environment variables
+resolved."
+  (let ((dst (proviso-substitute-env-vars (plist-get spec :destination))))
+    (if (file-name-absolute-p dst)
+        (concat prefix dst)
+      (concat prefix root dst))))
 
 (defun proviso-deploy-get-real-source-by-id (spec id)
   "Fetch the real source from SPEC by ID."
@@ -1245,11 +1268,20 @@ This only has an effect if there is a current deployment buffer."
                                               (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
                                :section 'pre) t))
                 ((eq type 'deploy)
-                 (let* ((real-sources (with-current-buffer buffer (proviso-deploy-compute-real-sources
-                                                                   spec
-                                                                   (proviso-get proviso-local-proj :remote-prefix)
-                                                                   (proviso-get proviso-local-proj :root-dir)))))
-                   (plist-put spec :real-sources real-sources)
+                 (let ((real-sources (plist-get spec :real-sources))
+                       (real-dest (plist-get spec :real-dest)))
+                   (unless real-sources
+                     (if (setq real-sources (with-current-buffer buffer (proviso-deploy-compute-real-sources
+                                                                         spec
+                                                                         (proviso-get proviso-local-proj :remote-prefix)
+                                                                         (proviso-get proviso-local-proj :root-dir))))
+                         (plist-put spec :real-sources real-sources)))
+                   (unless real-dest
+                     (if (setq real-dest (with-current-buffer buffer (proviso-deploy-compute-real-dest
+                                                                      spec
+                                                                      (proviso-get proviso-local-proj :remote-prefix)
+                                                                      (proviso-get proviso-local-proj :root-dir))))
+                         (plist-put spec :real-dest real-dest)))
                    (when (and (proviso-deploy-contains-regexp-p (plist-get spec :source))
                               (not (eq (length real-sources) 1)))
                      (add-to-list 'lst
@@ -1378,7 +1410,7 @@ This only has an effect if there is a current deployment buffer."
                                                 (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj (cons id subid)))
                                                        (realsrc (proviso-deploy-get-real-source-by-id spec subid))
                                                        (src (proviso-substitute-env-vars realsrc))
-                                                       (dst (proviso-substitute-env-vars (plist-get spec :destination))))
+                                                       (dst (proviso-substitute-env-vars (plist-get spec :real-dest))))
                                                   (when (file-directory-p dst)
                                                     (setq dst (expand-file-name
                                                                (file-name-nondirectory src) dst)))
@@ -1416,7 +1448,7 @@ This only has an effect if there is a current deployment buffer."
                                                 (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj (cons id subid)))
                                                        (realsrc (proviso-deploy-get-real-source-by-id spec subid))
                                                        (src (proviso-substitute-env-vars realsrc))
-                                                       (dst (proviso-substitute-env-vars (plist-get spec :destination)))
+                                                       (dst (proviso-substitute-env-vars (plist-get spec :real-dest)))
                                                        attr)
                                                   (when (file-directory-p dst)
                                                     (setq dst (expand-file-name
