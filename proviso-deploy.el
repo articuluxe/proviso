@@ -409,7 +409,16 @@ If ARG is non-nil, another project can be chosen."
     (if (and file
              (setq specs (proviso-deploy-read-from-file proj file)))
         (progn
-          (proviso-put proj :deployments specs)
+          (proviso-put proj :deployments
+                       (mapcar (lambda (spec)
+                                 (when (eq (plist-get spec :type) 'deploy)
+                                   (plist-put spec :real-sources
+                                              (proviso-deploy-compute-real-sources
+                                               spec
+                                               (proviso-get proj :remote-prefix)
+                                               (proviso-get proj :root-dir))))
+                                 spec)
+                               specs))
           (proviso-put proj :deploy-file file)))))
 
 ;;;###autoload
@@ -431,7 +440,15 @@ If ARG is non-nil, another project can be chosen."
         (proviso-put proj :deployments
                      (append
                       (proviso-get proj :deployments)
-                      specs)))))
+                      (mapcar (lambda (spec)
+                                 (when (eq (plist-get spec :type) 'deploy)
+                                   (plist-put spec :real-sources
+                                              (proviso-deploy-compute-real-sources
+                                               spec
+                                               (proviso-get proj :remote-prefix)
+                                               (proviso-get proj :root-dir))))
+                                 spec)
+                               specs))))))
 
 (defun proviso-deploy-get-next-id (proj)
   "Get the next :deploy-id from PROJ."
