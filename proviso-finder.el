@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-23 08:44:15 dharms>
+;; Modified Time-stamp: <2019-10-11 14:29:24 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -82,7 +82,7 @@ passed on to `proviso-fulledit-gather-files'."
       (when reporter (progress-reporter-done reporter))
       (unless async
         (message "Done g%s (%d files)" msg (length result))))
-    (proviso-finder--adjust-paths result remote root)))
+    (proviso-finder-adjust-paths result remote root)))
 
 (defun proviso-finder-gather-dirs-interactive (proj)
   "Gather directories in project PROJ."
@@ -121,7 +121,7 @@ optional exclusion list."
       (when reporter (progress-reporter-done reporter))
       (unless async
         (message "Done g%s (%d dirs)" msg (length result))))
-    (proviso-finder--adjust-paths result remote root)))
+    (proviso-finder-adjust-paths result remote root)))
 
 ;;;###autoload
 (defun proviso-finder-recompute-cache ()
@@ -131,12 +131,12 @@ optional exclusion list."
     (when proj
       (proviso-finder--load-files proj))))
 
-(defun proviso-finder--adjust-paths (lst remote root)
+(defun proviso-finder-adjust-paths (lst remote root)
   "Adjust paths relative in LST, a list of files or directories.
-REMOTE is a possibly empty remote prefix, ROOT is the project root.
+REMOTE is a possibly empty remote prefix, ROOT is a root directory.
 The result is the same list, with each element transformed into a
-cons (NAME . ORIG), where ORIG was the original file or
-directory, and NAME is that name made relative to ROOT."
+cons (NAME . ORIG), where ORIG is the original file or
+directory (absolute), and NAME is that name made relative to ROOT."
   (let ((stem (concat remote root)))
     (mapcar (lambda (name)
               (cons
