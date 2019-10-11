@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 06:36:04 dharms>
+;; Modified Time-stamp: <2019-10-11 10:44:47 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -468,8 +468,10 @@ Real sources have had wildcards and environment variables
 resolved."
   (let ((source (proviso-substitute-env-vars (plist-get spec :source)))
         sources indices)
-    (unless (file-name-absolute-p source)
-      (setq source (concat prefix root source)))
+    (setq source
+          (if (file-name-absolute-p source)
+              (concat prefix source)
+            (concat prefix root source)))
     (if (file-exists-p (file-name-directory source))
         (progn
           (setq sources (cond ((proviso-deploy-contains-regexp-p source)
