@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:34:26 dan.harms>
+;; Modified Time-stamp: <2019-10-15 12:39:33 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools gdb proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -54,20 +54,27 @@
   "Return non-nil if SCRIPT is a valid script to be debugged."
   (and script (string-match-p "\\.py$" script)))
 
-(defun proviso-gud-get-debug-script (&optional arg)
+(defun proviso-gud-get-debug-script (&optional arg predicate)
   "Fetch a script to be debugged according to the current project.
-ARG allows customizing the location to look in."
+ARG allows customizing the location to look in.
+PREDICATE is an optional predicate to validate filenames."
   (let ((cands (proviso-gud-gather-debug-dirs (proviso-current-project)))
         (dir-prompt "Find script in: ")
         (script-prompt "Debug script: ")
         dir script)
-    (setq dir (cond ((and arg (eq (prefix-numeric-value arg) 16))
-                     (read-file-name dir-prompt default-directory nil t))
-                    ((and cands arg (eq (prefix-numeric-value arg) 4))
-                     (read-file-name dir-prompt
-                                     (completing-read dir-prompt cands) nil t))
-                    (t (or (proviso-current-project-root) default-directory))))
-    (setq script (read-file-name script-prompt dir nil t nil))
+    (cond ((and arg (eq (prefix-numeric-value arg) 16))
+           (setq script (read-file-name
+                         script-prompt default-directory nil t nil predicate)))
+          ((eq (length cands) 1)
+           (setq dir (cdr (car cands))))
+          ((and cands arg (eq (prefix-numeric-value arg) 4))
+           (setq dir (completing-read dir-prompt cands)))
+          (cands
+           (setq dir (cdr (car cands))))
+          (t
+           (setq dir (or (proviso-current-project-root) default-directory))))
+    (unless script
+      (setq script (read-file-name script-prompt dir nil t nil predicate)))
     script))
 
 (defun proviso-gud-gather-debug-dirs (proj)
@@ -138,7 +145,9 @@ ARG allows customizing the directory to look in for executables."
   "Open pdb according to the current project.
 ARG allows customizing the directory to look in for scripts."
   (interactive "P")
-  (let ((script (proviso-gud-get-debug-script arg)))
+  (let ((script (proviso-gud-get-debug-script
+                 arg
+                 #'proviso-gud--script-suitable-p)))
     (if script
         (pdb (concat "python -m pdb " script))
       (message "No script found."))))
