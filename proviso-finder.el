@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:23:43 dan.harms>
+;; Modified Time-stamp: <2019-10-16 14:19:49 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -172,9 +172,7 @@ current project is used."
 OTHER-WINDOW means to open the file in the other window."
   (let* ((remote (proviso-get proj :remote-prefix))
          (root (or (proviso-get proj :root-dir) default-directory))
-         (symbol :project-files)
-         (future :project-files-future)
-         (files (proviso-get proj symbol))
+         (files (proviso-get proj :project-files))
          (desc (if proj (concat "in project \""
                                 (proviso-get proj :project-name)
                                 "\"")
@@ -183,10 +181,10 @@ OTHER-WINDOW means to open the file in the other window."
     (when (not files)
       (if proj
           (progn
-            (unless (async-ready (proviso-get proj future))
+            (unless (async-ready (proviso-get proj :project-files-future))
               (message "Still gathering files..."))
-            (when (setq files (async-get (proviso-get proj future)))
-              (proviso-put proj symbol files)))
+            (when (setq files (async-get (proviso-get proj :project-files-future)))
+              (proviso-put proj :project-files files)))
         (setq files (proviso-finder-gather-files (file-remote-p default-directory)
                                                  default-directory nil nil
                                                  proviso-uninteresting-files
