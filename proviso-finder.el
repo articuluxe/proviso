@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-16 14:19:49 dharms>
+;; Modified Time-stamp: <2019-10-16 16:13:11 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -177,7 +177,7 @@ OTHER-WINDOW means to open the file in the other window."
                                 (proviso-get proj :project-name)
                                 "\"")
                  "under current directory"))
-         (prompt (concat "Find file " desc)))
+         (prompt (concat "Find file " desc ": ")))
     (when (not files)
       (if proj
           (progn
@@ -192,7 +192,6 @@ OTHER-WINDOW means to open the file in the other window."
                                                  proviso-interesting-files))))
     (when (seq-empty-p files)
       (error "No files to open %s" desc))
-    (ivy-set-prompt 'proviso-finder--find-file #'counsel-prompt-function-default)
     (ivy-read prompt files
               :action (if other-window
                           #'proviso-finder-open-file-other-window-action
@@ -246,7 +245,7 @@ OTHER-WINDOW means to open the file in the other window."
                                 (proviso-get proj :project-name)
                                 "\"")
                  "under current directory"))
-         (prompt (concat "Open directory " desc)))
+         (prompt (concat "Open directory " desc ": ")))
     (when (not dirs)
       (if proj
           (progn
@@ -259,7 +258,6 @@ OTHER-WINDOW means to open the file in the other window."
                                                proviso-uninteresting-dirs))))
     (when (seq-empty-p dirs)
       (error "No directories to open %s" desc))
-    (ivy-set-prompt 'proviso-finder--find-dir #'counsel-prompt-function-default)
     (ivy-read prompt dirs
               :action (if other-window
                           #'proviso-finder-open-dir-other-window-action
