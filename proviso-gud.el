@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-15 12:39:33 dan.harms>
+;; Modified Time-stamp: <2019-10-16 13:22:23 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools gdb proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -47,12 +47,13 @@
 
 (defun proviso-gud--exe-suitable-p (exe)
   "Return non-nil if EXE is an executable that can be debugged."
-  (and exe (file-executable-p exe)
-       (not (file-directory-p exe))))
+  (or (file-directory-p exe)
+      (file-executable-p exe)))
 
 (defun proviso-gud--script-suitable-p (script)
   "Return non-nil if SCRIPT is a valid script to be debugged."
-  (and script (string-match-p "\\.py$" script)))
+  (or (file-directory-p script)
+      (string-match-p "\\.py$" script)))
 
 (defun proviso-gud-get-debug-script (&optional arg predicate)
   "Fetch a script to be debugged according to the current project.
