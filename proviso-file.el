@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, October 17, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-18 08:36:12 dharms>
+;; Modified Time-stamp: <2019-10-18 08:46:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -55,6 +55,7 @@
                 :action action
                 :caller #'proviso-file-choose))))
 
+;;;###autoload
 (defun proviso-file-remove-git-lock ()
   "Allow user to choose to delete any git lock files under DIR."
   (interactive)
