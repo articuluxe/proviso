@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:28:04 dan.harms>
+;; Modified Time-stamp: <2019-10-18 13:22:23 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -290,8 +290,8 @@ If PROJ is not supplied, no `:id' parameter will be present."
                  (push obj specs))))
             (t
              (and
-              (setq obj (proviso-deploy--read-elt spec 'command))
-              (push obj specs)))))
+              (when (setq obj (proviso-deploy--read-elt spec 'command))
+                (push obj specs))))))
     (nreverse specs)))
 
 (defun proviso-deploy-read-from-file (proj filename)
@@ -451,17 +451,20 @@ If ARG is non-nil, another project can be chosen."
                      (append
                       (proviso-get proj :deployments)
                       (mapcar (lambda (spec)
-                                 (when (eq (plist-get spec :type) 'deploy)
-                                   (plist-put spec :real-sources
-                                              (proviso-deploy-compute-real-sources
-                                               spec
-                                               (proviso-get proj :remote-prefix)
-                                               (proviso-get proj :root-dir)))
-                                   (plist-put spec :real-dest
-                                              (proviso-deploy-compute-real-dest
-                                               spec
-                                               (proviso-get proj :remote-prefix)
-                                               (proviso-get proj :root-dir)))))
+                                (if (eq (plist-get spec :type) 'deploy)
+                                    (progn
+                                      (plist-put spec :real-sources
+                                                 (proviso-deploy-compute-real-sources
+                                                  spec
+                                                  (proviso-get proj :remote-prefix)
+                                                  (proviso-get proj :root-dir)))
+                                      (plist-put spec :real-dest
+                                                 (proviso-deploy-compute-real-dest
+                                                  spec
+                                                  (proviso-get proj :remote-prefix)
+                                                  (proviso-get proj :root-dir)))
+                                      spec)
+                                  spec))
                                specs))))))
 
 (defun proviso-deploy-get-next-id (proj)
