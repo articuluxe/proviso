@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 25, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:30:13 dan.harms>
+;; Modified Time-stamp: <2019-10-18 23:08:42 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -33,7 +33,7 @@
 (require 'xref)
 
 ;;;###autoload
-(defun proviso-search-grep (&optional arg)
+(defun proviso-grep-all (&optional arg)
   "Search through multiple projects using grep.
 ARG allows customizing search parameters."
   (interactive "P")
@@ -44,7 +44,7 @@ ARG allows customizing search parameters."
    "grep"))
 
 ;;;###autoload
-(defun proviso-search-ag (&optional arg)
+(defun proviso-ag-all (&optional arg)
   "Search through multiple projects using the silver searcher.
 ARG allows customizing search parameters."
   (interactive "P")
@@ -55,7 +55,7 @@ ARG allows customizing search parameters."
    "ag"))
 
 ;;;###autoload
-(defun proviso-search-rg (&optional arg)
+(defun proviso-rg-all (&optional arg)
   "Search through multiple projects using ripgrep.
 ARG allows customizing search parameters."
   (interactive "P")
