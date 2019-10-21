@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-18 13:22:23 dan.harms>
+;; Modified Time-stamp: <2019-10-21 12:50:13 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -1221,7 +1221,8 @@ This only has an effect if there is a current deployment buffer."
                                   (let ((file (proviso-get proviso-local-proj :deploy-file)))
                                     (cond ((and file (file-exists-p file))
                                            (propertize
-                                            (replace-regexp-in-string (getenv "HOME") "~" file)
+                                            (replace-regexp-in-string (concat "^" (getenv "HOME"))
+                                                                      "~" file)
                                             'face '(bold)))
                                           (file
                                            (propertize
@@ -1299,14 +1300,14 @@ This only has an effect if there is a current deployment buffer."
                                                 (concat
                                                  (propertize
                                                   (if home
-                                                      (replace-regexp-in-string home "~" realsrc)
+                                                      (replace-regexp-in-string (concat "^" home) "~" realsrc)
                                                     realsrc)
                                                   'face '(bold)
                                                   'help-echo src)
                                                  " -> "
                                                  (propertize
                                                   (if home
-                                                      (replace-regexp-in-string home "~" dst)
+                                                      (replace-regexp-in-string (concat "^" home) "~" dst)
                                                     dst)
                                                   'face '(bold)
                                                   'help-echo dst))))
@@ -1336,7 +1337,7 @@ This only has an effect if there is a current deployment buffer."
                                                        (home (getenv "HOME")))
                                                   (propertize
                                                    (if home
-                                                       (replace-regexp-in-string home "~" src)
+                                                       (replace-regexp-in-string (concat "^" home) "~" src)
                                                      src)
                                                    'help-echo (plist-get spec :source))))
                                      :bindings `(("r" "Run"
@@ -1416,7 +1417,7 @@ This only has an effect if there is a current deployment buffer."
                                                     (setq dst (expand-file-name
                                                                (file-name-nondirectory src) dst)))
                                                   (propertize
-                                                   (replace-regexp-in-string (getenv "HOME") "~" dst)
+                                                   (replace-regexp-in-string (concat "^" (getenv "HOME")) "~" dst)
                                                    'help-echo (plist-get spec :destination))))
                                      :bindings `(("r" "Run"
                                                   (lambda ()
