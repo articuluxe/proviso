@@ -1273,18 +1273,16 @@ This only has an effect if there is a current deployment buffer."
                 ((eq type 'deploy)
                  (let ((real-sources (plist-get spec :real-sources))
                        (real-dest (plist-get spec :real-dest)))
-                   (unless real-sources
-                     (if (setq real-sources (with-current-buffer buffer (proviso-deploy-compute-real-sources
-                                                                         spec
-                                                                         (proviso-get proviso-local-proj :remote-prefix)
-                                                                         (proviso-get proviso-local-proj :root-dir))))
-                         (plist-put spec :real-sources real-sources)))
-                   (unless real-dest
-                     (if (setq real-dest (with-current-buffer buffer (proviso-deploy-compute-real-dest
-                                                                      spec
-                                                                      (proviso-get proviso-local-proj :remote-prefix)
-                                                                      (proviso-get proviso-local-proj :root-dir))))
-                         (plist-put spec :real-dest real-dest)))
+                   (setq real-sources (with-current-buffer buffer (proviso-deploy-compute-real-sources
+                                                                   spec
+                                                                   (proviso-get proviso-local-proj :remote-prefix)
+                                                                   (proviso-get proviso-local-proj :root-dir))))
+                   (plist-put spec :real-sources real-sources)
+                   (setq real-dest (with-current-buffer buffer (proviso-deploy-compute-real-dest
+                                                                spec
+                                                                (proviso-get proviso-local-proj :remote-prefix)
+                                                                (proviso-get proviso-local-proj :root-dir))))
+                   (plist-put spec :real-dest real-dest)
                    (when (and (proviso-deploy-contains-regexp-p (plist-get spec :source))
                               (not (eq (length real-sources) 1)))
                      (add-to-list 'lst
