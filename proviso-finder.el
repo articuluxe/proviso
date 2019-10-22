@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-16 16:13:11 dharms>
+;; Modified Time-stamp: <2019-10-21 22:55:58 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -30,6 +30,7 @@
 ;;; Code:
 (require 'proviso-core)
 (require 'proviso-fulledit)
+(require 'proviso-fd)
 (require 'counsel)
 (require 'async)
 
@@ -57,7 +58,9 @@
 If ASYNC is non-nil, the search is occurring asynchronously.
 EXCLUDE-FILES, EXCLUDE-DIRS and INCLUDE-FILES, if present, are
 passed on to `proviso-fulledit-gather-files'."
-  (let* ((msg (format "athering all files %sunder %s"
+  (let* ((method (if (xfer-util-find-executable "fd" root) 'fd 'std))
+         (msg (format "athering all files%s %sunder %s"
+                      (if (eq method 'fd) " using fd" "")
                       (if async "asynchronously " "")
                       (concat remote root)))
          (reporter (unless async (make-progress-reporter (concat "G" msg "..."))))
@@ -75,9 +78,15 @@ passed on to `proviso-fulledit-gather-files'."
                    (when (or (null entry) (not (file-name-absolute-p entry)))
                      root)
                    entry))
-            (setq files (proviso-fulledit-gather-files dir exclude-files
-                                                       exclude-dirs include-files
-                                                       reporter t))
+            (setq files
+                  (if (eq method 'fd)
+                      (proviso-fd-gather-files
+                       dir nil exclude-files
+                       exclude-dirs include-files)
+                    (proviso-fulledit-gather-files
+                     dir exclude-files
+                     exclude-dirs include-files
+                     reporter t)))
             (setq result (nconc result (sort files 'string-lessp)))))
       (when reporter (progress-reporter-done reporter))
       (unless async
