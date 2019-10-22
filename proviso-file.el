@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, October 17, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-18 08:46:32 dharms>
+;; Modified Time-stamp: <2019-10-21 08:59:36 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -46,7 +46,7 @@
                (t
                 (directory-files-recursively dir pattern)))))
     (if (seq-empty-p files)
-        (user-error "No files found")
+        (user-error (format "No files found matching %s" pattern))
       (ivy-read prompt
                 (proviso-finder-adjust-paths
                  files
