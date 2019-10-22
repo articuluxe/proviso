@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, October 11, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-18 08:40:22 dharms>
+;; Modified Time-stamp: <2019-10-22 09:00:28 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project fd
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -28,6 +28,8 @@
 
 ;;; Code:
 (require 'proviso-defines)
+(require 'proviso-regexp)
+(require 'seq)
 
 (defcustom proviso-fd-args "-HIa"
   "Standard arguments to give to fd."
@@ -35,10 +37,13 @@
 
 (defun proviso-fd--create-inclusion-str (lst)
   "Create a substring for `fd' to match files from LST."
-  (mapconcat (lambda (elt)
-               (concat "-e "
-                       (string-remove-prefix "*." elt)))
-             lst " "))
+  (if (seq-empty-p lst)
+      "."
+    (concat "'("
+            (mapconcat (lambda (elt)
+                         (proviso-regexp-glob-to-regex elt))
+                       lst "|")
+            ")'")))
 
 (defun proviso-fd--create-file-exclusion (lst)
   "Create a substring for `fd' to ignore files from LST."
@@ -64,7 +69,7 @@ Results are filtered via `proviso-interesting-files',
          (include-files (or (proviso-get proj :grep-include-files)
                             proviso-interesting-files)))
     (proviso-fd-gather-files dir exclude-files exclude-dirs
-                             include-files; reporter
+                             include-files
                              symbolic)))
 
 (defun proviso-fd-gather-files (dir &optional pattern
@@ -81,71 +86,28 @@ non-nil to allow the presence of symlinks in the results."
         (cmd (concat "fd "
                      (if symbolic (concat proviso-fd-args "L")
                        proviso-fd-args)
-                     " "
-                     (when include-files
-                       (proviso-fd--create-inclusion-str include-files) " ")
                      (when exclude-files
-                       (proviso-fd--create-file-exclusion exclude-files) " ")
+                       (concat " "
+                               (proviso-fd--create-file-exclusion exclude-files)))
                      (when exclude-dirs
-                       (proviso-fd--create-dir-exclusion exclude-dirs))
-                     (when (or include-files exclude-files exclude-dirs)
-                       " ")
-                     (if (and pattern (not (string-empty-p pattern)))
-                         (concat "'" pattern "'")
-                       ".")
-                     " " dir))
-        (default-directory dir))
-;    (message "%s" cmd)
+                       (concat " "
+                               (proviso-fd--create-dir-exclusion exclude-dirs)))
+                     " "
+                     (proviso-fd--create-inclusion-str
+                      (if pattern (list pattern) include-files))
+                     " "
+                     dir))
+        (default-directory dir)
+        status)
+;    (message "drh: %s" cmd)
     (with-current-buffer buffer
       (erase-buffer)
-      (call-process-shell-command cmd nil t)
-      (split-string (buffer-string) "\n" t))))
-
-(defun get-files (path &optional exclude-files exclude-dirs include-files)
-  "Gather files under PATH."
-  (let ((files (if (xfer-util-find-executable "fd" path)
-                   (proviso-fd-gather-files
-                    path
-                    exclude-files exclude-dirs include-files
-                    t)
-                 (proviso-fulledit-gather-files
-                  path
-                  exclude-files exclude-dirs include-files
-                  nil t))))
-    (proviso-finder-adjust-paths files )
-    ))
-
-  ;; (let* ((all-results
-  ;;         (directory-files
-  ;;          dir t directory-files-no-dot-files-regexp t))
-  ;;        (files (seq-remove 'file-directory-p all-results))
-  ;;        (dirs (seq-filter 'file-directory-p all-results))
-  ;;        result)
-  ;;   (unless symbolic
-  ;;     (setq files (seq-remove 'file-symlink-p files))
-  ;;     (setq dirs (seq-remove 'file-symlink-p dirs)))
-  ;;   (dolist (file files)
-  ;;     (and
-  ;;      (proviso-fulledit-test-list-for-string
-  ;;       (mapcar 'proviso-regexp-glob-to-regex include-files)
-  ;;       (file-name-nondirectory file))
-  ;;      (not (proviso-fulledit-test-list-for-string
-  ;;            (mapcar 'proviso-regexp-glob-to-regex exclude-files)
-  ;;            (file-name-nondirectory file)))
-  ;;      (setq result (cons file result))
-  ;;      (when reporter (progress-reporter-update reporter))))
-  ;;   (dolist (dir dirs)
-  ;;     (unless
-  ;;         (proviso-fulledit-test-list-for-string
-  ;;          (mapcar 'proviso-regexp-glob-to-regex exclude-dirs)
-  ;;          dir)
-  ;;       (setq
-  ;;        result
-  ;;        (nconc
-  ;;         result
-  ;;         (proviso-fulledit-gather-files dir exclude-files exclude-dirs include-files reporter symbolic)))))
-  ;;   result))
-
+      (setq status (call-process-shell-command cmd nil t))
+      (if (eq status 0)
+          (split-string (buffer-string) "\n" t)
+        (if (string-match "[fd error]: \\(.+\\)" (buffer-string))
+            (user-error "Error: %s" (match-string 1)))
+        nil))))
 
 (provide 'proviso-fd)
 ;;; proviso-fd.el ends here
