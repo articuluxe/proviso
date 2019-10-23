@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, October 11, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-22 09:00:28 dharms>
+;; Modified Time-stamp: <2019-10-23 15:43:54 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project fd
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -99,7 +99,6 @@ non-nil to allow the presence of symlinks in the results."
                      dir))
         (default-directory dir)
         status)
-;    (message "drh: %s" cmd)
     (with-current-buffer buffer
       (erase-buffer)
       (setq status (call-process-shell-command cmd nil t))
