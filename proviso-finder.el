@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-21 22:55:58 dharms>
+;; Modified Time-stamp: <2019-10-23 09:03:10 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -156,6 +156,36 @@ directory (absolute), and NAME is that name made relative to ROOT."
                   name))
                name))
             lst)))
+
+;;;###autoload
+(defun proviso-find-file-all (&optional arg)
+  "Allow user to select a file across all projects.
+ARG is currently unused."
+  (interactive "P")
+  (let (lst)
+    (mapatoms (lambda (atom) (push atom lst)) proviso-obarray)
+    (ivy-read "File file in projects: "
+              (proviso-find-file--projects lst)
+              :action (lambda (x) (find-file x))
+              :caller #'proviso-find-file-all)))
+
+;;;###autoload
+(defun proviso-find-file-all-other-window (&optional arg)
+  "Allow user to select a file in other window across all projects.
+ARG is currently unused."
+  (interactive "P")
+  (let (lst)
+    (mapatoms (lambda (atom) (push atom lst)) proviso-obarray)
+    (ivy-read "Find file in other window in projects: "
+              (proviso-find-file--projects lst)
+              :action (lambda (x) (find-file-other-window x))
+              :caller #'proviso-find-file-all-other-window)))
+
+(defun proviso-find-file--projects (projects)
+  "Return a list of all files contained in PROJECTS."
+  (mapcan (lambda (proj)
+            (mapcar 'cdr (proviso-get proj :project-files)))
+          projects))
 
 ;;;###autoload
 (defun proviso-finder-find-file (&optional arg)
