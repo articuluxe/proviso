@@ -1,11 +1,13 @@
-;;; test_proviso-fd.el --- test proviso-fd
+#!/bin/sh
+":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
+;;; test_proviso-fd.el --- Test proviso-fd
 ;; Copyright (C) 2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, October 22, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-22 09:06:58 dharms>
+;; Modified Time-stamp: <2019-10-22 22:40:46 dharms>
 ;; Modified by: Dan Harms
-;; Keywords:
+;; Keywords: tools proviso fd fulledit project
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -21,10 +23,12 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;; Test file gathering utilities.
 ;;
 
 ;;; Code:
+(load-file "test/proviso-test-common.el")
+
 (require 'proviso-fulledit)
 (require 'proviso-fd)
 
@@ -38,7 +42,7 @@
                dir proviso-uninteresting-files
                proviso-uninteresting-dirs proviso-interesting-files)
               'string-lessp)
-             nil (file-name-absolute-p dir))))
+             nil (expand-file-name dir))))
 
 (defun test-proviso-fd-fd (dir)
   "Get files under DIR."
@@ -50,6 +54,6 @@
                dir nil proviso-uninteresting-files
                proviso-uninteresting-dirs proviso-interesting-files)
               'string-lessp)
-             nil (file-name-absolute-p dir))))
+             nil (expand-file-name dir))))
 
 ;;; test_proviso-fd.el ends here
