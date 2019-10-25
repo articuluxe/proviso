@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, October 11, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-23 15:43:54 dan.harms>
+;; Modified Time-stamp: <2019-10-25 09:57:07 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project fd
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -35,15 +35,29 @@
   "Standard arguments to give to fd."
   :group 'proviso-custom-group)
 
-(defun proviso-fd--create-inclusion-str (lst)
-  "Create a substring for `fd' to match files from LST."
+(defun proviso-fd--compute-quote-char (remote)
+  "Return the quote character, with remote path REMOTE.
+Basically fd in a dos shell barfs on surrounding quotes.  Normal,
+sane shells do need the quotes to avoid premature expansion.  But
+even on windows, if we're connecting via tramp, we still need the
+quotes."
+  (if (and (string-match-p "cmdproxy" shell-file-name)
+           (not remote))
+      ;; works unless we remote into windows
+      ""
+    "'"))
+
+(defun proviso-fd--create-inclusion-str (lst quote)
+  "Create a substring for `fd' to match files from LST, quoted by QUOTE."
   (if (seq-empty-p lst)
       "."
-    (concat "'("
+    (concat quote
+            (if (> (seq-length lst) 1) "(" "")
             (mapconcat (lambda (elt)
                          (proviso-regexp-glob-to-regex elt))
                        lst "|")
-            ")'")))
+            (if (> (seq-length lst) 1) ")" "")
+            quote)))
 
 (defun proviso-fd--create-file-exclusion (lst)
   "Create a substring for `fd' to ignore files from LST."
@@ -94,7 +108,8 @@ non-nil to allow the presence of symlinks in the results."
                                (proviso-fd--create-dir-exclusion exclude-dirs)))
                      " "
                      (proviso-fd--create-inclusion-str
-                      (if pattern (list pattern) include-files))
+                      (if pattern (list pattern) include-files)
+                      (proviso-fd--compute-quote-char (file-remote-p dir)))
                      " "
                      dir))
         (default-directory dir)
