@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, June 28, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:32:46 dan.harms>
+;; Modified Time-stamp: <2019-10-25 07:02:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project dired
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -68,7 +68,7 @@
                             (let ((file (directory-file-name (cdr x))))
                               (if (file-readable-p file)
                                   (dired file)
-                                (error "%s does not exist!" file)))))
+                                (user-error "%s does not exist!" file)))))
       (dired default-directory))))
 
 ;;;###autoload
@@ -88,7 +88,7 @@
                             (let ((file (directory-file-name (cdr x))))
                               (if (file-readable-p file)
                                   (dired file)
-                                (error "%s does not exist!" file)))))
+                                (user-error "%s does not exist!" file)))))
       (dired default-directory))))
 
 (provide 'proviso-dired)

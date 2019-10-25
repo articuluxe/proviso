@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:33:00 dan.harms>
+;; Modified Time-stamp: <2019-10-25 07:02:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -49,7 +49,7 @@ With double universal argument, dump the raw project fields."
            (if (eq (prefix-numeric-value arg) 4)
                (proviso-display--print-project-field proj)
              (proviso-display--print-project proj (eq (prefix-numeric-value arg) 16)))))
-      (error "No project selected"))))
+      (user-error "No project selected"))))
 
 (defun proviso-display--print-project-field (proj)
   "Print a particular field of project PROJ."
@@ -63,8 +63,8 @@ With double universal argument, dump the raw project fields."
               (concat
                (format "Project %s: %s " proj field)
                (proviso-display--print-project-property proj field))
-            (error "No field selected")))
-      (error (format "No properties in project %s" proj)))))
+            (user-error "No field selected")))
+      (user-error (format "No properties in project %s" proj)))))
 
 (defun proviso-display--print-project (proj &optional raw)
   "Return a string containing a textual representation of PROJ.
@@ -151,7 +151,7 @@ longest root dir."
     (if (setq msg (proviso-display--get-project-names
                    (proviso-current-project) maxwidth-name maxwidth-dir))
         (message msg)
-      (error "No projects"))))
+      (user-error "No projects"))))
 
 ;;;###autoload
 (defun proviso-display-echo-current-project-name ()

@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-23 08:41:40 dharms>
+;; Modified Time-stamp: <2019-10-25 07:02:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -87,7 +87,7 @@ remotely-generated files will be toggled."
   (let ((proj (if (= (prefix-numeric-value current-prefix-arg) 16)
                   (proviso-choose-project) (proviso-current-project))))
     (unless proj
-      (error "Could not generate tags: no active project"))
+      (user-error "Could not generate tags: no active project"))
     (proviso-gentags--start-gen
      proj
      (= (prefix-numeric-value current-prefix-arg) 4))))
