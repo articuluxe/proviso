@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-25 06:59:54 dharms>
+;; Modified Time-stamp: <2019-10-25 07:06:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -164,7 +164,7 @@ ARG is currently unused."
   (interactive "P")
   (let (lst)
     (mapatoms (lambda (atom) (push atom lst)) proviso-obarray)
-    (ivy-read "File file in projects: "
+    (ivy-read "Find file in projects: "
               (proviso-find-file--projects lst)
               :action (lambda (x) (find-file x))
               :caller #'proviso-find-file-all)))
