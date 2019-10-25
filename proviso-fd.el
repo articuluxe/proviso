@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, October 11, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-25 09:57:07 dan.harms>
+;; Modified Time-stamp: <2019-10-29 08:44:46 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project fd
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -92,7 +92,7 @@ Results are filtered via `proviso-interesting-files',
                                     include-files
                                     symbolic
                                     )
-  "Return files matching PATTERN recursively beneath DIR.
+  "Return files matching glob PATTERN recursively beneath DIR.
 EXCLUDE-FILES, EXCLUDE-DIRS and INCLUDE-FILES provide filters to
 exclude and include results, respectively.  SYMBOLIC should be
 non-nil to allow the presence of symlinks in the results."
