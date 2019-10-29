@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-21 12:50:13 dan.harms>
+;; Modified Time-stamp: <2019-10-28 23:35:12 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -501,21 +501,21 @@ PREFIX is an optional remote-prefix, with ROOT the project's root directory.
 Real sources have had wildcards and environment variables
 resolved."
   (let ((source (proviso-substitute-env-vars (plist-get spec :source)))
-        sources indices)
-    (setq source
+        dir sources indices)
+    (setq dir
           (if (file-name-absolute-p source)
-              (concat prefix source)
-            (concat prefix root source)))
-    (if (file-exists-p (file-name-directory source))
+              prefix
+            (concat prefix root)))
+    ;; can't use 'file-name-directory since backslashes in regexes will
+    ;; confuse it on windows
+    ;; TODO handle regex throughout path
+    (if (file-exists-p dir)
         (progn
           (setq sources (cond ((proviso-deploy-contains-regexp-p source)
-                               (directory-files
-                                (file-name-directory source)
-                                t
-                                (file-name-nondirectory source)))
-                              ((file-directory-p source)
-                               (directory-files source t))
-                              (t (list source))))
+                               (directory-files dir t source))
+                              ((file-directory-p (concat dir source))
+                               (directory-files (concat dir source) t))
+                              (t (list (concat dir source)))))
           (setq indices (number-sequence 0 (1- (length sources))))
           (mapcar (lambda (x)
                     (cons x (nth x sources)))
