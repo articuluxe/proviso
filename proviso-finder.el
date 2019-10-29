@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-25 07:06:37 dharms>
+;; Modified Time-stamp: <2019-10-29 06:44:30 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -57,7 +57,7 @@
   "Gather files at REMOTE under ROOT, according to LST (see `:proj-alist').
 If ASYNC is non-nil, the search is occurring asynchronously.
 EXCLUDE-FILES, EXCLUDE-DIRS and INCLUDE-FILES, if present, are
-passed on to `proviso-fulledit-gather-files'."
+passed on to `proviso-fulledit-gather-files' or `proviso-fd-gather-files'."
   (let* ((method (if (xfer-util-find-executable "fd" root) 'fd 'std))
          (msg (format "athering all files%s %sunder %s"
                       (if (eq method 'fd) " using fd" "")
@@ -341,7 +341,7 @@ OTHER-WINDOW means to open the file in the other window."
                    (async-start
                     `(lambda ()
                        (setq inhibit-message t)
-                       ,(async-inject-variables "load-path")
+                       ,(async-inject-variables "load-path\\|shell-file-name")
                        (require 'proviso-finder)
                        (proviso-finder-gather-files ,remote ,root (quote ,lst) t
                                                     (quote ,exclude-files)
@@ -351,7 +351,7 @@ OTHER-WINDOW means to open the file in the other window."
                    (async-start
                     `(lambda ()
                        (setq inhibit-message t)
-                       ,(async-inject-variables "load-path")
+                       ,(async-inject-variables "load-path\\|shell-file-name")
                        (require 'proviso-finder)
                        (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t
                                                    (quote ,exclude-dirs))))))))
