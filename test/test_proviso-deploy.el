@@ -5,9 +5,10 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-04-02 08:41:03 dharms>
+;; Modified Time-stamp: <2019-10-31 08:17:45 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

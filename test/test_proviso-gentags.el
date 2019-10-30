@@ -5,9 +5,10 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-08-14 10:54:22 dan.harms>
+;; Modified Time-stamp: <2019-10-30 08:59:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project tags gentags
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

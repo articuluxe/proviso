@@ -5,9 +5,10 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-27 12:02:19 dan.harms>
+;; Modified Time-stamp: <2019-10-30 08:59:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project grep command
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

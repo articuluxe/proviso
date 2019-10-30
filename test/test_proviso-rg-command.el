@@ -1,13 +1,14 @@
 #!/bin/sh
 ":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-rg-command.el --- test proviso rg command
-;; Copyright (C) 2017-2018  Dan Harms (dharms)
+;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, January 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2018-05-24 17:36:55 dharms>
+;; Modified Time-stamp: <2019-10-30 08:59:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project rg command
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
