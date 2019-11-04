@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-31 08:17:45 dharms>
+;; Modified Time-stamp: <2019-11-04 08:46:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; Package-Requires: ((emacs "25.1"))
@@ -29,6 +29,7 @@
 
 ;;; Code:
 (load-file "test/proviso-test-common.el")
+(require 'proviso)
 (require 'proviso-deploy)
 
 (ert-deftest proviso-deploy-test-read-file-simple ()
@@ -93,6 +94,60 @@
 "
                      )))))
 
+(defun test-proviso-deployment (contents proj files)
+  "Test that deployment CONTENTS copies FILES in project PROJ."
+  (let* ((specs (proviso-deploy--read-from-str contents))
+         (root (proviso-get proj :root-dir))
+         (dest (concat root "deploydest/"))
+         spec current)
+    (proviso-put proj :deployments
+                 (mapcar (lambda (spec)
+                           (when (eq (plist-get spec :type)
+                                     'deploy)
+                             (plist-put spec :real-sources
+                                        (proviso-deploy-compute-real-sources
+                                         spec
+                                         (proviso-get proj :remote-prefix)
+                                         (proviso-get proj :root-dir)))
+                             (plist-put spec :real-dest
+                                        (proviso-deploy-compute-real-dest
+                                         spec
+                                         (proviso-get proj :remote-prefix)
+                                         (proviso-get proj :root-dir)))))
+                         specs))
+    (delete-directory dest t)
+    (proviso-deploy-all specs)
+    (setq current (directory-files dest nil directory-files-no-dot-files-regexp))
+    (should (equal current files))
+    (delete-directory dest t)
+    ))
+
+(ert-deftest test-proviso-deploy-files ()
+  (proviso-test-reset-all)
+  (let ((base (file-name-directory load-file-name))
+        (file-contents "")
+        buffers)
+    (cl-letf (((symbol-function 'proviso--eval-file)
+               (lambda (_)
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
+      ;; open first file, init new project
+      (should (not proviso-local-proj))
+      (find-file (concat base "a/b/c/d/dfile1"))
+      (push "dfile1" buffers)
+      (should proviso-local-proj)
+      (should (equal proviso-proj-alist
+                     (list (cons (concat base "a/b/c/")
+                                 (concat "c#" base "a/b/c/")))))
+      (test-proviso-deployment "
+((deploy . (
+(\".*\\.el$\" . \"deploydest/\")
+)))
+" proviso-local-proj
+                               '("file4.el" "file5.el"))
+      ;; clean up buffers
+      (dolist (b buffers) (kill-buffer b))
+      )))
 
 (ert-run-tests-batch-and-exit (car argv))
 ;;; test_proviso-deploy.el ends here
