@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-19 08:30:22 dharms>
+;; Modified Time-stamp: <2019-11-19 08:50:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; Package-Requires: ((emacs "25.1"))
@@ -100,12 +100,15 @@
 ;; (proviso-deploy--walk-sources (proviso-deploy--split-sources "src/proviso-deploy.el")
 ;;                               (getenv "HOME"))
 
-(defun test-proviso-deployment (contents proj files)
-  "Test that deployment CONTENTS copies FILES in project PROJ."
+(defun test-proviso-deployment (contents proj files &optional other-files)
+  "Test that deployment CONTENTS copies FILES in project PROJ.
+OTHER-FILES, if present, should be in a separate deploy destination."
   (let* ((specs (proviso-deploy--read-from-str contents))
          (root (proviso-get proj :root-dir))
          (dest (concat root "deploydest/"))
+         (persistent-dest (concat root "persistent-deploy/"))
          spec current)
+    (make-directory persistent-dest t)
     (proviso-put proj :deployments
                  (mapcar (lambda (spec)
                            (when (eq (plist-get spec :type)
@@ -123,10 +126,16 @@
                          specs))
     (delete-directory dest t)
     (proviso-deploy-all specs)
-    (should (file-directory-p dest))
-    (setq current (directory-files dest nil directory-files-no-dot-files-regexp))
-    (should (equal (sort current #'string-lessp) (sort files #'string-lessp)))
+    (when (not (seq-empty-p files))
+      (should (file-directory-p dest))
+      (setq current (directory-files dest nil directory-files-no-dot-files-regexp))
+      (should (equal (sort current #'string-lessp) (sort files #'string-lessp))))
+    (when (not (seq-empty-p other-files))
+      (should (equal
+               (directory-files persistent-dest nil directory-files-no-dot-files-regexp)
+               (sort other-files #'string-lessp))))
     (delete-directory dest t)
+    (delete-directory persistent-dest t)
     ))
 
 (ert-deftest test-proviso-deploy-files ()
@@ -154,6 +163,15 @@
 )))
 " proviso-local-proj
 '("file4.el"))
+
+      ;;  deploy one file to existing subdirectory; this allows
+      ;;  us to not specify the trailing separator
+      (test-proviso-deployment "
+((deploy . (
+(\"file4.el\" . \"persistent-deploy\")
+)))
+" proviso-local-proj
+nil '("file4.el"))
 
       ;; deploy one file, renamed
       (test-proviso-deployment "

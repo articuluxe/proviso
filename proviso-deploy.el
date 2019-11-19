@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-19 08:55:37 dharms>
+;; Modified Time-stamp: <2019-11-19 08:56:07 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -569,10 +569,13 @@ resolved."
 PREFIX is an optional remote-prefix, with ROOT the project's root directory.
 The real destination will have its path adjusted and environment variables
 resolved."
-  (let ((dst (proviso-substitute-env-vars (plist-get spec :destination))))
-    (if (file-name-absolute-p dst)
-        (concat prefix dst)
-      (concat prefix root dst))))
+  (let* ((dst (proviso-substitute-env-vars (plist-get spec :destination)))
+         (dir (if (file-name-absolute-p dst)
+                  (concat prefix dst)
+                (concat prefix root dst))))
+    (if (file-directory-p dir)
+        (file-name-as-directory dir)
+      dir)))
 
 (defun proviso-deploy-get-real-source-by-id (spec id)
   "Fetch the real source from SPEC by ID."
