@@ -3,11 +3,11 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-28 23:35:12 dan.harms>
+;; Modified Time-stamp: <2019-11-19 08:54:59 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "25.1") (seq "2.15"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -495,32 +495,72 @@ sub-deployment."
   "Return non-nil if there is a regexp inside STR."
   (string-match-p "[^*]" str))
 
+(defun proviso-deploy--split-sources (source)
+  "Split directory or file regexp SOURCE into its subdirectories.
+Returns a list of each constituent part, each element of the form:
+\(FILEPART SEPARATOR)."
+  (let ((idx 0)
+        elt subdir sep dirs)
+    (while (string-match "\\([^/\\]*\\)\\([/\\]\\)" source idx)
+      (push (list (match-string-no-properties 1 source)
+                  (match-string-no-properties 2 source))
+            dirs)
+      (setq idx (match-end 2)))
+    (unless (string-empty-p (substring source idx))
+      (push (list (substring source idx)) dirs))
+    (nreverse dirs)))
+
+(defun proviso-deploy--walk-sources (dirs path)
+  "Walk the list DIRS at PATH.
+Returns a list of paths or directories so specified.  Each
+element will either be a string (one file or dir), or a cons
+cell (DIR . REGEXP) to match multiple files in a directory by
+regex."
+  (let ((stem "")
+        (sep "")
+        results elt)
+    (while dirs
+      (setq elt (pop dirs))
+      (setq stem (concat stem (car elt)))
+      (setq sep (cadr elt))
+      (if (file-exists-p (concat path stem))
+          (progn
+            (setq path (concat path stem sep))
+            (setq stem nil))
+        (setq stem (concat stem sep))))
+    (if (file-directory-p path)
+        (if (string-empty-p stem)
+            (push (file-name-as-directory path) results)
+          (push (cons (file-name-as-directory path) stem) results))
+      (if (file-exists-p path)
+          (push path results)))
+    results))
+
 (defun proviso-deploy-compute-real-sources (spec prefix root)
   "Return a list of the real sources contained in deployment SPEC.
 PREFIX is an optional remote-prefix, with ROOT the project's root directory.
 Real sources have had wildcards and environment variables
 resolved."
-  (let ((source (proviso-substitute-env-vars (plist-get spec :source)))
-        dir sources indices)
-    (setq dir
-          (if (file-name-absolute-p source)
-              prefix
-            (concat prefix root)))
-    ;; can't use 'file-name-directory since backslashes in regexes will
-    ;; confuse it on windows
-    ;; TODO handle regex throughout path
-    (if (file-exists-p dir)
-        (progn
-          (setq sources (cond ((proviso-deploy-contains-regexp-p source)
-                               (directory-files dir t source))
-                              ((file-directory-p (concat dir source))
-                               (directory-files (concat dir source) t))
-                              (t (list (concat dir source)))))
-          (setq indices (number-sequence 0 (1- (length sources))))
-          (mapcar (lambda (x)
-                    (cons x (nth x sources)))
-                  indices))
-      nil)))
+  (let* ((source (proviso-substitute-env-vars (plist-get spec :source)))
+         (path (if (file-name-absolute-p source)
+                   prefix
+                 (concat prefix root))))
+    (seq-map-indexed
+     (lambda (elt idx)
+       (cons idx elt))
+     (mapcan (lambda (result)
+               (cond ((stringp result)
+                      (list result))
+                     ((consp result)
+                      (if (cdr result)
+                          (directory-files
+                           (car result) t (cdr result))
+                        (directory-files
+                         (car result) t
+                         directory-files-no-dot-files-regexp)))))
+             (proviso-deploy--walk-sources
+              (proviso-deploy--split-sources source)
+              path)))))
 
 (defun proviso-deploy-compute-real-dest (spec prefix root)
   "Compute the real destination of deployment SPEC.

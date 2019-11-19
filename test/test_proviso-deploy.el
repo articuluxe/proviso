@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-04 08:46:01 dharms>
+;; Modified Time-stamp: <2019-11-19 08:15:16 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; Package-Requires: ((emacs "25.1"))
@@ -94,6 +94,12 @@
 "
                      )))))
 
+;; (proviso-deploy--split-sources "src/proviso.*\\.el$")
+;; (("src" . "/") ("proviso.*" . "\\") ".el$")
+
+;; (proviso-deploy--walk-sources (proviso-deploy--split-sources "src/proviso-deploy.el")
+;;                               (getenv "HOME"))
+
 (defun test-proviso-deployment (contents proj files)
   "Test that deployment CONTENTS copies FILES in project PROJ."
   (let* ((specs (proviso-deploy--read-from-str contents))
@@ -117,8 +123,9 @@
                          specs))
     (delete-directory dest t)
     (proviso-deploy-all specs)
+    (should (file-directory-p dest))
     (setq current (directory-files dest nil directory-files-no-dot-files-regexp))
-    (should (equal current files))
+    (should (equal (sort current #'string-lessp) (sort files #'string-lessp)))
     (delete-directory dest t)
     ))
 
@@ -139,12 +146,63 @@
       (should (equal proviso-proj-alist
                      (list (cons (concat base "a/b/c/")
                                  (concat "c#" base "a/b/c/")))))
+
+      ;;  deploy one file to directory
+      (test-proviso-deployment "
+((deploy . (
+(\"file4.el\" . \"deploydest/\")
+)))
+" proviso-local-proj
+'("file4.el"))
+
+      ;; deploy one file, renamed
+      (test-proviso-deployment "
+((deploy . (
+(\"file4.el\" . \"deploydest/newfile.el\")
+)))
+" proviso-local-proj
+'("newfile.el"))
+
+      ;; deploy one file from subdirectory
+      (test-proviso-deployment "
+((deploy . (
+(\"d/file7.http\" . \"deploydest/\")
+)))
+" proviso-local-proj
+'("file7.http"))
+
+      ;; deploy one file from subdirectory, renamed
+      (test-proviso-deployment "
+((deploy . (
+(\"d/file7.http\" . \"deploydest/hfile.http\")
+)))
+" proviso-local-proj
+'("hfile.http"))
+
+      ;; deploy contents of subdirectory
+      (test-proviso-deployment "
+((deploy . (
+(\"subdir/\" . \"deploydest/\")
+)))
+" proviso-local-proj
+'("file8.txt" "file9.org"))
+
+      ;; deploy regexp matching files
       (test-proviso-deployment "
 ((deploy . (
 (\".*\\.el$\" . \"deploydest/\")
 )))
 " proviso-local-proj
-                               '("file4.el" "file5.el"))
+'("file4.el" "file5.el"))
+
+      ;; deploy regexp in subdir
+      (test-proviso-deployment "
+((deploy . (
+(\"d/.*\\.el$\" . \"deploydest/\")
+)))
+" proviso-local-proj
+'("file6.el"))
+
       ;; clean up buffers
       (dolist (b buffers) (kill-buffer b))
       )))
