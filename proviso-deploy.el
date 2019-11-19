@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-19 09:29:53 dharms>
+;; Modified Time-stamp: <2019-11-19 15:41:59 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -514,13 +514,16 @@ Returns a list of each constituent part, each element of the form:
 
 (defun proviso-deploy--walk-sources (dirs path)
   "Walk the list DIRS at PATH.
-Returns a list of paths or directories so specified.  Each
-element will either be a string (one file or dir), or a cons
+DIRS is a list of lists, each element of the form (DIR SEP),
+where DIR is a subdirectory and SEP is the filename separator.
+Several consecutive DIR elements may actually form a single
+regexp.  Returns a list of paths or directories so specified.
+Each element will either be a string (one file or dir), or a cons
 cell (DIR . REGEXP) to match multiple files in a directory by
 regex."
   (let ((stem "")
         (sep "")
-        results elt)
+        results elt contained)
     (while dirs
       (setq elt (pop dirs))
       (setq stem (concat stem (car elt)))
@@ -529,7 +532,26 @@ regex."
           (progn
             (setq path (concat path stem sep))
             (setq stem nil))
-        (setq stem (concat stem sep))))
+        (if (and
+             dirs
+             (proviso-deploy-contains-regexp-p stem)
+             (string= sep "/")
+             (setq contained
+                   (seq-filter
+                    #'file-directory-p
+                    (directory-files path t stem t))))
+            (progn
+              (mapc (lambda (sub)
+                      (setq results
+                            (append
+                             (proviso-deploy--walk-sources
+                              (copy-tree dirs)
+                              (concat sub sep))
+                             results)))
+                    contained)
+              (setq stem (concat stem sep))
+              (setq dirs nil))
+          (setq stem (concat stem sep)))))
     (if (file-directory-p path)
         (if (string-empty-p stem)
             (push (file-name-as-directory path) results)

@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-19 09:25:03 dharms>
+;; Modified Time-stamp: <2019-11-19 15:40:21 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; Package-Requires: ((emacs "25.1"))
@@ -209,7 +209,7 @@ nil '("file4.el"))
       ;; note this skips contained subdirectories
       (test-proviso-deployment "
 ((deploy . (
-(\"subdir/\" . \"deploydest/\")
+(\"subdir1/\" . \"deploydest/\")
 )))
 " proviso-local-proj
 '("file8.txt" "file9.org"))
@@ -229,6 +229,22 @@ nil '("file4.el"))
 )))
 " proviso-local-proj
 '("file6.el"))
+
+      ;; deploy regexp in intermediate subdirs
+      (test-proviso-deployment "
+((deploy . (
+(\"subdir./file\\.*\" . \"deploydest/\")
+)))
+" proviso-local-proj
+'("file8.txt" "file9.org" "file11.el" "file12.cpp"))
+
+      ;; deploy regexp in intermediate subdirs
+      (test-proviso-deployment "
+((deploy . (
+(\"sub.*/.*\" . \"deploydest/\")
+)))
+" proviso-local-proj
+'("file8.txt" "file9.org" "file11.el" "file12.cpp"))
 
       ;; clean up buffers
       (dolist (b buffers) (kill-buffer b))
