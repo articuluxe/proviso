@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-19 08:50:32 dharms>
+;; Modified Time-stamp: <2019-11-19 09:25:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; Package-Requires: ((emacs "25.1"))
@@ -93,6 +93,14 @@
 )))
 "
                      )))))
+
+(ert-deftest test-proviso-deploy-contains-regexp ()
+  (should (not (proviso-deploy-contains-regexp-p "file\\.el")))
+  (should (proviso-deploy-contains-regexp-p "file.el"))
+  (should (proviso-deploy-contains-regexp-p "file\\.el$"))
+  (should (proviso-deploy-contains-regexp-p "^file\\.el"))
+  (should (proviso-deploy-contains-regexp-p "file*\\.el"))
+  )
 
 ;; (proviso-deploy--split-sources "src/proviso.*\\.el$")
 ;; (("src" . "/") ("proviso.*" . "\\") ".el$")

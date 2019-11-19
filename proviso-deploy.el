@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-19 08:56:07 dharms>
+;; Modified Time-stamp: <2019-11-19 09:29:53 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -493,7 +493,9 @@ sub-deployment."
 
 (defun proviso-deploy-contains-regexp-p (str)
   "Return non-nil if there is a regexp inside STR."
-  (string-match-p "[^*]" str))
+  (or
+   (string-match-p "[*^$]" str)
+   (string-match-p "[^\\]\\." str)))
 
 (defun proviso-deploy--split-sources (source)
   "Split directory or file regexp SOURCE into its subdirectories.
@@ -1329,8 +1331,7 @@ This only has an effect if there is a current deployment buffer."
                                                                 (proviso-get proviso-local-proj :remote-prefix)
                                                                 (proviso-get proviso-local-proj :root-dir))))
                    (plist-put spec :real-dest real-dest)
-                   (when (and (proviso-deploy-contains-regexp-p (plist-get spec :source))
-                              (not (eq (length real-sources) 1)))
+                   (when (and (proviso-deploy-contains-regexp-p (plist-get spec :source)))
                      (add-to-list 'lst
                                   (list
                                    :heading "Deployment"
