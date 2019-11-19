@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-19 08:54:59 dharms>
+;; Modified Time-stamp: <2019-11-19 08:55:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -465,7 +465,7 @@ If ARG is non-nil, another project can be chosen."
                                                   (proviso-get proj :root-dir)))
                                       spec)
                                   spec))
-                               specs))))))
+                              specs))))))
 
 (defun proviso-deploy-get-next-id (proj)
   "Get the next :deploy-id from PROJ."
@@ -548,19 +548,21 @@ resolved."
     (seq-map-indexed
      (lambda (elt idx)
        (cons idx elt))
-     (mapcan (lambda (result)
-               (cond ((stringp result)
-                      (list result))
-                     ((consp result)
-                      (if (cdr result)
-                          (directory-files
-                           (car result) t (cdr result))
-                        (directory-files
-                         (car result) t
-                         directory-files-no-dot-files-regexp)))))
-             (proviso-deploy--walk-sources
-              (proviso-deploy--split-sources source)
-              path)))))
+     (seq-remove
+      #'file-directory-p
+      (mapcan (lambda (result)
+                (cond ((stringp result)
+                       (list result))
+                      ((consp result)
+                       (if (cdr result)
+                           (directory-files
+                            (car result) t (cdr result))
+                         (directory-files
+                          (car result) t
+                          directory-files-no-dot-files-regexp)))))
+              (proviso-deploy--walk-sources
+               (proviso-deploy--split-sources source)
+               path))))))
 
 (defun proviso-deploy-compute-real-dest (spec prefix root)
   "Compute the real destination of deployment SPEC.

@@ -5,7 +5,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-19 08:15:16 dharms>
+;; Modified Time-stamp: <2019-11-19 08:30:22 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; Package-Requires: ((emacs "25.1"))
@@ -179,7 +179,8 @@
 " proviso-local-proj
 '("hfile.http"))
 
-      ;; deploy contents of subdirectory
+      ;; deploy contents of subdirectory;
+      ;; note this skips contained subdirectories
       (test-proviso-deployment "
 ((deploy . (
 (\"subdir/\" . \"deploydest/\")
