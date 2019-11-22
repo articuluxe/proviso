@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 25, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-18 23:08:42 dharms>
+;; Modified Time-stamp: <2019-11-22 08:51:35 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -78,8 +78,8 @@ NAME is a descriptive term for the search driver."
                str))
     (if arg
         (setq args (read-string
-                   (format "%s arguments: " name)
-                   args)))
+                    (format "%s arguments: " name)
+                    args)))
     (if (and str (not (string-empty-p str)))
         (progn
           (mapatoms (lambda (atom) (push atom lst)) proviso-obarray)
@@ -124,7 +124,9 @@ to create the final command line, of the signature (PROJ STR
 ARGS), where PROJ is the project, STR is the search string, and
 ARGS are the desired command line switches."
   (let ((command (funcall (nth 0 spec) proj (nth 1 spec) (nth 2 spec)))
-         (default-directory (proviso-get proj :root-dir)))
+        (default-directory (concat
+                            (proviso-get proj :remote-prefix)
+                            (proviso-get proj :root-dir))))
     (call-process-shell-command command nil t)))
 
 (provide 'proviso-search)
