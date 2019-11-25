@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 25, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-22 08:51:35 dharms>
+;; Modified Time-stamp: <2019-11-25 15:57:27 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -127,7 +127,7 @@ ARGS are the desired command line switches."
         (default-directory (concat
                             (proviso-get proj :remote-prefix)
                             (proviso-get proj :root-dir))))
-    (call-process-shell-command command nil t)))
+    (process-file-shell-command command nil t)))
 
 (provide 'proviso-search)
 ;;; proviso-search.el ends here
