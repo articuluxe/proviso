@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, October 11, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-29 08:44:46 dharms>
+;; Modified Time-stamp: <2019-11-25 12:49:54 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project fd
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -116,7 +116,7 @@ non-nil to allow the presence of symlinks in the results."
         status)
     (with-current-buffer buffer
       (erase-buffer)
-      (setq status (call-process-shell-command cmd nil t))
+      (setq status (process-file-shell-command cmd nil t))
       (if (eq status 0)
           (split-string (buffer-string) "\n" t)
         (if (string-match "[fd error]: \\(.+\\)" (buffer-string))
