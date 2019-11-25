@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-29 06:44:30 dan.harms>
+;; Modified Time-stamp: <2019-11-25 13:51:06 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -58,7 +58,10 @@
 If ASYNC is non-nil, the search is occurring asynchronously.
 EXCLUDE-FILES, EXCLUDE-DIRS and INCLUDE-FILES, if present, are
 passed on to `proviso-fulledit-gather-files' or `proviso-fd-gather-files'."
-  (let* ((method (if (xfer-util-find-executable "fd" root) 'fd 'std))
+  (let* ((method (if (xfer-util-find-executable
+                      "fd"
+                      (concat remote root))
+                     'fd 'std))
          (msg (format "athering all files%s %sunder %s"
                       (if (eq method 'fd) " using fd" "")
                       (if async "asynchronously " "")
