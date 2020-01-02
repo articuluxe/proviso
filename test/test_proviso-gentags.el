@@ -1,11 +1,9 @@
-#!/bin/sh
-":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-gentags.el --- test proviso gentags
 ;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-30 08:59:09 dharms>
+;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project tags gentags
 ;; Package-Requires: ((emacs "25.1"))
@@ -33,7 +31,7 @@
 
 (ert-deftest proviso-gentags-test-tags ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (proviso-gentags-ctags-cpp-kinds "+l")
         file-contents arg-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -101,7 +99,7 @@
 
 (ert-deftest proviso-gentags-test-empty-proviso-file ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (proviso-gentags-ctags-cpp-kinds "+l")
         file-contents arg-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -144,7 +142,7 @@
 
 (ert-deftest proviso-gentags-test-tags-dirs-without-trailing-slashes ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (proviso-gentags-ctags-cpp-kinds "+l")
         file-contents arg-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -212,7 +210,7 @@
 
 (ert-deftest proviso-gentags-test-tags-specify-tags-subdir ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents arg-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -279,7 +277,7 @@
 
 (ert-deftest proviso-gentags-test-tags-specify-tags-subdir-no-trailing-slash ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents arg-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -346,7 +344,7 @@
 
 (ert-deftest proviso-gentags-test-tags-additional-ctags-options ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (proviso-gentags-ctags-cpp-kinds "+l")
         file-contents arg-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -414,7 +412,7 @@
 
 (ert-deftest proviso-gentags-test-tags-override-cpp-kinds ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (proviso-gentags-ctags-cpp-kinds "+lw")
         file-contents arg-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -482,7 +480,7 @@
 
 (ert-deftest proviso-gentags-test-tags-override-gentags-exe ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents arg-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -549,7 +547,7 @@
 
 (ert-deftest proviso-gentags-test-tags-override-settings ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents arg-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -615,6 +613,5 @@
       (kill-buffer "dfile1")
       )))
 
-(ert-run-tests-batch-and-exit (car argv))
 
 ;;; test_proviso-gentags.el ends here

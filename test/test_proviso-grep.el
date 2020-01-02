@@ -1,11 +1,9 @@
-#!/bin/sh
-":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-grep.el --- test proviso grep dirs
 ;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-30 08:59:09 dharms>
+;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project grep test
 ;; Package-Requires: ((emacs "25.1"))
@@ -33,7 +31,7 @@
 
 (ert-deftest proviso-grep-open-project-empty-dir ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -59,7 +57,7 @@
 
 (ert-deftest proviso-grep-open-project-absolute-dir ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -85,7 +83,7 @@
 
 (ert-deftest proviso-grep-open-project-relative-dir ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -112,7 +110,7 @@
 
 (ert-deftest proviso-grep-open-project-no-dir ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -134,7 +132,7 @@
 
 (ert-deftest proviso-grep-open-project-no-trailing-slashes ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -210,6 +208,5 @@
       (kill-buffer "dfile3")
       )))
 
-(ert-run-tests-batch-and-exit (car argv))
 
 ;;; test_proviso-grep.el ends here

@@ -1,11 +1,9 @@
-#!/bin/sh
-":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-compile.el --- test proviso compile
 ;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, May 25, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-30 08:59:09 dharms>
+;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso test compile
 ;; Package-Requires: ((emacs "25.1"))
@@ -33,7 +31,7 @@
 
 (ert-deftest proviso-compile-test-with-and-without-project ()
   (proviso-test-reset-all)
-  (let* ((base (file-name-directory load-file-name))
+  (let* ((base (file-name-directory load-name))
          (default-directory base)
          file-contents read-result read-index)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -81,7 +79,7 @@
 
 (ert-deftest proviso-compile-test-different-compile-sub-cmd ()
   (proviso-test-reset-all)
-  (let* ((base (file-name-directory load-file-name))
+  (let* ((base (file-name-directory load-name))
          (default-directory base)
          file-contents read-result read-index)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -124,7 +122,7 @@
 
 (ert-deftest proviso-compile-test-with-2-subdirs ()
   (proviso-test-reset-all)
-  (let* ((base (file-name-directory load-file-name))
+  (let* ((base (file-name-directory load-name))
          (default-directory base)
          file-contents read-result read-index)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -176,7 +174,7 @@
 
 (ert-deftest proviso-compile-test-with-repo ()
   (proviso-test-reset-all)
-  (let* ((base (file-name-directory load-file-name))
+  (let* ((base (file-name-directory load-name))
          (default-directory base)
          file-contents read-result read-index)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -229,7 +227,7 @@
 
 (ert-deftest proviso-compile-test-real-compile-with-repo ()
   (proviso-test-reset-all)
-  (let* ((base (file-name-directory load-file-name))
+  (let* ((base (file-name-directory load-name))
          (default-directory base)
          (compilation-read-command nil)
          (compilation-always-kill t)
@@ -289,7 +287,7 @@
 
 (ert-deftest proviso-compile-test-real-compile-with-repo-project-definition ()
   (proviso-test-reset-all)
-  (let* ((base (file-name-directory load-file-name))
+  (let* ((base (file-name-directory load-name))
          (default-directory base)
          (compilation-read-command nil)
          (compilation-always-kill t)
@@ -349,6 +347,5 @@
       (kill-buffer "dfile1")
       )))
 
-(ert-run-tests-batch-and-exit (car argv))
 
 ;;; test_proviso-compile.el ends here

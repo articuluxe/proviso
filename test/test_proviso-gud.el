@@ -1,11 +1,9 @@
-#!/bin/sh
-":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-gud.el --- test proviso gud functionality
 ;; Copyright (C) 2018-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, February  1, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-30 08:59:09 dharms>
+;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso gud debugger test
 ;; Package-Requires: ((emacs "25.1"))
@@ -33,7 +31,7 @@
 
 (ert-deftest proviso-gud-open-empty-project ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -59,7 +57,7 @@
 
 (ert-deftest proviso-gud-open-project ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -94,6 +92,5 @@
       (kill-buffer "dfile1")
       )))
 
-(ert-run-tests-batch-and-exit (car argv))
 
 ;;; test_proviso-gud.el ends here

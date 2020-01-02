@@ -1,11 +1,9 @@
-#!/bin/sh
-":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso.el --- test projects
 ;; Copyright (C) 2016-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-30 08:59:09 dharms>
+;; Modified Time-stamp: <2019-12-31 12:47:14 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 ;; Package-Requires: ((emacs "25.1"))
@@ -32,14 +30,9 @@
 (require 'proviso)
 
 ;; tests
-(ert-deftest proviso-compile-test()
-  (let ((byte-compile-error-on-warn t))
-    (should (byte-compile-file load-file-name))
-    (delete-file (byte-compile-dest-file load-file-name) nil)))
-
 (ert-deftest proviso-open-project-test ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (file-contents "")
         buffers)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -105,7 +98,7 @@
 
 (ert-deftest proviso-open-project-override-name ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (file-contents "")
         buffers)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -137,7 +130,7 @@
 
 (ert-deftest proviso-open-project-ignore-errors-project-file ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (file-contents "")
         buffers)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -170,7 +163,7 @@
 
 (ert-deftest proviso-open-project-test-git-should-be-ignored-due-to-proviso-file ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (file-contents "")
         buffers)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -204,7 +197,7 @@
 
 (ert-deftest proviso-open-project-test-git-project ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (file-contents "")
         buffers)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -635,7 +628,7 @@
 
 (ert-deftest proviso-open-project-override-provisional-project ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (file-contents "")
         buffers)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -675,6 +668,5 @@
       (dolist (b buffers) (kill-buffer b))
       )))
 
-(ert-run-tests-batch-and-exit (car argv))
 
 ;;; test_proviso.el ends here

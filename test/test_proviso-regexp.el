@@ -1,11 +1,9 @@
-#!/bin/sh
-":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-regexp.el --- test proviso regexp
 ;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, November  8, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-30 08:59:09 dharms>
+;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects regexp
 ;; Package-Requires: ((emacs "25.1"))
@@ -50,6 +48,5 @@
                    "^t.*e.*t\\.c.*v$"))
   )
 
-(ert-run-tests-batch-and-exit (car argv))
 
 ;;; test_proviso-regexp.el ends here

@@ -1,7 +1,15 @@
 EMACS=$(VISUAL) -nw
 ROOT=$(HOME)/.emacs.d
-DEPS=-L `pwd` -L $(ROOT)/plugins -L ../parsenv -L $(ROOT)/elisp -L $(ROOT)/plugins/bookmark+ -L $(ROOT)/plugins/auto-complete -L $(ROOT)/plugins/swiper -L $(ROOT)/plugins/realgud -L $(ROOT)/ext/xfer
+DEPS=-L . -L $(ROOT)/ext/xfer -L $(ROOT)/ext/parsenv -L $(ROOT)/plugins -L $(ROOT)/elisp -L $(ROOT)/plugins/bookmark+ -L $(ROOT)/plugins/auto-complete -L $(ROOT)/plugins/swiper -L $(ROOT)/plugins/realgud
 ELC := $(patsubst %.el,%.elc,$(wildcard *.el))
+rwildcard=$(wildcard $1$2)$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
+TESTS := $(call rwildcard,test/,test_*.el)
+
+check: $(TESTS)
+
+$(TESTS):
+	@echo "\n\nRunning -*- $@ -*-\n"
+	$(EMACS) $(DEPS) -batch -l $@ -f ert-run-tests-batch-and-exit
 
 %.elc: %.el
 	$(EMACS) -Q -batch $(DEPS) -f batch-byte-compile $<
@@ -9,13 +17,6 @@ ELC := $(patsubst %.el,%.elc,$(wildcard *.el))
 compile: $(ELC)
 
 clean:
-	rm $(ELC)
+	rm -f $(ELC)
 
-test:
-	@for idx in test/test_*.el; do \
-		printf '* %s\n' $$idx ; \
-		./$$idx $(DEPS) ; \
-		[ $$? -ne 0 ] && exit 1 ; \
-	done; :
-
-.PHONY: compile clean test
+.PHONY: compile clean test $(TESTS) check

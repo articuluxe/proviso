@@ -1,11 +1,9 @@
-#!/bin/sh
-":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-grep-command.el --- test proviso grep-command
 ;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-30 08:59:09 dharms>
+;; Modified Time-stamp: <2019-12-31 12:40:11 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project grep command
 ;; Package-Requires: ((emacs "25.1"))
@@ -32,7 +30,7 @@
 (require 'proviso)
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude ()
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (proviso-interesting-files '("*.cpp" "*.hpp"))
         (proviso-uninteresting-files '("*moc_*" "*qrc_*"))
         (proviso-uninteresting-dirs '("*.git"))
@@ -45,7 +43,7 @@
     ))
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude-empty-file-blacklist ()
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (proviso-interesting-files '("*.cpp" "*.hpp"))
         (proviso-uninteresting-files '())
         (proviso-uninteresting-dirs '("*.git"))
@@ -58,7 +56,7 @@
     ))
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude-empty-dir-blacklist ()
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (proviso-interesting-files '("*.cpp" "*.hpp"))
         (proviso-uninteresting-files '("*moc_*" "*qrc_*"))
         (proviso-uninteresting-dirs '())
@@ -71,7 +69,7 @@
     ))
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-exclude-empty-dir-and-file-blacklist ()
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (proviso-interesting-files '("*.cpp" "*.hpp"))
         (proviso-uninteresting-files '())
         (proviso-uninteresting-dirs '())
@@ -83,7 +81,7 @@
     ))
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-no-include ()
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (proviso-interesting-files '())
         (proviso-uninteresting-files '("*moc_*" "*qrc_*"))
         (proviso-uninteresting-dirs '("*.git" "*.svn"))
@@ -95,7 +93,7 @@
     ))
 
 (ert-deftest proviso-grep-cmd-test-create-cmd-no-exclude-or-include ()
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         (proviso-interesting-files '())
         (proviso-uninteresting-files '())
         (proviso-uninteresting-dirs '())
@@ -107,7 +105,7 @@
 
 (ert-deftest proviso-grep-cmd-open-project-dir ()
   (proviso-test-reset-all)
-  (let* ((base (file-name-directory load-file-name))
+  (let* ((base (file-name-directory load-name))
          (default-directory base)
          file-contents read-result)
     (cl-letf (((symbol-function 'proviso--eval-file)
@@ -191,6 +189,5 @@
       (kill-buffer "dfile1")
       )))
 
-(ert-run-tests-batch-and-exit (car argv))
 
 ;;; test_proviso-grep-command.el ends here

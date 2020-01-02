@@ -1,11 +1,9 @@
-#!/bin/sh
-":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-tags.el --- test proviso tags functionality
 ;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, April 13, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-30 08:59:09 dharms>
+;; Modified Time-stamp: <2019-12-31 12:29:42 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project tags etags
 ;; Package-Requires: ((emacs "25.1"))
@@ -33,7 +31,7 @@
 
 (ert-deftest proviso-tags-test-tags-one ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -73,7 +71,7 @@
 
 (ert-deftest proviso-tags-test-empty-proviso ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -97,7 +95,7 @@
 
 ;; (ert-deftest proviso-tags-test-tags-dir-from-env-var ()
 ;;   (proviso-test-reset-all)
-;;   (let ((base (file-name-directory load-file-name))
+;;   (let ((base (file-name-directory load-name))
 ;;         file-contents)
 ;;     (cl-letf (((symbol-function 'proviso--eval-file)
 ;;                (lambda (_)
@@ -135,7 +133,7 @@
 
 (ert-deftest proviso-tags-test-tags-dir-explicit-with-trailing-slash ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -174,7 +172,7 @@
 
 (ert-deftest proviso-tags-test-tags-dir-explicit-without-trailing-slash ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -213,7 +211,7 @@
 
 (ert-deftest proviso-tags-test-tags ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -308,7 +306,5 @@
       (kill-buffer "dfile2")
       (kill-buffer "dfile3")
       )))
-
-(ert-run-tests-batch-and-exit (car argv))
 
 ;;; test_proviso-tags.el ends here

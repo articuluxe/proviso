@@ -1,11 +1,9 @@
-#!/bin/sh
-":"; exec "$VISUAL" --quick --script "$0" -- "$@" # -*- mode: emacs-lisp; -*-
 ;;; test_proviso-registers.el --- test proviso registers
 ;; Copyright (C) 2017-2019  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April  4, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-30 08:59:09 dharms>
+;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project registers test
 ;; Package-Requires: ((emacs "25.1"))
@@ -41,7 +39,7 @@
 (ert-deftest proviso-register-test-root-register ()
   (proviso-test-reset-all)
   (proviso-register-reset-registers)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -69,7 +67,7 @@
 (ert-deftest proviso-register-test-empty-dir ()
   (proviso-test-reset-all)
   (proviso-register-reset-registers)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -97,7 +95,7 @@
 (ert-deftest proviso-register-test-relative-dir ()
   (proviso-test-reset-all)
   (proviso-register-reset-registers)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -125,7 +123,7 @@
 (ert-deftest proviso-register-test-absolute-dir ()
   (proviso-test-reset-all)
   (proviso-register-reset-registers)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -153,7 +151,7 @@
 (ert-deftest proviso-register-test-build-dirs-relative ()
   (proviso-test-reset-all)
   (proviso-register-reset-registers)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -185,7 +183,7 @@
 (ert-deftest proviso-register-test-build-dirs-absolute ()
   (proviso-test-reset-all)
   (proviso-register-reset-registers)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -217,7 +215,7 @@
 (ert-deftest proviso-register-test-build-dirs-empty-dir ()
   (proviso-test-reset-all)
   (proviso-register-reset-registers)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -249,7 +247,7 @@
 (ert-deftest proviso-register-test-no-project-file ()
   (proviso-test-reset-all)
   (proviso-register-reset-registers)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -270,7 +268,7 @@
 ;; (ert-deftest proviso-register-test-remote ()
 ;;   (proviso-test-reset-all)
 ;;   (proviso-register-reset-registers)
-;;   (let ((base (file-name-directory load-file-name))
+;;   (let ((base (file-name-directory load-name))
 ;;         file-contents)
 ;;     (cl-letf (((symbol-function 'proviso--eval-file)
 ;;                (lambda (_)
@@ -322,7 +320,7 @@
 (ert-deftest proviso-register-test-switch-projects ()
   (proviso-test-reset-all)
   (proviso-register-reset-registers)
-  (let ((base (file-name-directory load-file-name))
+  (let ((base (file-name-directory load-name))
         file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -401,6 +399,5 @@
       )))
 
 
-(ert-run-tests-batch-and-exit (car argv))
 
 ;;; test_proviso-registers.el ends here
