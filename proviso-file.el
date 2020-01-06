@@ -1,9 +1,9 @@
 ;;; proviso-file.el --- File utilities for proviso
-;; Copyright (C) 2019  Dan Harms (dharms)
+;; Copyright (C) 2019-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, October 17, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-21 08:59:36 dharms>
+;; Modified Time-stamp: <2020-01-06 10:54:37 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -28,6 +28,7 @@
 
 ;;; Code:
 (require 'proviso-fd)
+(require 'proviso-regexp)
 (require 'seq)
 (require 'ivy)
 (require 'xfer-util)
@@ -37,14 +38,17 @@
   (let ((file (cdr x)))
     (delete-file file)))
 
-(defun proviso-file-choose (dir prompt action &optional regex)
-  "Perform ACTION of file chosen via PROMPT beneath DIR."
-  (let* ((pattern (or regex "."))
+(defun proviso-file-choose (dir prompt action &optional glob)
+  "Perform ACTION of file chosen via PROMPT beneath DIR.
+GLOB is an optional shell glob pattern to restrict results."
+  (let* ((pattern (or glob "*"))
         (files
          (cond ((xfer-util-find-executable "fd" dir)
                 (proviso-fd-gather-files dir pattern))
                (t
-                (directory-files-recursively dir pattern)))))
+                (directory-files-recursively
+                 dir
+                 (proviso-regexp-glob-to-regex pattern))))))
     (if (seq-empty-p files)
         (user-error (format "No files found matching %s" pattern))
       (ivy-read prompt
@@ -64,7 +68,7 @@
      (read-directory-name "Search for lock file under: " dir)
      "Remove file: "
      #'proviso-file-choose-remove-action
-     "index\\.lock$")))
+     "index.lock")))
 
 ;;;###autoload
 (defun proviso-file-choose-file-delete (dir regex)
