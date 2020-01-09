@@ -1,9 +1,9 @@
 ;;; proviso-core.el --- Core functionality for proviso.
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-25 07:02:50 dharms>
+;; Modified Time-stamp: <2020-01-09 09:25:17 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -551,6 +551,7 @@ location, or a writeable dir tracking a non-writeable one."
     (file-name-as-directory
      (concat (unless local remote-prefix)
              (proviso-compute-proviso-dir (and (not local)
+                                               remote-prefix
                                                (concat remote-prefix root-dir)))
              sub
              (when (and local remote-host)
