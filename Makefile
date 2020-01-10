@@ -4,14 +4,19 @@ DEPS=-L . -L $(ROOT)/ext/xfer -L $(ROOT)/ext/parsenv -L $(ROOT)/plugins -L $(ROO
 ELC := $(patsubst %.el,%.elc,$(wildcard *.el))
 rwildcard=$(wildcard $1$2)$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 TESTS := $(call rwildcard,test/,test_*.el)
+ifdef COMSPEC
+	BLANK = echo.
+else
+	BLANK = echo -e
+endif
 
 check: $(TESTS)
 
 $(TESTS):
-	@echo.
-	@echo.
-	@echo "Running -*- $@ -*-"
-	@echo.
+	@$(BLANK)
+	@$(BLANK)
+	@echo Running -*- $@ -*-
+	@$(BLANK)
 	$(EMACS) -Q $(DEPS) -batch -l $@ -f ert-run-tests-batch-and-exit
 
 %.elc: %.el
