@@ -1,10 +1,10 @@
 ;;; proviso-test-common.el --- common test utilities for proviso
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, March 31, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-12-31 12:25:48 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-08 09:00:18 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools proviso test
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,12 @@
 ;;; Code:
 
 (require 'ert)
-(setq load-name load-file-name)
+(defvar load-name load-file-name)
+(defvar absolute-root-dir
+  (cond ((eq system-type 'windows-nt)
+         (expand-file-name "c:\\Users"))
+        (t "/home"))
+  "An absolute path name near the root of the current host.")
 (setq debug-on-error t)
 (setq bmkp-last-as-first-bookmark-file nil)
 

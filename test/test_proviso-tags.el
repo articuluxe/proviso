@@ -1,10 +1,10 @@
 ;;; test_proviso-tags.el --- test proviso tags functionality
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, April 13, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-12-31 12:29:42 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-09 08:23:05 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools proviso project tags etags
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -38,15 +38,17 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d/\")
                   (:name \"third\" :dir \"d2/\")
-                  (:name \"fourth\" :dir \"/home/\")
+                  (:name \"fourth\" :dir \""
+                                  (file-name-as-directory absolute-root-dir)
+                                  "\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -58,7 +60,9 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home/" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         (file-name-as-directory absolute-root-dir)
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
@@ -140,15 +144,17 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d/\")
                   (:name \"third\" :dir \"d2/\")
-                  (:name \"fourth\" :dir \"/home/\")
+                  (:name \"fourth\" :dir \""
+                                  (file-name-as-directory absolute-root-dir)
+                                  "\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -160,7 +166,9 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home/" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         (file-name-as-directory absolute-root-dir)
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
@@ -179,15 +187,17 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d/\")
                   (:name \"third\" :dir \"d2/\")
-                  (:name \"fourth\" :dir \"/home/\")
+                  (:name \"fourth\" :dir \""
+                                  (file-name-as-directory absolute-root-dir)
+                                  "\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -199,7 +209,9 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home/" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         (file-name-as-directory absolute-root-dir)
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
@@ -218,15 +230,17 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d/\")
                   (:name \"third\" :dir \"d2/\")
-                  (:name \"fourth\" :dir \"/home/\")
+                  (:name \"fourth\" :dir \""
+                                  absolute-root-dir
+                                  "/\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -238,7 +252,9 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home/" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         (file-name-as-directory absolute-root-dir)
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
@@ -256,7 +272,9 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home/" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         (file-name-as-directory absolute-root-dir)
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
@@ -294,7 +312,9 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home/" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         (file-name-as-directory absolute-root-dir)
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
