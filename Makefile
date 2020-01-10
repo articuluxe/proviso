@@ -8,8 +8,11 @@ TESTS := $(call rwildcard,test/,test_*.el)
 check: $(TESTS)
 
 $(TESTS):
-	@echo "\n\nRunning -*- $@ -*-\n"
-	$(EMACS) $(DEPS) -batch -l $@ -f ert-run-tests-batch-and-exit
+	@echo.
+	@echo.
+	@echo "Running -*- $@ -*-"
+	@echo.
+	$(EMACS) -Q $(DEPS) -batch -l $@ -f ert-run-tests-batch-and-exit
 
 %.elc: %.el
 	$(EMACS) -Q -batch $(DEPS) -f batch-byte-compile $<
