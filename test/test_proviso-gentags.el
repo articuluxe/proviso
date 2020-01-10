@@ -1,10 +1,10 @@
 ;;; test_proviso-gentags.el --- test proviso gentags
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-10 09:14:40 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools proviso project tags gentags
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -29,6 +29,12 @@
 (load-file "test/proviso-test-common.el")
 (require 'proviso)
 
+(defvar tags-executable
+  (cond ((executable-find "exctags")
+         "exctags")
+        (t "ctags"))
+  "Tags executable on the host machine.")
+
 (ert-deftest proviso-gentags-test-tags ()
   (proviso-test-reset-all)
   (let ((base (file-name-directory load-name))
@@ -47,18 +53,20 @@
                    (should (string= (car arg-contents) str))
                    (pop arg-contents))))
               ((symbol-function 'proviso-gentags-exe)
-               (lambda(_) "exctags")))
+               (lambda(_) tags-executable)))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d/\")
                   (:name \"third\" :dir \"d2/\")
-                  (:name \"fourth\" :dir \"/home/\")
+                  (:name \"fourth\" :dir \""
+                                  (file-name-as-directory absolute-root-dir)
+                                  "\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -71,25 +79,27 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home/" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         (file-name-as-directory absolute-root-dir)
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/first-tags "
                            base "a/b/c")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/second-tags "
                            base "a/b/c/d")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/third-tags "
                            base "a/b/c/d2")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/fourth-tags "
-                           "/home")
+                           absolute-root-dir)
                           ))
       (proviso-gentags-generate-tags)
 
@@ -115,7 +125,7 @@
                    (should (string= (car arg-contents) str))
                    (pop arg-contents))))
               ((symbol-function 'proviso-gentags-exe)
-               (lambda(_) "exctags")))
+               (lambda(_) tags-executable)))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
       (setq file-contents "")
@@ -130,7 +140,7 @@
                                  (concat base "a/b/c/.tags/c-tags")
                                  ))))
       (setq arg-contents (list
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/c-tags "
                            base "a/b/c")
                           ))
@@ -158,18 +168,20 @@
                    (should (string= (car arg-contents) str))
                    (pop arg-contents))))
               ((symbol-function 'proviso-gentags-exe)
-               (lambda(_) "exctags")))
+               (lambda(_) tags-executable)))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d\")
                   (:name \"third\" :dir \"d2\")
-                  (:name \"fourth\" :dir \"/home\")
+                  (:name \"fourth\" :dir \""
+                                  absolute-root-dir
+                                  "\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -182,25 +194,27 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         absolute-root-dir
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/first-tags "
                            base "a/b/c")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/second-tags "
                            base "a/b/c/d")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/third-tags "
                            base "a/b/c/d2")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/fourth-tags "
-                           "/home")
+                           absolute-root-dir)
                           ))
       (proviso-gentags-generate-tags)
 
@@ -225,18 +239,20 @@
                    (should (string= (car arg-contents) str))
                    (pop arg-contents))))
               ((symbol-function 'proviso-gentags-exe)
-               (lambda(_) "exctags")))
+               (lambda(_) tags-executable)))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d\")
                   (:name \"third\" :dir \"d2\")
-                  (:name \"fourth\" :dir \"/home\")
+                  (:name \"fourth\" :dir \""
+                                  absolute-root-dir
+                                  "\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -249,25 +265,27 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         absolute-root-dir
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/first-tags "
                            base "a/b/c")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/second-tags "
                            base "a/b/c/d")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/third-tags "
                            base "a/b/c/d2")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/fourth-tags "
-                           "/home")
+                           absolute-root-dir)
                           ))
       (proviso-gentags-generate-tags)
 
@@ -292,18 +310,20 @@
                    (should (string= (car arg-contents) str))
                    (pop arg-contents))))
               ((symbol-function 'proviso-gentags-exe)
-               (lambda(_) "exctags")))
+               (lambda(_) tags-executable)))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d\")
                   (:name \"third\" :dir \"d2\")
-                  (:name \"fourth\" :dir \"/home\")
+                  (:name \"fourth\" :dir \""
+                                  absolute-root-dir
+                                  "\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -316,25 +336,27 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         absolute-root-dir
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/first-tags "
                            base "a/b/c")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/second-tags "
                            base "a/b/c/d")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/third-tags "
                            base "a/b/c/d2")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/fourth-tags "
-                           "/home")
+                           absolute-root-dir)
                           ))
       (proviso-gentags-generate-tags)
 
@@ -360,18 +382,20 @@
                    (should (string= (car arg-contents) str))
                    (pop arg-contents))))
               ((symbol-function 'proviso-gentags-exe)
-               (lambda(_) "exctags")))
+               (lambda(_) tags-executable)))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\" :ctags-opts \"--exclude=boost\")
                   (:name \"second\" :dir \"d/\" :ctags-opts \"--exclude=asio --exclude=spirit\")
                   (:name \"third\" :dir \"d2/\")
-                  (:name \"fourth\" :dir \"/home/\")
+                  (:name \"fourth\" :dir \""
+                                  (file-name-as-directory absolute-root-dir)
+                                  "\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -384,25 +408,27 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home/" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         (file-name-as-directory absolute-root-dir)
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no --exclude=boost -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no --exclude=boost -f "
                            base "a/b/c/.tags/first-tags "
                            base "a/b/c")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no --exclude=asio --exclude=spirit -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no --exclude=asio --exclude=spirit -f "
                            base "a/b/c/.tags/second-tags "
                            base "a/b/c/d")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/third-tags "
                            base "a/b/c/d2")
-                          (concat "-c exctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/fourth-tags "
-                           "/home")
+                           absolute-root-dir)
                           ))
       (proviso-gentags-generate-tags)
 
@@ -428,18 +454,20 @@
                    (should (string= (car arg-contents) str))
                    (pop arg-contents))))
               ((symbol-function 'proviso-gentags-exe)
-               (lambda(_) "exctags")))
+               (lambda(_) tags-executable)))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d\")
                   (:name \"third\" :dir \"d2\")
-                  (:name \"fourth\" :dir \"/home\")
+                  (:name \"fourth\" :dir \""
+                                  absolute-root-dir
+                                  "\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -452,25 +480,27 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         absolute-root-dir
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
-                          (concat "-c exctags -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/first-tags "
                            base "a/b/c")
-                          (concat "-c exctags -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/second-tags "
                            base "a/b/c/d")
-                          (concat "-c exctags -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/third-tags "
                            base "a/b/c/d2")
-                          (concat "-c exctags -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/fourth-tags "
-                           "/home")
+                           absolute-root-dir)
                           ))
       (proviso-gentags-generate-tags)
 
@@ -498,15 +528,17 @@
                (lambda(_) "myctags")))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d\")
                   (:name \"third\" :dir \"d2\")
-                  (:name \"fourth\" :dir \"/home\")
+                  (:name \"fourth\" :dir \""
+                                  absolute-root-dir
+                                  "\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -519,7 +551,9 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         absolute-root-dir
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
@@ -537,7 +571,7 @@
                            base "a/b/c/d2")
                           (concat "-c myctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
                            base "a/b/c/.tags/fourth-tags "
-                           "/home")
+                           absolute-root-dir)
                           ))
       (proviso-gentags-generate-tags)
 
@@ -566,15 +600,17 @@
                  (list "totally new options"))))
       (should-error (proviso-gentags-generate-tags))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"first\" :dir \"\")
                   (:name \"second\" :dir \"d\")
                   (:name \"third\" :dir \"d2\")
-                  (:name \"fourth\" :dir \"/home\")
+                  (:name \"fourth\" :dir \""
+                                  absolute-root-dir
+                                  "\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -587,7 +623,9 @@
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
                                  (concat base "a/b/c/.tags/fourth-tags"))
-                           (list (concat "^\\(.*\\)" "/home" "\\(.*\\)$")
+                           (list (concat "^\\(.*\\)"
+                                         absolute-root-dir
+                                         "\\(.*\\)$")
                                  (concat base "a/b/c/.tags/first-tags")
                                  (concat base "a/b/c/.tags/second-tags")
                                  (concat base "a/b/c/.tags/third-tags")
@@ -605,7 +643,7 @@
                            base "a/b/c/d2")
                           (concat "-c totally new options -f "
                            base "a/b/c/.tags/fourth-tags "
-                           "/home")
+                           absolute-root-dir)
                           ))
       (proviso-gentags-generate-tags)
 
