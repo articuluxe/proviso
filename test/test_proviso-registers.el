@@ -1,10 +1,10 @@
 ;;; test_proviso-registers.el --- test proviso registers
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April  4, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-13 11:23:49 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools proviso project registers test
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -130,20 +130,22 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
-               '( (:name \"base\" :dir \"/home/\" :register ?1)
+               '( (:name \"base\" :dir \""
+                                  absolute-root-dir
+                                  "\" :register ?1)
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
-      (should (equal (get-register ?c) (cons 'file "/home/")))
-      (should (equal (get-register ?1) (cons 'file "/home/")))
+      (should (equal (get-register ?c) (cons 'file absolute-root-dir)))
+      (should (equal (get-register ?1) (cons 'file absolute-root-dir)))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
@@ -158,23 +160,25 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
-               '( (:name \"base\" :dir \"/home/\" :register ?1)
+               '( (:name \"base\" :dir \""
+                                  (file-name-as-directory absolute-root-dir)
+                                  "\" :register ?1)
                   ))
    (proviso-put proj :build-subdirs
                '( (:name \"subdir\" :dir \"d2/\" :register ?2)
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
-      (should (equal (get-register ?c) (cons 'file "/home/")))
-      (should (equal (get-register ?1) (cons 'file "/home/")))
+      (should (equal (get-register ?c) (cons 'file (file-name-as-directory absolute-root-dir))))
+      (should (equal (get-register ?1) (cons 'file (file-name-as-directory absolute-root-dir))))
       (should (equal (get-register ?2) (cons 'file (concat base "a/b/c/d2/"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
@@ -190,24 +194,28 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
-               '( (:name \"base\" :dir \"/home/\" :register ?1)
+               '( (:name \"base\" :dir \""
+                                  (file-name-as-directory absolute-root-dir)
+                                  "\" :register ?1)
                   ))
    (proviso-put proj :build-subdirs
-               '( (:name \"subdir\" :dir \"/home/\" :register ?2)
+               '( (:name \"subdir\" :dir \""
+                                  (file-name-as-directory absolute-root-dir)
+                                  "\" :register ?2)
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
-      (should (equal (get-register ?c) (cons 'file "/home/")))
-      (should (equal (get-register ?1) (cons 'file "/home/")))
-      (should (equal (get-register ?2) (cons 'file "/home/")))
+      (should (equal (get-register ?c) (cons 'file (file-name-as-directory absolute-root-dir))))
+      (should (equal (get-register ?1) (cons 'file (file-name-as-directory absolute-root-dir))))
+      (should (equal (get-register ?2) (cons 'file (file-name-as-directory absolute-root-dir))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
@@ -222,23 +230,25 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
-               '( (:name \"base\" :dir \"/home/\" :register ?1)
+               '( (:name \"base\" :dir \""
+                                  (file-name-as-directory absolute-root-dir)
+                                  "\" :register ?1)
                   ))
    (proviso-put proj :build-subdirs
                '( (:name \"subdir\" :dir \"\" :register ?2)
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
-      (should (equal (get-register ?c) (cons 'file "/home/")))
-      (should (equal (get-register ?1) (cons 'file "/home/")))
+      (should (equal (get-register ?c) (cons 'file (file-name-as-directory absolute-root-dir))))
+      (should (equal (get-register ?1) (cons 'file (file-name-as-directory absolute-root-dir))))
       (should (equal (get-register ?2) (cons 'file (concat base "a/b/c/"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
@@ -327,23 +337,25 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
-               '( (:name \"base\" :dir \"/home/\" :register ?1)
+               '( (:name \"base\" :dir \""
+                                  (file-name-as-directory absolute-root-dir)
+                                  "\" :register ?1)
                   ))
    (proviso-put proj :build-subdirs
                '( (:name \"subdir\" :dir \"d2/\" :register ?2)
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
-      (should (equal (get-register ?c) (cons 'file "/home/")))
-      (should (equal (get-register ?1) (cons 'file "/home/")))
+      (should (equal (get-register ?c) (cons 'file (file-name-as-directory absolute-root-dir))))
+      (should (equal (get-register ?1) (cons 'file (file-name-as-directory absolute-root-dir))))
       (should (equal (get-register ?2) (cons 'file (concat base "a/b/c/d2/"))))
       (should (eq proviso-local-proj proviso-curr-proj))
       ;; open 2nd file, same project
@@ -355,8 +367,8 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
-      (should (equal (get-register ?c) (cons 'file "/home/")))
-      (should (equal (get-register ?1) (cons 'file "/home/")))
+      (should (equal (get-register ?c) (cons 'file (file-name-as-directory absolute-root-dir))))
+      (should (equal (get-register ?1) (cons 'file (file-name-as-directory absolute-root-dir))))
       (should (equal (get-register ?2) (cons 'file (concat base "a/b/c/d2/"))))
       ;; open 3rd file, new project
       (setq file-contents "(
@@ -389,8 +401,8 @@
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (eq proviso-local-proj proviso-curr-proj))
       (should (equal (get-register ?r) (cons 'file (concat base "a/b/c/"))))
-      (should (equal (get-register ?c) (cons 'file "/home/")))
-      (should (equal (get-register ?1) (cons 'file "/home/")))
+      (should (equal (get-register ?c) (cons 'file (file-name-as-directory absolute-root-dir))))
+      (should (equal (get-register ?1) (cons 'file (file-name-as-directory absolute-root-dir))))
       (should (equal (get-register ?2) (cons 'file (concat base "a/b/c/d2/"))))
       ;; clean up buffers
       (kill-buffer "dfile1")

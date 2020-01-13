@@ -1,10 +1,10 @@
 ;;; test_proviso-include-files.el --- test proviso include files
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-13 11:28:16 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: proviso project include files test
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -67,21 +67,23 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
-               '( (:name \"base\" :dir \"/home/\")
+               '( (:name \"base\" :dir \""
+                                  (file-name-as-directory absolute-root-dir)
+                                  "\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (equal (proviso-get proviso-local-proj :include-files)
-                  (list "/home/")))
+                  (list (file-name-as-directory absolute-root-dir))))
       (should (equal (proviso-get proviso-local-proj :include-ff-files)
-                  (list "." "/home" (concat base "a/b/c"))))
+                     (list "." absolute-root-dir (concat base "a/b/c"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
@@ -175,14 +177,16 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"one\" :dir \"\")
-                  (:name \"two\" :dir \"/home\")
+                  (:name \"two\" :dir \""
+                                  absolute-root-dir
+                                  "\")
                   (:name \"three\" :dir \"d\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -191,14 +195,14 @@
       (should (equal (proviso-get proviso-local-proj :include-files)
                      (list
                       (concat base "a/b/c/d/")
-                      "/home/"
+                      (file-name-as-directory absolute-root-dir)
                       (concat base "a/b/c/")
                       )))
       (should (equal (proviso-get proviso-local-proj :include-ff-files)
                      (list
                       "."
                       (concat base "a/b/c/d")
-                      "/home"
+                      absolute-root-dir
                       (concat base "a/b/c")
                       )))
       ;; clean up buffers
@@ -214,14 +218,16 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"one\" :dir \"\")
-                  (:name \"two\" :dir \"/home\")
+                  (:name \"two\" :dir \""
+                                  absolute-root-dir
+                                  "\")
                   (:name \"three\" :dir \"d\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -230,21 +236,21 @@
       (should (equal (proviso-get proviso-local-proj :include-files)
                      (list
                       (concat base "a/b/c/d/")
-                      "/home/"
+                      (file-name-as-directory absolute-root-dir)
                       (concat base "a/b/c/")
                       )))
       (should (equal (proviso-get proviso-local-proj :include-ff-files)
                      (list
                       "."
                       (concat base "a/b/c/d")
-                      "/home"
+                      absolute-root-dir
                       (concat base "a/b/c")
                       )))
       (should (local-variable-p 'ff-search-directories (get-buffer "dfile1")))
       (should (equal ff-search-directories
                      (list "."
                            (concat base "a/b/c/d")
-                           "/home"
+                           absolute-root-dir
                            (concat base "a/b/c"))))
       ;; open 2nd file, same project
       (find-file (concat base "a/b/c/d/dfile2"))
@@ -256,7 +262,7 @@
       (should (equal ff-search-directories
                      (list "."
                            (concat base "a/b/c/d")
-                           "/home"
+                           absolute-root-dir
                            (concat base "a/b/c"))))
       ;; open 3rd file, new project
       (setq file-contents "(
@@ -287,7 +293,7 @@
       (should (equal ff-search-directories
                      (list "."
                            (concat base "a/b/c/d")
-                           "/home"
+                           absolute-root-dir
                            (concat base "a/b/c"))))
 
       ;; clean up buffers

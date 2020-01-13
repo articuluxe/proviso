@@ -1,10 +1,10 @@
 ;;; test_proviso-grep.el --- test proviso grep dirs
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-13 11:31:45 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools proviso project grep test
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -64,19 +64,22 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
-               '( (:name \"base\" :dir \"/home/\")
+               '( (:name \"base\" :dir \""
+                                  (file-name-as-directory absolute-root-dir)
+                                  "\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (equal (proviso-get proviso-local-proj :grep-dirs)
-                     (list "/home/" (concat base "a/b/c/"))))
+                     (list (file-name-as-directory absolute-root-dir)
+                           (concat base "a/b/c/"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
@@ -139,14 +142,16 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents))))))
       ;; open file
-      (setq file-contents "(
+      (setq file-contents (concat "(
 :initfun (lambda (proj)
    (proviso-put proj :proj-alist
                '( (:name \"one\" :dir \"\")
-                  (:name \"two\" :dir \"/home\")
+                  (:name \"two\" :dir \""
+                                  absolute-root-dir
+                                  "\")
                   (:name \"three\" :dir \"d\")
                   )))
-)")
+)"))
       (find-file (concat base "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
                        (concat base "a/b/c/")))
@@ -155,7 +160,7 @@
       (should (equal (proviso-get proviso-local-proj :grep-dirs)
                      (list
                       (concat base "a/b/c/")
-                      "/home/"
+                      (file-name-as-directory absolute-root-dir)
                       (concat base "a/b/c/d/")
                       )))
       ;; open 2nd file, same project
@@ -167,7 +172,7 @@
       (should (equal (proviso-get proviso-local-proj :grep-dirs)
                      (list
                       (concat base "a/b/c/")
-                      "/home/"
+                      (file-name-as-directory absolute-root-dir)
                       (concat base "a/b/c/d/")
                       )))
       ;; open 3rd file, new project
@@ -198,7 +203,7 @@
       (should (equal (proviso-get proviso-local-proj :grep-dirs)
                      (list
                       (concat base "a/b/c/")
-                      "/home/"
+                      (file-name-as-directory absolute-root-dir)
                       (concat base "a/b/c/d/")
                       )))
 
