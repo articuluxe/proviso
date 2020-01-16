@@ -3,8 +3,8 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-01-09 09:25:17 dan.harms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-16 08:46:50 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "25.1"))
@@ -338,6 +338,8 @@ HOST defaults to nil for localhost."
   "While loading PROJECT, error ERR has occurred; ask the user what to do."
   (interactive)
   (unless (stringp err) (setq err (prin1-to-string err)))
+  (when noninteractive
+    (message "proviso--query-error: %s" err))
   (let ((buf (get-buffer-create "*Proviso Error*")))
     (with-current-buffer buf
       (erase-buffer)
