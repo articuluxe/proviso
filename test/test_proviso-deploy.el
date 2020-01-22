@@ -1,10 +1,10 @@
 ;;; test_proviso-deploy.el --- test deploy utilities
-;; Copyright (C) 2018-2019  Dan Harms (dharms)
+;; Copyright (C) 2018-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-20 08:39:38 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools proviso project
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -146,8 +146,7 @@ OTHER-FILES, if present, should be in a separate deploy destination."
 
 (ert-deftest test-proviso-deploy-files ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-name))
-        (file-contents "")
+  (let ((file-contents "")
         buffers)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -155,12 +154,12 @@ OTHER-FILES, if present, should be in a separate deploy destination."
                    (car (read-from-string file-contents))))))
       ;; open first file, init new project
       (should (not proviso-local-proj))
-      (find-file (concat base "a/b/c/d/dfile1"))
+      (find-file (concat base-test-dir "a/b/c/d/dfile1"))
       (push "dfile1" buffers)
       (should proviso-local-proj)
       (should (equal proviso-proj-alist
-                     (list (cons (concat base "a/b/c/")
-                                 (concat "c#" base "a/b/c/")))))
+                     (list (cons (concat base-test-dir "a/b/c/")
+                                 (concat "c#" base-test-dir "a/b/c/")))))
 
       ;;  deploy one file to directory
       (test-proviso-deployment "

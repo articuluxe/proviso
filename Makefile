@@ -10,6 +10,8 @@ else
 	BLANK = echo -e
 endif
 
+# $(info $(SHELL))
+
 check: $(TESTS)
 
 $(TESTS):

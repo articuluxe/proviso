@@ -1,10 +1,10 @@
 ;;; test_proviso-bookmarks.el --- test proviso bookmarks
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-12-31 12:40:11 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-20 08:55:37 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools proviso bookmark test
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -31,8 +31,7 @@
 
 (ert-deftest proviso-register-test-bookmark-created ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-name))
-        (proviso-bookmarks-create-bmk-on-proj-init t)
+  (let ((proviso-bookmarks-create-bmk-on-proj-init t)
         file-contents)
     (cl-letf (((symbol-function 'proviso--load-file)
                (lambda (_)
@@ -46,25 +45,24 @@
  (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (ignore-errors
-        (f-delete (concat base "a/b/c/c.bmk") t))
-      (should (not (f-exists? (concat base "a/b/c/c.bmk"))))
-      (find-file (concat base "a/b/c/d/dfile1"))
+        (f-delete (concat base-test-dir "a/b/c/c.bmk") t))
+      (should (not (f-exists? (concat base-test-dir "a/b/c/c.bmk"))))
+      (find-file (concat base-test-dir "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c/")))
+                       (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
-      (should (f-exists? (concat base "a/b/c/c.bmk")))
+      (should (f-exists? (concat base-test-dir "a/b/c/c.bmk")))
       (should (string= bmkp-current-bookmark-file
-                       (abbreviate-file-name (concat base "a/b/c/c.bmk"))))
+                       (abbreviate-file-name (concat base-test-dir "a/b/c/c.bmk"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
-      (f-delete (concat base "a/b/c/c.bmk"))
+      (f-delete (concat base-test-dir "a/b/c/c.bmk"))
       )))
 
 (ert-deftest proviso-register-test-bookmark-empty-project-file ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-name))
-        (proviso-bookmarks-create-bmk-on-proj-init t)
+  (let ((proviso-bookmarks-create-bmk-on-proj-init t)
         file-contents)
     (cl-letf (((symbol-function 'proviso--load-file)
                (lambda (_)
@@ -72,25 +70,24 @@
       ;; open file
       (setq file-contents "")
       (ignore-errors
-        (f-delete (concat base "a/b/c/c.bmk") t))
-      (should (not (f-exists? (concat base "a/b/c/c.bmk"))))
-      (find-file (concat base "a/b/c/d/dfile1"))
+        (f-delete (concat base-test-dir "a/b/c/c.bmk") t))
+      (should (not (f-exists? (concat base-test-dir "a/b/c/c.bmk"))))
+      (find-file (concat base-test-dir "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c/")))
+                       (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
-      (should (f-exists? (concat base "a/b/c/c.bmk")))
+      (should (f-exists? (concat base-test-dir "a/b/c/c.bmk")))
       (should (string= bmkp-current-bookmark-file
-                       (abbreviate-file-name (concat base "a/b/c/c.bmk"))))
+                       (abbreviate-file-name (concat base-test-dir "a/b/c/c.bmk"))))
       ;; clean up buffers
       (kill-buffer "dfile1")
-      (f-delete (concat base "a/b/c/c.bmk"))
+      (f-delete (concat base-test-dir "a/b/c/c.bmk"))
       )))
 
 (ert-deftest proviso-register-test-bookmark-switch-projects ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-name))
-        (proviso-bookmarks-create-bmk-on-proj-init t)
+  (let ((proviso-bookmarks-create-bmk-on-proj-init t)
         file-contents)
     (cl-letf (((symbol-function 'proviso--load-file)
                (lambda (_)
@@ -104,25 +101,25 @@
  (proviso-define-project \"c\" :initfun 'do-init)
 ")
       (ignore-errors
-        (f-delete (concat base "a/b/c/c.bmk") t))
-      (should (not (f-exists? (concat base "a/b/c/c.bmk"))))
-      (find-file (concat base "a/b/c/d/dfile1"))
+        (f-delete (concat base-test-dir "a/b/c/c.bmk") t))
+      (should (not (f-exists? (concat base-test-dir "a/b/c/c.bmk"))))
+      (find-file (concat base-test-dir "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c/")))
+                       (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
-      (should (f-exists? (concat base "a/b/c/c.bmk")))
+      (should (f-exists? (concat base-test-dir "a/b/c/c.bmk")))
       (should (string= bmkp-current-bookmark-file
-                       (abbreviate-file-name (concat base "a/b/c/c.bmk"))))
+                       (abbreviate-file-name (concat base-test-dir "a/b/c/c.bmk"))))
       ;; open 2nd file, same project
-      (find-file (concat base "a/b/c/d/dfile2"))
+      (find-file (concat base-test-dir "a/b/c/d/dfile2"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c/")))
+                       (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
-      (should (f-exists? (concat base "a/b/c/c.bmk")))
+      (should (f-exists? (concat base-test-dir "a/b/c/c.bmk")))
       (should (string= bmkp-current-bookmark-file
-                       (abbreviate-file-name (concat base "a/b/c/c.bmk"))))
+                       (abbreviate-file-name (concat base-test-dir "a/b/c/c.bmk"))))
       ;; open 3rd file, new project
       (setq file-contents "
  (defun do-init (proj)
@@ -134,34 +131,34 @@
                   )))
  (proviso-define-project \"c2\" :initfun 'do-init)
 ")
-      (find-file (concat base "a/b/c2/d2/dfile3"))
+      (find-file (concat base-test-dir "a/b/c2/d2/dfile3"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c2/")))
+                       (concat base-test-dir "a/b/c2/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c2"))
-      (should (f-exists? (concat base "a/b/c/c.bmk")))
-      (should (f-exists? (concat base "a/b/c2/c2.bmk")))
+      (should (f-exists? (concat base-test-dir "a/b/c/c.bmk")))
+      (should (f-exists? (concat base-test-dir "a/b/c2/c2.bmk")))
       (should (string= bmkp-current-bookmark-file
-                       (abbreviate-file-name (concat base "a/b/c2/c2.bmk"))))
+                       (abbreviate-file-name (concat base-test-dir "a/b/c2/c2.bmk"))))
       ;; switch back to initial buffer
       (switch-to-buffer "dfile1")
       (run-hooks 'post-command-hook)    ;simulate interactive use
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c/")))
+                       (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (eq proviso-local-proj proviso-curr-proj))
-      (should (f-exists? (concat base "a/b/c/c.bmk")))
-      (should (f-exists? (concat base "a/b/c2/c2.bmk")))
+      (should (f-exists? (concat base-test-dir "a/b/c/c.bmk")))
+      (should (f-exists? (concat base-test-dir "a/b/c2/c2.bmk")))
       (should (string= bmkp-current-bookmark-file
-                       (abbreviate-file-name (concat base "a/b/c/c.bmk"))))
+                       (abbreviate-file-name (concat base-test-dir "a/b/c/c.bmk"))))
 
       ;; clean up buffers
       (kill-buffer "dfile1")
       (kill-buffer "dfile2")
       (kill-buffer "dfile3")
-      (f-delete (concat base "a/b/c/c.bmk"))
-      (f-delete (concat base "a/b/c2/c2.bmk"))
+      (f-delete (concat base-test-dir "a/b/c/c.bmk"))
+      (f-delete (concat base-test-dir "a/b/c2/c2.bmk"))
       )))
 
 

@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, March 31, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-01-08 09:00:18 Dan.Harms>
+;; Modified Time-stamp: <2020-01-20 09:03:13 Dan.Harms>
 ;; Modified by: Dan.Harms
 ;; Keywords: tools proviso test
 
@@ -27,7 +27,9 @@
 ;;; Code:
 
 (require 'ert)
-(defvar load-name load-file-name)
+(defvar base-test-dir
+  (file-name-as-directory
+   (file-name-directory load-file-name)))
 (defvar absolute-root-dir
   (cond ((eq system-type 'windows-nt)
          (expand-file-name "c:\\Users"))

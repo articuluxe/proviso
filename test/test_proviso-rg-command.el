@@ -1,10 +1,10 @@
 ;;; test_proviso-rg-command.el --- test proviso rg command
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, January 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-12-31 12:40:11 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-20 08:56:15 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools proviso project rg command
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -30,8 +30,7 @@
 (require 'proviso)
 
 (ert-deftest proviso-rg-cmd-test-create-cmd-exclude ()
-  (let ((base (file-name-directory load-name))
-        (proviso-interesting-files '("*.cpp" "*.hpp"))
+  (let ((proviso-interesting-files '("*.cpp" "*.hpp"))
         (proviso-uninteresting-files '("*moc_*" "*qrc_*"))
         (proviso-uninteresting-dirs '("*.git" "*.tags"))
         )
@@ -40,8 +39,7 @@
                       "-g '!*moc_*' -g '!*qrc_*' -g '!*.git' -g '!*.tags' -g '*.cpp' -g '*.hpp' ")))))
 
 (ert-deftest proviso-rg-cmd-test-create-cmd-exclude-empty-file-blacklist ()
-  (let ((base (file-name-directory load-name))
-        (proviso-interesting-files '("*.cpp" "*.hpp"))
+  (let ((proviso-interesting-files '("*.cpp" "*.hpp"))
         (proviso-uninteresting-files '())
         (proviso-uninteresting-dirs '("*.git" "*.tags"))
         )
@@ -50,8 +48,7 @@
                       "-g '!*.git' -g '!*.tags' -g '*.cpp' -g '*.hpp' ")))))
 
 (ert-deftest proviso-rg-cmd-test-create-cmd-exclude-empty-dir-blacklist ()
-  (let ((base (file-name-directory load-name))
-        (proviso-interesting-files '("*.cpp" "*.hpp"))
+  (let ((proviso-interesting-files '("*.cpp" "*.hpp"))
         (proviso-uninteresting-files '("*moc_*" "*qrc_*"))
         (proviso-uninteresting-dirs '())
         )
@@ -60,8 +57,7 @@
                       "-g '!*moc_*' -g '!*qrc_*' -g '*.cpp' -g '*.hpp' ")))))
 
 (ert-deftest proviso-rg-cmd-test-create-cmd-exclude-empty-dir-and-file-blacklist ()
-  (let ((base (file-name-directory load-name))
-        (proviso-interesting-files '("*.cpp" "*.hpp"))
+  (let ((proviso-interesting-files '("*.cpp" "*.hpp"))
         (proviso-uninteresting-files '())
         (proviso-uninteresting-dirs '())
         )
@@ -70,8 +66,7 @@
                       "-g '*.cpp' -g '*.hpp' ")))))
 
 (ert-deftest proviso-rg-cmd-test-create-cmd-exclude-no-include ()
-  (let ((base (file-name-directory load-name))
-        (proviso-interesting-files '())
+  (let ((proviso-interesting-files '())
         (proviso-uninteresting-files '("*moc_*" "*qrc_*"))
         (proviso-uninteresting-dirs '("*.git" "*.tags"))
         )
@@ -80,8 +75,7 @@
                       "-g '!*moc_*' -g '!*qrc_*' -g '!*.git' -g '!*.tags' ")))))
 
 (ert-deftest proviso-rg-cmd-test-create-cmd-exclude-no-exclude-or-include ()
-  (let ((base (file-name-directory load-name))
-        (proviso-interesting-files '())
+  (let ((proviso-interesting-files '())
         (proviso-uninteresting-files '())
         (proviso-uninteresting-dirs '())
         )

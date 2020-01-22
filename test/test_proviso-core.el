@@ -1,10 +1,10 @@
 ;;; test_proviso-core.el --- test proviso-core.el
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-20 08:40:19 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools proviso projects
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -127,12 +127,10 @@
     ))
 
 (ert-deftest proviso-core-find-root-test ()
-  (let ((base (file-name-directory load-name))
-        dir)
-    (setq dir (concat base "a/b/c/d"))
+  (let ((dir (concat base-test-dir "a/b/c/d")))
     (should (equal (proviso--find-root dir t)
-                   (list (concat base "a/b/c/c.proviso")
-                         (concat base "a/b/c/"))))
+                   (list (concat base-test-dir "a/b/c/c.proviso")
+                         (concat base-test-dir "a/b/c/"))))
     ))
 
 

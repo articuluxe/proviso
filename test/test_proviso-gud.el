@@ -1,10 +1,10 @@
 ;;; test_proviso-gud.el --- test proviso gud functionality
-;; Copyright (C) 2018-2019  Dan Harms (dharms)
+;; Copyright (C) 2018-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, February  1, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-20 08:49:04 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools proviso gud debugger test
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -31,8 +31,7 @@
 
 (ert-deftest proviso-gud-open-empty-project ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-name))
-        file-contents)
+  (let (file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
                  (unless (string-empty-p (string-trim file-contents))
@@ -44,9 +43,9 @@
                '( (:name \"base\" :dir \"\")
                   )))
 )")
-      (find-file (concat base "a/b/c/d/dfile1"))
+      (find-file (concat base-test-dir "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c/")))
+                       (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (equal (proviso-gud-gather-debug-dirs proviso-local-proj)
@@ -57,8 +56,7 @@
 
 (ert-deftest proviso-gud-open-project ()
   (proviso-test-reset-all)
-  (let ((base (file-name-directory load-name))
-        file-contents)
+  (let (file-contents)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
                  (unless (string-empty-p (string-trim file-contents))
@@ -78,16 +76,16 @@
                 ))
    )
 )")
-      (find-file (concat base "a/b/c/d/dfile1"))
+      (find-file (concat base-test-dir "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c/")))
+                       (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (equal (proviso-gud-gather-debug-dirs proviso-local-proj)
-                     (list (cons (concat base "a/b/c/d2")
-                                 (concat base "a/b/c/d2"))
-                           (cons (concat base "a/b/c/d")
-                                 (concat base "a/b/c/d")))))
+                     (list (cons (concat base-test-dir "a/b/c/d2")
+                                 (concat base-test-dir "a/b/c/d2"))
+                           (cons (concat base-test-dir "a/b/c/d")
+                                 (concat base-test-dir "a/b/c/d")))))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))

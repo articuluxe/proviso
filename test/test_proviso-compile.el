@@ -1,10 +1,10 @@
 ;;; test_proviso-compile.el --- test proviso compile
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, May 25, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-12-31 12:40:12 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-20 08:45:55 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools proviso test compile
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -31,8 +31,7 @@
 
 (ert-deftest proviso-compile-test-with-and-without-project ()
   (proviso-test-reset-all)
-  (let* ((base (file-name-directory load-name))
-         (default-directory base)
+  (let* ((default-directory base-test-dir)
          file-contents read-result read-index)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -49,9 +48,9 @@
                  (message "proviso-query-error: %s" err))))
       (should (string= (proviso-compile-command-std)
                        "cd ./ && make"))
-      (setq read-result (concat base "a/"))
+      (setq read-result (concat base-test-dir "a/"))
       (should (string= (proviso-compile-command-std '(4))
-                       (concat "cd " base "a/ && make")))
+                       (concat "cd " base-test-dir "a/ && make")))
       ;; open file
       (setq file-contents "(
 :initfun
@@ -63,24 +62,23 @@
                 '( (:name \"bld\" :dir \"d2/\")))
   )
 )")
-      (find-file (concat base "a/b/c/d/dfile1"))
+      (find-file (concat base-test-dir "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c/")))
+                       (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (string= (proviso-compile-command-std)
-                       (concat "cd " base "a/b/c/d2/ && make")))
-      (setq read-result (concat base "a/b/c2/"))
+                       (concat "cd " base-test-dir "a/b/c/d2/ && make")))
+      (setq read-result (concat base-test-dir "a/b/c2/"))
       (should (string= (proviso-compile-command-std '(4))
-                       (concat "cd " base "a/b/c2/ && make")))
+                       (concat "cd " base-test-dir "a/b/c2/ && make")))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
 
 (ert-deftest proviso-compile-test-different-compile-sub-cmd ()
   (proviso-test-reset-all)
-  (let* ((base (file-name-directory load-name))
-         (default-directory base)
+  (let* ((default-directory base-test-dir)
          file-contents read-result read-index)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -106,24 +104,23 @@
                 '( (:name \"bld\" :dir \"d2/\"))))
 :compile-cmds (\"nmake -n \")
 )")
-      (find-file (concat base "a/b/c/d/dfile1"))
+      (find-file (concat base-test-dir "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c/")))
+                       (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (should (string= (proviso-compile-command-std)
-                       (concat "cd " base "a/b/c/d2/ && nmake -n ")))
-      (setq read-result (concat base "a/b/c2/"))
+                       (concat "cd " base-test-dir "a/b/c/d2/ && nmake -n ")))
+      (setq read-result (concat base-test-dir "a/b/c2/"))
       (should (string= (proviso-compile-command-std '(4))
-                       (concat "cd " base "a/b/c2/ && nmake -n ")))
+                       (concat "cd " base-test-dir "a/b/c2/ && nmake -n ")))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
 
 (ert-deftest proviso-compile-test-with-2-subdirs ()
   (proviso-test-reset-all)
-  (let* ((base (file-name-directory load-name))
-         (default-directory base)
+  (let* ((default-directory base-test-dir)
          file-contents read-result read-index)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -151,31 +148,30 @@
                  ))
   )
 )")
-      (find-file (concat base "a/b/c/d/dfile1"))
+      (find-file (concat base-test-dir "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c/")))
+                       (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (setq read-index 0)               ;picks empty choice, which is root dir
       (should (string= (proviso-compile-command-std)
-                       (concat "cd " base "a/b/c/ && make")))
+                       (concat "cd " base-test-dir "a/b/c/ && make")))
       (setq read-index 1)               ;picks 1st choice
       (should (string= (proviso-compile-command-std)
-                       (concat "cd " base "a/b/c/d2/ && make")))
+                       (concat "cd " base-test-dir "a/b/c/d2/ && make")))
       (setq read-index 2)               ;picks 2nd choice
       (should (string= (proviso-compile-command-std)
-                       (concat "cd " base "a/b/c/d/e/f/ && make")))
-      (setq read-result (concat base "a/b/c2/"))
+                       (concat "cd " base-test-dir "a/b/c/d/e/f/ && make")))
+      (setq read-result (concat base-test-dir "a/b/c2/"))
       (should (string= (proviso-compile-command-std '(4))
-                       (concat "cd " base "a/b/c2/ && make")))
+                       (concat "cd " base-test-dir "a/b/c2/ && make")))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
 
 (ert-deftest proviso-compile-test-with-repo ()
   (proviso-test-reset-all)
-  (let* ((base (file-name-directory load-name))
-         (default-directory base)
+  (let* ((default-directory base-test-dir)
          file-contents read-result read-index)
     (cl-letf (((symbol-function 'proviso--eval-file)
                (lambda (_)
@@ -204,31 +200,30 @@
   )
 )")
       (setq proviso-compile-command 'proviso-compile-command-repo)
-      (find-file (concat base "a/b/c/d/dfile1"))
+      (find-file (concat base-test-dir "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c/")))
+                       (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (setq read-index 0)               ;picks empty choice, which is root dir
       (should (string= (proviso-compile-command-repo)
-                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/ && make")))
+                       (concat ". " base-test-dir "a/b/c/repo-setup.sh && cd " base-test-dir "a/b/c/ && make")))
       (setq read-index 1)               ;picks 1st choice
       (should (string= (proviso-compile-command-repo)
-                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d2/ && make")))
+                       (concat ". " base-test-dir "a/b/c/repo-setup.sh && cd " base-test-dir "a/b/c/d2/ && make")))
       (setq read-index 2)               ;picks 2nd choice
       (should (string= (proviso-compile-command-repo)
-                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d/e/f/ && make")))
-      (setq read-result (concat base "a/b/c2/"))
+                       (concat ". " base-test-dir "a/b/c/repo-setup.sh && cd " base-test-dir "a/b/c/d/e/f/ && make")))
+      (setq read-result (concat base-test-dir "a/b/c2/"))
       (should (string= (proviso-compile-command-repo '(4))
-                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c2/ && make")))
+                       (concat ". " base-test-dir "a/b/c/repo-setup.sh && cd " base-test-dir "a/b/c2/ && make")))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))
 
 (ert-deftest proviso-compile-test-real-compile-with-repo ()
   (proviso-test-reset-all)
-  (let* ((base (file-name-directory load-name))
-         (default-directory base)
+  (let* ((default-directory base-test-dir)
          (compilation-read-command nil)
          (compilation-always-kill t)
          file-contents read-result read-index)
@@ -259,27 +254,27 @@
   )
 )")
       (setq proviso-compile-command 'proviso-compile-command-repo)
-      (find-file (concat base "a/b/c/d/dfile1"))
+      (find-file (concat base-test-dir "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c/")))
+                       (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (setq read-index 0)               ;picks empty choice, which is root dir
       (proviso-compile)
       (should (string= compile-command
-                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/ && make")))
+                       (concat ". " base-test-dir "a/b/c/repo-setup.sh && cd " base-test-dir "a/b/c/ && make")))
       (setq read-index 1)               ;picks 1st choice
       (proviso-compile)
       (should (string= compile-command
-                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d2/ && make")))
+                       (concat ". " base-test-dir "a/b/c/repo-setup.sh && cd " base-test-dir "a/b/c/d2/ && make")))
       (setq read-index 2)               ;picks 2nd choice
       (proviso-compile)
       (should (string= compile-command
-                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d/e/f/ && make")))
-      (setq read-result (concat base "a/b/c2/"))
+                       (concat ". " base-test-dir "a/b/c/repo-setup.sh && cd " base-test-dir "a/b/c/d/e/f/ && make")))
+      (setq read-result (concat base-test-dir "a/b/c2/"))
       (proviso-compile '(4))
       (should (string= compile-command
-                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c2/ && make")))
+                       (concat ". " base-test-dir "a/b/c/repo-setup.sh && cd " base-test-dir "a/b/c2/ && make")))
 
       ;; clean up buffers
       (kill-buffer "dfile1")
@@ -287,8 +282,7 @@
 
 (ert-deftest proviso-compile-test-real-compile-with-repo-project-definition ()
   (proviso-test-reset-all)
-  (let* ((base (file-name-directory load-name))
-         (default-directory base)
+  (let* ((default-directory base-test-dir)
          (compilation-read-command nil)
          (compilation-always-kill t)
          file-contents read-result read-index)
@@ -321,27 +315,27 @@
 )")
       ;; will be overridden by the project setting for :compile-defun
       (setq proviso-compile-command 'proviso-compile-command-std)
-      (find-file (concat base "a/b/c/d/dfile1"))
+      (find-file (concat base-test-dir "a/b/c/d/dfile1"))
       (should (string= (proviso-get proviso-local-proj :root-dir)
-                       (concat base "a/b/c/")))
+                       (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
       (setq read-index 0)               ;picks empty choice, which is root dir
       (proviso-compile)
       (should (string= compile-command
-                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/ && make")))
+                       (concat ". " base-test-dir "a/b/c/repo-setup.sh && cd " base-test-dir "a/b/c/ && make")))
       (setq read-index 1)               ;picks 1st choice
       (proviso-compile)
       (should (string= compile-command
-                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d2/ && make")))
+                       (concat ". " base-test-dir "a/b/c/repo-setup.sh && cd " base-test-dir "a/b/c/d2/ && make")))
       (setq read-index 2)               ;picks 2nd choice
       (proviso-compile)
       (should (string= compile-command
-                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c/d/e/f/ && make")))
-      (setq read-result (concat base "a/b/c2/"))
+                       (concat ". " base-test-dir "a/b/c/repo-setup.sh && cd " base-test-dir "a/b/c/d/e/f/ && make")))
+      (setq read-result (concat base-test-dir "a/b/c2/"))
       (proviso-compile '(4))
       (should (string= compile-command
-                       (concat ". " base "a/b/c/repo-setup.sh && cd " base "a/b/c2/ && make")))
+                       (concat ". " base-test-dir "a/b/c/repo-setup.sh && cd " base-test-dir "a/b/c2/ && make")))
 
       ;; clean up buffers
       (kill-buffer "dfile1")
