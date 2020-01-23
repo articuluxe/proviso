@@ -1,9 +1,9 @@
 ;;; proviso-deploy.el --- Deploy artifacts to locations
-;; Copyright (C) 2018-2019  Dan Harms (dharms)
+;; Copyright (C) 2018-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-19 15:41:59 dharms>
+;; Modified Time-stamp: <2020-01-23 10:09:19 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -593,13 +593,15 @@ resolved."
 PREFIX is an optional remote-prefix, with ROOT the project's root directory.
 The real destination will have its path adjusted and environment variables
 resolved."
-  (let* ((dst (proviso-substitute-env-vars (plist-get spec :destination)))
-         (dir (if (file-name-absolute-p dst)
-                  (concat prefix dst)
-                (concat prefix root dst))))
-    (if (file-directory-p dir)
-        (file-name-as-directory dir)
-      dir)))
+  (let ((dst (proviso-substitute-env-vars (plist-get spec :destination))))
+    (setq dst (cond ((tramp-tramp-file-p dst)
+                     dst)
+                    ((file-name-absolute-p dst)
+                     (concat prefix dst))
+                    (t (concat prefix root dst))))
+    (if (file-directory-p dst)
+        (file-name-as-directory dst)
+      dst)))
 
 (defun proviso-deploy-get-real-source-by-id (spec id)
   "Fetch the real source from SPEC by ID."
