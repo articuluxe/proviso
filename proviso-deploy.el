@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-01-23 10:09:19 dan.harms>
+;; Modified Time-stamp: <2020-01-27 12:20:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -94,16 +94,23 @@ ID is an optional id."
   (let ((root (concat (proviso-get proj :remote-prefix)
                       (proviso-get proj :root-dir)))
         lst)
+    ;; source
     (unless source
       (setq source
             (read-file-name "Source: " root)))
+    (if (file-in-directory-p source root)
+        (setq source (file-relative-name source root)))
+    (if (string= source "./")
+        (setq source ""))
+    ;; destination
     (unless dest
       (setq dest
             (read-file-name "Destination: " root)))
-    (if (file-in-directory-p source root)
-        (setq source (file-relative-name source root)))
     (if (file-in-directory-p dest root)
         (setq dest (file-relative-name dest root)))
+    (if (string= dest "./")
+        (setq dest ""))
+    ;; clean up any text properties
     (set-text-properties 0 (- (length source) 1) nil source)
     (set-text-properties 0 (- (length dest) 1) nil dest)
     (setq lst (list :source source :destination dest :type 'deploy))
