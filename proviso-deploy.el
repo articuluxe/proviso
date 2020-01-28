@@ -3,8 +3,8 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-01-27 12:20:37 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-01-28 08:58:00 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "25.1") (seq "2.15"))
@@ -573,9 +573,13 @@ PREFIX is an optional remote-prefix, with ROOT the project's root directory.
 Real sources have had wildcards and environment variables
 resolved."
   (let* ((source (proviso-substitute-env-vars (plist-get spec :source)))
-         (path (if (file-name-absolute-p source)
-                   prefix
-                 (concat prefix root))))
+         (path (cond ((tramp-tramp-file-p source)
+                      (prog1
+                          (file-remote-p source)
+                        (setq source (file-remote-p source 'localname))))
+                     ((file-name-absolute-p source)
+                      prefix)
+                     (t (concat prefix root)))))
     (seq-map-indexed
      (lambda (elt idx)
        (cons idx elt))
