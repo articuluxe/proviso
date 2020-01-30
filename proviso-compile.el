@@ -1,9 +1,9 @@
 ;;; proviso-compile.el --- Compile utilities for proviso
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:31:52 dan.harms>
+;; Modified Time-stamp: <2020-01-30 10:51:53 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -259,7 +259,7 @@ non-nil."
   (when (and (string-match-p "compilation" (buffer-name buffer))
              (string-match-p "finished" string))
     (call-process "notify-send" nil nil nil
-                  "-t" "2"
+                  "-t" "1000"
                   "-i" "emacs"
                   "Compilation finished"
                   string)))
