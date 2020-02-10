@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-01-30 10:51:53 dan.harms>
+;; Modified Time-stamp: <2020-02-10 06:35:47 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -263,6 +263,8 @@ non-nil."
                   "-i" "emacs"
                   "Compilation finished"
                   string)))
+
+;; alerter -title "emacs" -message "Compilation finished" -timeout 3
 
 (add-hook 'compilation-finish-functions 'proviso-compile-dispose-buffer)
 
