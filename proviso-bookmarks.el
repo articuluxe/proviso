@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:27:22 dan.harms>
+;; Modified Time-stamp: <2019-11-26 08:42:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project bookmarks
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -29,7 +29,6 @@
 ;;; Code:
 (require 'proviso-core)
 (require 'bookmark+)
-(require 'f)
 
 (defvar proviso-bookmarks-create-bmk-on-proj-init nil
   "Create bookmark file automatically when switching to a project.
