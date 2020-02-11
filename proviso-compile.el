@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-02-10 06:35:47 dharms>
+;; Modified Time-stamp: <2020-02-11 09:01:53 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -43,6 +43,10 @@ A match means that command should be run in `comint-mode'."
   "Internal variable tracks whether the compile window was visible originally.")
 (defvar proviso-compile--window-count nil
   "Internal variable tracks how many windows existed pre-compile.")
+(defvar proviso-compile--notify-timeout 3
+  "Default timeout for compilation notifications, in seconds.")
+(defvar proviso-compile--notify-msg "Compilation finished"
+  "Default message for compilation notifications.")
 
 (defvar proviso-compile-command-list
   (list #'proviso-compile-command-std #'proviso-compile-command-repo)
@@ -258,18 +262,25 @@ non-nil."
   "Make a notification based on BUFFER finishing as described by STRING."
   (when (and (string-match-p "compilation" (buffer-name buffer))
              (string-match-p "finished" string))
-    (call-process "notify-send" nil nil nil
-                  "-t" "1000"
-                  "-i" "emacs"
-                  "Compilation finished"
-                  string)))
-
-;; alerter -title "emacs" -message "Compilation finished" -timeout 3
+    (let ((cmd
+           (cond ((and (eq system-type 'darwin)
+                        (executable-find "alerter"))
+                  (list "alerter"
+                        "-title" "proviso"
+                        "-message" proviso-compile--notify-msg
+                        "-timeout"
+                        (format "%d" proviso-compile--notify-timeout)))
+                 ((and (executable-find "notify-send"))
+                  (list "notify-send"
+                        "-t" (format "%d" (* 1000 proviso-compile--notify-timeout))
+                        "-i" "emacs"
+                        proviso-compile--notify-msg)))))
+      (when cmd
+        (apply #'call-process (car cmd) nil nil nil (cdr cmd))))))
 
 (add-hook 'compilation-finish-functions 'proviso-compile-dispose-buffer)
 
-(when (executable-find "notify-send")
-  (add-hook 'compilation-finish-functions 'proviso-compile-notify))
+(add-hook 'compilation-finish-functions 'proviso-compile-notify)
 
 (provide 'proviso-compile)
 ;;; proviso-compile.el ends here
