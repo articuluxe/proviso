@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-02-11 09:01:53 dharms>
+;; Modified Time-stamp: <2020-02-11 09:13:27 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -267,6 +267,7 @@ non-nil."
                         (executable-find "alerter"))
                   (list "alerter"
                         "-title" "proviso"
+                        "-sender" "org.gnu.Emacs"
                         "-message" proviso-compile--notify-msg
                         "-timeout"
                         (format "%d" proviso-compile--notify-timeout)))
