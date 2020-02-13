@@ -3,8 +3,8 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-02-13 00:09:30 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-02-13 09:09:20 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "25.1"))
@@ -283,7 +283,13 @@ non-nil."
                         "-i" "emacs"
                         (format "%s: %s"
                                 proviso-compile--subtitle
-                                proviso-compile--notify-msg))))))
+                                proviso-compile--notify-msg)))
+                 ((and (eq system-type 'windows-nt)
+                       (executable-find "toast"))
+                  (list "toast"
+                        "-t" proviso-compile--subtitle
+                        "-m" proviso-compile--notify-msg))
+                 )))
       (when cmd
         (apply #'call-process (car cmd) nil nil nil (cdr cmd))))))
 
