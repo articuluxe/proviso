@@ -1,9 +1,9 @@
 ;;; proviso-dashboard.el --- A dashboard for proviso projects
-;; Copyright (C) 2018-2019  Dan Harms (dharms)
+;; Copyright (C) 2018-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:27:53 dan.harms>
+;; Modified Time-stamp: <2020-02-19 13:58:16 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -135,7 +135,7 @@ Optional ARG allows choosing a project."
                             (let ((gen (proviso-get proviso-local-proj :tags-lastgen)))
                               (propertize (if gen (current-time-string gen)
                                             "")
-                                          'face '(bold))))
+                                          'face '())))
                  :bindings (("t" "Generate Tags" proviso-gentags-generate-tags)))
        (:heading "Bookmarks"
                  :predicate (lambda ()
