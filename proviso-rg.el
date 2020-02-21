@@ -1,10 +1,10 @@
 ;;; proviso-rg.el --- Support rg for proviso
-;; Copyright (C) 2018-2019  Dan Harms (dharms)
+;; Copyright (C) 2018-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:30:03 dan.harms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-02-20 17:31:50 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools unix proviso project rg ripgrep
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "25.1"))
@@ -68,16 +68,33 @@ quotes."
     (dolist (elt lst str)
       (setq str (concat str "-g " quote elt quote " ")))))
 
-(defun proviso-rg--create-rg-str (proj quote)
+(defun proviso-rg--create-rg-str (proj quote &optional
+                                       exclude-files
+                                       exclude-dirs
+                                       include-files)
   "Create an rg command string according to the settings of PROJ.
-The command will be delimited by QUOTE."
-  (let ((exclude-files (or (proviso-get proj :grep-exclude-files)
-                           proviso-uninteresting-files))
-        (exclude-dirs (or (proviso-get proj :grep-exclude-dirs)
-                          proviso-uninteresting-dirs))
-        (include-files (or (proviso-get proj :grep-include-files)
-                           proviso-interesting-files))
-        has-exclude-dirs-p has-exclude-files-p has-include-files-p)
+The command will be delimited by QUOTE.  Optionally,
+EXCLUDE-FILES, EXCLUDE-DIRS and INCLUDE-FILES can be overridden;
+otherwise they are taken from project settings, or default values
+from `proviso-uninteresting-dirs', `proviso-uninteresting-files'
+and `proviso-interesting-files'.  To override an empty value,
+use the synbol 'none to distinguish from unspecified."
+  (let (has-exclude-dirs-p has-exclude-files-p has-include-files-p)
+    (setq exclude-files
+          (if (eq exclude-files 'none) nil
+            (or exclude-files
+                (proviso-get proj :grep-exclude-files)
+                proviso-uninteresting-files)))
+    (setq exclude-dirs
+          (if (eq exclude-dirs 'none) nil
+            (or exclude-dirs
+                (proviso-get proj :grep-exclude-dirs)
+                proviso-uninteresting-dirs)))
+    (setq include-files
+          (if (eq include-files 'none) nil
+            (or include-files
+                (proviso-get proj :grep-include-files)
+                proviso-interesting-files)))
     (setq has-exclude-files-p (not (seq-empty-p exclude-files)))
     (setq has-exclude-dirs-p (not (seq-empty-p exclude-dirs)))
     (setq has-include-files-p (not (seq-empty-p include-files)))
@@ -96,15 +113,15 @@ ARG allows customizing the selection of the root search directory."
     (let* ((proj (proviso-current-project))
            (root (proviso-get proj :root-dir))
            (dirs (proviso-get proj :grep-dirs))
-           (cmd (or (proviso-get proj :rg-cmd) ""))
+           (cmd "")
            (prompt "Search root: ")
            (search-string (if (region-active-p)
                               (buffer-substring (region-beginning) (region-end))
                             (thing-at-point 'symbol)))
            (remote (file-remote-p default-directory))
-           first dir substr idx)
+           first dir substr idx exclude-files exclude-dirs include-files)
       (setq first (if (consp (car dirs)) (cdr (car dirs)) (car dirs)))
-      (setq dir (cond ((and arg (= (prefix-numeric-value arg) 16))
+      (setq dir (cond ((and arg (>= (prefix-numeric-value arg) 16))
                        (read-directory-name prompt default-directory nil t))
                       ((and arg (= (prefix-numeric-value arg) 4) dirs)
                        (completing-read prompt dirs))
@@ -116,10 +133,44 @@ ARG allows customizing the selection of the root search directory."
                 ;; remove remote prefix
                 (replace-regexp-in-string (regexp-quote remote) "" dir)
               (expand-file-name dir)))  ;not sure if this is needed for rg
-      (when (string-empty-p cmd)
-        (setq cmd (proviso-rg--create-rg-str proj (proviso-rg--compute-quote-char remote))))
-      (when (and proj (not (proviso-get proj :rg-cmd)))
-        (proviso-put proj :rg-cmd cmd))
+      (when (and arg (>= (prefix-numeric-value arg) 64))
+        (setq exclude-files
+              (split-string
+               (read-string
+                "Exclude files: "
+                (mapconcat 'identity
+                           (or
+                            (proviso-get proj :grep-exclude-files)
+                            proviso-uninteresting-files)
+                           " "))))
+        (unless exclude-files
+          (setq exclude-files 'none))
+        (setq exclude-dirs
+              (split-string
+               (read-string
+                "Exclude dirs: "
+                (mapconcat 'identity
+                           (or
+                            (proviso-get proj :grep-exclude-dirs)
+                            proviso-uninteresting-dirs)
+                           " "))))
+        (unless exclude-dirs
+          (setq exclude-dirs 'none))
+        (setq include-files
+              (split-string
+               (read-string
+                "Include files: "
+                (mapconcat 'identity
+                           (or
+                            (proviso-get proj :grep-include-files)
+                            proviso-interesting-files)
+                           " "))))
+        (unless include-files
+          (setq include-files 'none)))
+      (setq cmd (proviso-rg--create-rg-str
+                 proj
+                 (proviso-rg--compute-quote-char remote)
+                 exclude-files exclude-dirs include-files))
       (setq substr (concat "rg " cmd proviso-rg-args " "))
       (setq idx (string-width substr))
       (cons
@@ -134,13 +185,17 @@ ARG allows customizing the selection of the root search directory."
         (directory-file-name dir))
        (1+ idx))))
 
-(defun proviso-rg-create-search-cmd (proj str args)
+(defun proviso-rg-create-search-cmd (proj str args &optional
+                                          exclude-files
+                                          exclude-dirs
+                                          include-files)
   "Return a command line to search for STR with args ARGS in project PROJ."
   (let* ((dir (proviso-get proj :root-dir))
          (remote (proviso-get proj :remote-prefix))
          (cmd (proviso-rg--create-rg-str
                proj
-               (proviso-rg--compute-quote-char remote))))
+               (proviso-rg--compute-quote-char remote)
+               exclude-files exclude-dirs include-files)))
     (setq dir (if remote
                   (replace-regexp-in-string (regexp-quote remote) "" dir)
                 (expand-file-name dir)))

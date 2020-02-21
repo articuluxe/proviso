@@ -1,10 +1,10 @@
-;;; proviso-search.el --- A custom search utility across projects.
-;; Copyright (C) 2019  Dan Harms (dharms)
+;;; proviso-search.el --- A custom search utility across projects
+;; Copyright (C) 2019-2020  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 25, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-25 15:57:27 dharms>
-;; Modified by: Dan Harms
+;; Modified Time-stamp: <2020-02-21 09:11:36 Dan.Harms>
+;; Modified by: Dan.Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "25.1"))
@@ -72,30 +72,51 @@ NAME is a descriptive term for the search driver."
   (let ((str (if (region-active-p)
                  (buffer-substring (region-beginning) (region-end))
                (thing-at-point 'symbol)))
-        lst)
+        lst exclude-files exclude-dirs include-files)
     (setq str (read-string
                (format "Search projects (using %s) for: " name)
                str))
-    (if arg
-        (setq args (read-string
-                    (format "%s arguments: " name)
-                    args)))
+    (when arg
+      (setq exclude-files
+            (split-string
+             (read-string "Exclude files: "
+                          (mapconcat 'identity
+                                     proviso-uninteresting-files " "))))
+      (setq exclude-dirs
+            (split-string
+             (read-string "Exclude dirs: "
+                          (mapconcat 'identity
+                                     proviso-uninteresting-dirs " "))))
+      (setq include-files
+            (split-string
+             (read-string "Include files: "
+                          (mapconcat 'identity
+                                     proviso-interesting-files " "))))
+      (setq args (read-string
+                  (format "%s arguments: " name)
+                  args)))
     (if (and str (not (string-empty-p str)))
         (progn
           (mapatoms (lambda (atom) (push atom lst)) proviso-obarray)
           (proviso-search-projects (nreverse lst)
-                                   (list command
-                                         str
-                                         args)))
+                                   command
+                                   str
+                                   args
+                                   exclude-files
+                                   exclude-dirs
+                                   include-files))
       (user-error "No search string"))))
 
-(defun proviso-search-projects (projects spec)
-  "Run a search through PROJECTS (a list of projects) for SPEC.
-SPEC is a list (FORM STR ARGS), with STR the search string and
-ARGS the desired command line switches.  FORM is a method to call
-to create the final command line, of the signature (PROJ STR
-ARGS), where PROJ is the project, STR is the search string, and
-ARGS are the desired command line switches."
+(defun proviso-search-projects (projects func search-str args
+                                         &optional exclude-files
+                                         exclude-dirs include-files)
+  "Run a search through PROJECTS (a list of projects) for search-str.
+FUNC is a method to call to create the final command line.  It
+has the signature (PROJ SEARCH-STR ARGS), where PROJ is the
+project, STR is the search string, and ARGS are the desired
+command line switches.  Optional arguments EXCLUDE-FILES,
+EXCLUDE-DIRS and INCLUDE-FILES allow customizing the file set to
+search."
   (let ((buffer (get-buffer-create " *proviso-search*"))
         (grep-re (first (car grep-regexp-alist)))
         (file-group (second (car grep-regexp-alist)))
@@ -104,7 +125,10 @@ ARGS are the desired command line switches."
     (with-current-buffer buffer
       (erase-buffer)
       (dolist (project projects)
-        (setq status (proviso-search--project project spec)))
+        (setq status
+              (proviso-search--project project func search-str
+                                       args exclude-files
+                                       exclude-dirs include-files)))
       (goto-char (point-min))
       (while (re-search-forward grep-re nil t)
         (push (list (string-to-number (match-string line-group))
@@ -112,18 +136,20 @@ ARGS are the desired command line switches."
                     (buffer-substring-no-properties (point) (line-end-position)))
               hits)))
     (if (setq matches
-              (xref--convert-hits (nreverse hits) (nth 1 spec)))
+              (xref--convert-hits (nreverse hits) search-str))
         (xref--show-xrefs matches nil t)
       (user-error "No results"))))
 
-(defun proviso-search--project (proj spec)
-  "Search for a string in project PROJ according to SPEC.
-SPEC is a list (FORM STR ARGS), with STR the search string and
-ARGS the desired command line switches.  FORM is a method to call
-to create the final command line, of the signature (PROJ STR
-ARGS), where PROJ is the project, STR is the search string, and
-ARGS are the desired command line switches."
-  (let ((command (funcall (nth 0 spec) proj (nth 1 spec) (nth 2 spec)))
+(defun proviso-search--project (proj func search-str args
+                                     &optional exclude-files
+                                     exclude-dirs include-files)
+  "Search for string SEARCH-STR in project PROJ using FUNC with ARGS.
+FUNC is a method to call to create the final command line, of the
+signature (PROJ SEARCH-STR ARGS).  Optional arguments
+EXCLUDE-FILES, EXCLUDE-DIRS and INCLUDE-FILES allow customizing
+the file set to search."
+  (let ((command (funcall func proj search-str args exclude-files
+                          exclude-dirs include-files))
         (default-directory (concat
                             (proviso-get proj :remote-prefix)
                             (proviso-get proj :root-dir))))
