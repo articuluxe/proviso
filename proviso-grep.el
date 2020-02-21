@@ -3,8 +3,8 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-02-21 08:52:18 Dan.Harms>
-;; Modified by: Dan.Harms
+;; Modified Time-stamp: <2020-02-21 10:12:39 dan.harms>
+;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "25.1"))
@@ -32,7 +32,7 @@
 (require 'subr-x)
 (require 's)
 
-(defcustom proviso-grep-args "--null -Isni"
+(defcustom proviso-grep-args "--null -HIsni"
   "Standard arguments to give to grep."
   :group 'proviso-custom-group)
 
