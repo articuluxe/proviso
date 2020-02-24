@@ -3,8 +3,8 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-02-13 09:09:20 Dan.Harms>
-;; Modified by: Dan.Harms
+;; Modified Time-stamp: <2020-02-24 11:34:35 dan.harms>
+;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "25.1"))
@@ -49,6 +49,8 @@ A match means that command should be run in `comint-mode'."
   "Default message for compilation notifications.")
 (defvar proviso-compile--subtitle ""
   "A subtitle for compilation notifications.")
+(defvar proviso--compile-notify-send-daemon-started nil
+  "We only check once if the `notify-send' daemon is running.")
 
 (defvar proviso-compile-command-list
   (list #'proviso-compile-command-std #'proviso-compile-command-repo)
@@ -270,25 +272,29 @@ non-nil."
              (string-match-p "finished" string))
     (let ((cmd
            (cond ((and (eq system-type 'darwin)
-                        (executable-find "alerter"))
+                       (executable-find "alerter"))
                   (list "alerter"
                         "-title" proviso-compile--subtitle
                         "-sender" "org.gnu.Emacs"
                         "-message" proviso-compile--notify-msg
                         "-timeout"
                         (format "%d" proviso-compile--notify-timeout)))
+                 ((and (eq system-type 'windows-nt)
+                       (executable-find "toast"))
+                  (list "toast"
+                        "-t" proviso-compile--subtitle
+                        "-m" proviso-compile--notify-msg))
                  ((and (executable-find "notify-send"))
+                  (unless proviso--compile-notify-send-daemon-started
+                    (unless (eq 0 (call-process "systemctl" nil nil nil "status" "--user" "xfce4-notifyd"))
+                      (call-process "systemctl" nil nil nil "start" "--user" "xfce4-notifyd"))
+                    (setq proviso--compile-notify-send-daemon-started t))
                   (list "notify-send"
                         "-t" (format "%d" (* 1000 proviso-compile--notify-timeout))
                         "-i" "emacs"
                         (format "%s: %s"
                                 proviso-compile--subtitle
                                 proviso-compile--notify-msg)))
-                 ((and (eq system-type 'windows-nt)
-                       (executable-find "toast"))
-                  (list "toast"
-                        "-t" proviso-compile--subtitle
-                        "-m" proviso-compile--notify-msg))
                  )))
       (when cmd
         (apply #'call-process (car cmd) nil nil nil (cdr cmd))))))
