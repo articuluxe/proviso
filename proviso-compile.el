@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-02-24 11:34:35 dan.harms>
+;; Modified Time-stamp: <2020-02-25 09:32:03 dan.harms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -49,7 +49,7 @@ A match means that command should be run in `comint-mode'."
   "Default message for compilation notifications.")
 (defvar proviso-compile--subtitle ""
   "A subtitle for compilation notifications.")
-(defvar proviso--compile-notify-send-daemon-started nil
+(defvar proviso--compile-notify-send-daemon-checked nil
   "We only check once if the `notify-send' daemon is running.")
 
 (defvar proviso-compile-command-list
@@ -285,10 +285,11 @@ non-nil."
                         "-t" proviso-compile--subtitle
                         "-m" proviso-compile--notify-msg))
                  ((and (executable-find "notify-send"))
-                  (unless proviso--compile-notify-send-daemon-started
-                    (unless (eq 0 (call-process "systemctl" nil nil nil "status" "--user" "xfce4-notifyd"))
-                      (call-process "systemctl" nil nil nil "start" "--user" "xfce4-notifyd"))
-                    (setq proviso--compile-notify-send-daemon-started t))
+                  (unless proviso--compile-notify-send-daemon-checked
+                    (when (executable-find "systemctl")
+                      (unless (eq 0 (call-process "systemctl" nil nil nil "status" "--user" "xfce4-notifyd"))
+                        (call-process "systemctl" nil nil nil "start" "--user" "xfce4-notifyd")))
+                    (setq proviso--compile-notify-send-daemon-checked t))
                   (list "notify-send"
                         "-t" (format "%d" (* 1000 proviso-compile--notify-timeout))
                         "-i" "emacs"
