@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-01-20 08:55:37 Dan.Harms>
+;; Modified Time-stamp: <2020-03-09 09:09:33 Dan.Harms>
 ;; Modified by: Dan.Harms
 ;; Keywords: tools proviso bookmark test
 ;; Package-Requires: ((emacs "25.1"))
@@ -38,11 +38,7 @@
                  (proviso-eval-string file-contents))))
       ;; open file
       (setq file-contents "
- (defun do-init (proj)
-   (proviso-put proj :proj-alist
-               '( (:name \"base\" :dir \"\")
-                  )))
- (proviso-define-project \"c\" :initfun 'do-init)
+:proj-alist ((:name \"base\" :dir \"\"))
 ")
       (ignore-errors
         (f-delete (concat base-test-dir "a/b/c/c.bmk") t))
@@ -52,6 +48,8 @@
                        (concat base-test-dir "a/b/c/")))
       (should (string= (proviso-get proviso-local-proj :project-name)
                        "c"))
+      (should (string= (proviso-get proviso-local-proj :bookmark-file)
+                       (concat base-test-dir "a/b/c/c.bmk")))
       (should (f-exists? (concat base-test-dir "a/b/c/c.bmk")))
       (should (string= bmkp-current-bookmark-file
                        (abbreviate-file-name (concat base-test-dir "a/b/c/c.bmk"))))
@@ -94,11 +92,7 @@
                  (proviso-eval-string file-contents))))
       ;; open file
       (setq file-contents "
- (defun do-init (proj)
-   (proviso-put proj :proj-alist
-               '( (:name \"base\" :dir \"d/\")
-                  )))
- (proviso-define-project \"c\" :initfun 'do-init)
+:proj-alist ((:name \"base\" :dir \"d/\"))
 ")
       (ignore-errors
         (f-delete (concat base-test-dir "a/b/c/c.bmk") t))
