@@ -3,8 +3,8 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-02-20 16:56:56 Dan.Harms>
-;; Modified by: Dan.Harms
+;; Modified Time-stamp: <2020-04-10 09:03:10 dharms>
+;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "25.1"))
@@ -558,6 +558,11 @@ location, or a writeable dir tracking a non-writeable one."
              (when (and local remote-host)
                (concat remote-host "@"))
              (replace-regexp-in-string "/\\|\\\\" "!" root-dir)))))
+
+(defun proviso-compute-projectdef-dir ()
+  "Compute the directory where project definitions are kept."
+  (let ((sub "projectdefs"))
+    (concat (proviso-compute-proviso-dir) sub)))
 
 (defun proviso-core-remote-executable-find (exe)
   "Try to find the binary associated with EXE on a remote host.
