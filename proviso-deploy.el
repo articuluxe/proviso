@@ -3,8 +3,8 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-01-28 08:58:00 Dan.Harms>
-;; Modified by: Dan.Harms
+;; Modified Time-stamp: <2020-04-13 07:59:53 dharms>
+;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "25.1") (seq "2.15"))
@@ -450,7 +450,7 @@ If ARG is non-nil, another project can be chosen."
     (make-directory (concat base proviso-deploy-subdir) t)
     (setq file
           (read-file-name "Import deployment file: "
-                          (concat base proviso-deploy-subdir)
+                          (concat base "deployments/")
                           nil t nil #'proviso-deploy--file-predicate))
     (if (and file
              (setq specs (proviso-deploy-read-from-file proj file)))
