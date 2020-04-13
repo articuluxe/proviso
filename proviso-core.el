@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-04-10 09:03:10 dharms>
+;; Modified Time-stamp: <2020-04-13 09:56:42 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -561,8 +561,7 @@ location, or a writeable dir tracking a non-writeable one."
 
 (defun proviso-compute-projectdef-dir ()
   "Compute the directory where project definitions are kept."
-  (let ((sub "projectdefs"))
-    (concat (proviso-compute-proviso-dir) sub)))
+  (concat (proviso-compute-proviso-dir) "projectdefs/"))
 
 (defun proviso-core-remote-executable-find (exe)
   "Try to find the binary associated with EXE on a remote host.
