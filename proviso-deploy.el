@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-04-13 07:59:53 dharms>
+;; Modified Time-stamp: <2020-04-27 07:41:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -932,9 +932,9 @@ SUBID is an optional identifier for a sub-deployment."
                 (while (null ch)
                   (setq ch (read-char-choice prompt choices)))
                 (cond ((eq ch ?d)
-                       (diff src dst))
+                       (diff dst src))
                       ((eq ch ?e)
-                       (ediff src dst))
+                       (ediff dst src))
                       (t
                        (message "Diff aborted.")))))
           (user-error "One or more files do not exist")))
@@ -975,7 +975,7 @@ SUBID is an optional identifier for a sub-deployment."
                         (file-name-nondirectory src) dst)))
         (if (and (file-exists-p src)
                  (file-exists-p dst))
-            (diff src dst)
+            (diff dst src)
           (user-error "One or more files do not exist")))
     (user-error "No files to compare")))
 
@@ -1014,7 +1014,7 @@ SUBID is an optional identifier for a sub-deployment."
                         (file-name-nondirectory src) dst)))
         (if (and (file-exists-p src)
                  (file-exists-p dst))
-            (ediff-files src dst)
+            (ediff-files dst src)
           (user-error "One or more files do not exist")))
     (user-error "No files to compare")))
 
