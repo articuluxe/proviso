@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-02-19 13:58:16 dan.harms>
+;; Modified Time-stamp: <2020-05-21 07:24:31 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -157,6 +157,7 @@ Optional ARG allows choosing a project."
                                           'face (if (file-exists-p file)
                                                     '(bold) '(shadow))))))
        (:heading "Clang format"
+                 :category clang
                  :content (lambda ()
                             (let ((file (proviso-get proviso-local-proj :clang-format)))
                               (concat
