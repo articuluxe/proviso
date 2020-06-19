@@ -1,9 +1,9 @@
 ;;; proviso-gentags.el --- Generate TAGS files
-;; Copyright (C) 2015-2019   (dan.harms)
+;; Copyright (C) 2015-2020   (dan.harms)
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-25 07:02:50 dharms>
+;; Modified Time-stamp: <2020-06-19 10:00:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -90,15 +90,18 @@ remotely-generated files will be toggled."
       (user-error "Could not generate tags: no active project"))
     (proviso-gentags--start-gen
      proj
-     (= (prefix-numeric-value current-prefix-arg) 4))))
+     current-prefix-arg)))
 
-(defun proviso-gentags--start-gen (proj &optional flip-remote)
+(defun proviso-gentags--start-gen (proj &optional arg)
   "Generate tags for project PROJ.
 Normally if the project is remote, then tags will also be
-automatically copied to a local destination.  If FLIP-REMOTE is
-non-nil, the opposite behavior will be chosen."
+automatically copied to a local destination.  Also, normally tags
+will be generated anew, but it is also possible to just copy over
+existing files.  ARG allows customizing these options
+interactively."
   (let* ((tags-alist (proviso-get proj :proj-alist))
          (remote (proviso-get proj :remote-prefix))
+         (do-gen t)
          (copy-remote remote)
          (exe (if (and remote
                        (string-match-p "\\s-" remote))
@@ -110,8 +113,10 @@ non-nil, the opposite behavior will be chosen."
          (int-dir (proviso-get proj :tags-remote-dir))
          (root (proviso-get proj :root-dir))
          lst)
-    (if flip-remote (setq copy-remote (not copy-remote)))
-    (setq copy-remote (and remote copy-remote))
+    (when arg
+      (setq do-gen (y-or-n-p "Generate TAGS (otherwise use existing)? "))
+      (when remote
+        (setq copy-remote (y-or-n-p "Copy remote files? "))))
     (make-directory tags-dir t)
     (when int-dir (make-directory int-dir t))
     (dolist (elt tags-alist)
@@ -135,6 +140,7 @@ non-nil, the opposite behavior will be chosen."
         (push (append
                (list :cmd (list cmd)
                      :dir (if remote (concat remote dir-abs) dir-abs)
+                     :do-gen do-gen
                      :copy-remote copy-remote
                      ) (when copy-remote
                      (list
@@ -190,15 +196,27 @@ REMOTE is non-nil if the project is on a remote host."
   "Execute a tags invocation according to PLIST.
 BUFFER is an output buffer."
   (let* ((default-directory (plist-get plist :dir))
-         (cmd (car (plist-get plist :cmd)))
+         (do-gen (plist-get plist :do-gen))
+         (cmd
+          (if do-gen
+              (car (plist-get plist :cmd))
+            ""))
          ;; /bin/sh -c "<script>" requires its argument (the script) be
          ;; quoted by strings; and `start-file-process' expects
          ;; a string of all arguments to be passed, starting with the executable.
-         (process (start-file-process
-                   "generate TAGS"
-                   buffer
-                   "sh" "-c"
-                   cmd)))
+         (process
+          (if do-gen
+              (start-file-process
+               "generate TAGS"
+               buffer
+               "sh" "-c"
+               cmd)
+            (start-file-process
+             "copy TAGS"
+             buffer
+             "sh" "-c"
+             (format "echo Using existing file %s"
+                     (plist-get plist :remote-src))))))
     (with-current-buffer buffer
       (insert (format "%s\n" cmd))
       (push (cons process
