@@ -1,10 +1,10 @@
 ;;; test_proviso-gentags.el --- test proviso gentags
-;; Copyright (C) 2017-2020  Dan Harms (dharms)
+;; Copyright (C) 2017-2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, April 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-01-20 08:48:35 Dan.Harms>
-;; Modified by: Dan.Harms
+;; Modified Time-stamp: <2021-01-05 09:03:30 dharms>
+;; Modified by: Dan Harms
 ;; Keywords: tools proviso project tags gentags
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -87,16 +87,16 @@
                                  (concat base-test-dir "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/first-tags "
                            base-test-dir "a/b/c")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/second-tags "
                            base-test-dir "a/b/c/d")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/third-tags "
                            base-test-dir "a/b/c/d2")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/fourth-tags "
                            absolute-root-dir)
                           ))
@@ -138,7 +138,7 @@
                                  (concat base-test-dir "a/b/c/.tags/c-tags")
                                  ))))
       (setq arg-contents (list
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/c-tags "
                            base-test-dir "a/b/c")
                           ))
@@ -200,16 +200,16 @@
                                  (concat base-test-dir "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/first-tags "
                            base-test-dir "a/b/c")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/second-tags "
                            base-test-dir "a/b/c/d")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/third-tags "
                            base-test-dir "a/b/c/d2")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/fourth-tags "
                            absolute-root-dir)
                           ))
@@ -270,16 +270,16 @@
                                  (concat base-test-dir "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/first-tags "
                            base-test-dir "a/b/c")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/second-tags "
                            base-test-dir "a/b/c/d")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/third-tags "
                            base-test-dir "a/b/c/d2")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/fourth-tags "
                            absolute-root-dir)
                           ))
@@ -340,16 +340,16 @@
                                  (concat base-test-dir "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/first-tags "
                            base-test-dir "a/b/c")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/second-tags "
                            base-test-dir "a/b/c/d")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/third-tags "
                            base-test-dir "a/b/c/d2")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/fourth-tags "
                            absolute-root-dir)
                           ))
@@ -411,16 +411,16 @@
                                  (concat base-test-dir "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no --exclude=boost -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no --exclude=boost -f "
                            base-test-dir "a/b/c/.tags/first-tags "
                            base-test-dir "a/b/c")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no --exclude=asio --exclude=spirit -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no --exclude=asio --exclude=spirit -f "
                            base-test-dir "a/b/c/.tags/second-tags "
                            base-test-dir "a/b/c/d")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/third-tags "
                            base-test-dir "a/b/c/d2")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/fourth-tags "
                            absolute-root-dir)
                           ))
@@ -482,16 +482,16 @@
                                  (concat base-test-dir "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
-                          (concat "-c " tags-executable " -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+lw --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/first-tags "
                            base-test-dir "a/b/c")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+lw --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/second-tags "
                            base-test-dir "a/b/c/d")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+lw --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/third-tags "
                            base-test-dir "a/b/c/d2")
-                          (concat "-c " tags-executable " -Re --c++-kinds=+lw --file-scope=no --tag-relative=no -f "
+                          (concat "-c " tags-executable " -Re --kinds-c++=+lw --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/fourth-tags "
                            absolute-root-dir)
                           ))
@@ -552,16 +552,16 @@
                                  (concat base-test-dir "a/b/c/.tags/fourth-tags"))
                            )))
       (setq arg-contents (list
-                          (concat "-c myctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c myctags -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/first-tags "
                            base-test-dir "a/b/c")
-                          (concat "-c myctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c myctags -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/second-tags "
                            base-test-dir "a/b/c/d")
-                          (concat "-c myctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c myctags -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/third-tags "
                            base-test-dir "a/b/c/d2")
-                          (concat "-c myctags -Re --c++-kinds=+l --file-scope=no --tag-relative=no -f "
+                          (concat "-c myctags -Re --kinds-c++=+l --extras=-F --tag-relative=no -f "
                            base-test-dir "a/b/c/.tags/fourth-tags "
                            absolute-root-dir)
                           ))
