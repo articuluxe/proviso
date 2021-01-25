@@ -1,10 +1,10 @@
 ;;; test_proviso.el --- test projects
-;; Copyright (C) 2016-2020  Dan Harms (dharms)
+;; Copyright (C) 2016-2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-01-20 09:03:11 Dan.Harms>
-;; Modified by: Dan.Harms
+;; Modified Time-stamp: <2021-01-25 14:31:51 dharms>
+;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -219,6 +219,100 @@
       (should (string= (proviso-get proviso-local-proj :scratch-dir)
                        (concat base-test-dir "a/gitproject/")))
       (dired-delete-file (concat base-test-dir "a/gitproject/.git") 'always)
+      (dolist (b buffers) (kill-buffer b))
+      )))
+
+(ert-deftest proviso-open-project-subproject-top-first ()
+  (proviso-test-reset-all)
+  (let ((file-contents "")
+        buffers)
+    (cl-letf (((symbol-function 'proviso--eval-file)
+               (lambda (_)
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
+      ;; open file, init new project
+      (find-file (concat base-test-dir "a/b/c/file1"))
+      (push "file1" buffers)
+      (should (equal proviso-proj-alist
+                     (list (cons (concat base-test-dir "a/b/c/")
+                                 (concat "c#" base-test-dir "a/b/c/")))))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (string= (concat base-test-dir "a/b/c/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (string= (proviso-get proviso-local-proj :project-uid)
+                       (concat "c#" base-test-dir "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base-test-dir "a/b/c/")))
+
+      ;; open a 2nd file belonging to another project contained within the first
+      (find-file (concat base-test-dir "a/b/c/e/efile1"))
+      (push "efile1" buffers)
+      (should (equal proviso-proj-alist
+                     (list (cons (concat base-test-dir "a/b/c/e/")
+                                 (concat "e#" base-test-dir "a/b/c/e/"))
+                           (cons (concat base-test-dir "a/b/c/")
+                                 (concat "c#" base-test-dir "a/b/c/")))))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (string= (concat base-test-dir "a/b/c/e/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "e"))
+      (should (string= (proviso-get proviso-local-proj :project-uid)
+                       (concat "e#" base-test-dir "a/b/c/e/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base-test-dir "a/b/c/e/")))
+
+      (dolist (b buffers) (kill-buffer b))
+      )))
+
+(ert-deftest proviso-open-project-subproject-bottom-first ()
+  (proviso-test-reset-all)
+  (let ((file-contents "")
+        buffers)
+    (cl-letf (((symbol-function 'proviso--eval-file)
+               (lambda (_)
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
+      ;; open file, init new project
+      (find-file (concat base-test-dir "a/b/c/e/efile1"))
+      (push "efile1" buffers)
+      (should (equal proviso-proj-alist
+                     (list (cons (concat base-test-dir "a/b/c/e/")
+                                 (concat "e#" base-test-dir "a/b/c/e/")))))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (string= (concat base-test-dir "a/b/c/e/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "e"))
+      (should (string= (proviso-get proviso-local-proj :project-uid)
+                       (concat "e#" base-test-dir "a/b/c/e/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base-test-dir "a/b/c/e/")))
+
+      ;; open a 2nd file belonging to another project that contains the first
+      (find-file (concat base-test-dir "a/b/c/file1"))
+      (push "file1" buffers)
+      (should (equal proviso-proj-alist
+                     (list (cons (concat base-test-dir "a/b/c/")
+                                 (concat "c#" base-test-dir "a/b/c/"))
+                           (cons (concat base-test-dir "a/b/c/e/")
+                                 (concat "e#" base-test-dir "a/b/c/e/")))))
+      (should (eq proviso-local-proj proviso-curr-proj))
+      (should (eq (proviso-get proviso-local-proj :inited) t))
+      (should (string= (concat base-test-dir "a/b/c/")
+                       (proviso-get proviso-local-proj :root-dir)))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (string= (proviso-get proviso-local-proj :project-uid)
+                       (concat "c#" base-test-dir "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :scratch-dir)
+                       (concat base-test-dir "a/b/c/")))
+
       (dolist (b buffers) (kill-buffer b))
       )))
 

@@ -1,9 +1,9 @@
 ;;; proviso-core.el --- Core functionality for proviso.
-;; Copyright (C) 2017-2020  Dan Harms (dharms)
+;; Copyright (C) 2017-2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-08-07 09:25:00 dharms>
+;; Modified Time-stamp: <2021-01-25 14:23:22 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -316,7 +316,12 @@ HOST defaults to nil for localhost."
 
 (defun proviso-add-active-proj-path--alist (alist dir uid)
   "Add definition for project UID at DIR to ALIST."
-  (cons (cons dir uid) alist))
+  (if (seq-contains-p alist (cons dir uid)
+                      ;; first check if this project already exists; need to look
+                      ;; in the cdr of each alist entry for the full unique name
+                      (lambda (a b) (string= (cdr a) (cdr b))))
+      alist
+    (cons (cons dir uid) alist)))
 
 (defun proviso-create-project-uid (project dir &optional host)
   "Return a unique ID identifying PROJECT located at DIR on HOST.
