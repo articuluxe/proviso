@@ -1,9 +1,9 @@
 ;;; proviso-display.el --- Display information about proviso
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2019, 2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, May  9, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-28 08:57:14 dharms>
+;; Modified Time-stamp: <2021-01-27 11:57:10 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project display
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -175,7 +175,7 @@ longest root dir."
     (append
      (mapcar (lambda (elt)
                (let ((name (proviso-get elt :project-name))
-                     (root (proviso-get elt :root-dir))
+                     (root (abbreviate-file-name (proviso-get elt :root-dir)))
                      (remote (or (proviso-get elt :remote-host) "")))
                  (list elt
                        (vconcat
