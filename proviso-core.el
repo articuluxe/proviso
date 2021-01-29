@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-01-25 14:23:22 dharms>
+;; Modified Time-stamp: <2021-01-29 14:34:06 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -306,21 +306,27 @@ HOST defaults to nil for localhost."
 
 (defun proviso-add-active-project-path (dir uid &optional host)
   "Add project UID centered at absolute path DIR.
-HOST defaults to nil for localhost."
-  (if host
-      (let ((alist (ht-get proviso-remote-projects host)))
-        (ht-set! proviso-remote-projects host
-                 (proviso-add-active-proj-path--alist alist dir uid)))
-    (setq proviso-proj-alist
-          (proviso-add-active-proj-path--alist proviso-proj-alist dir uid))))
+HOST defaults to nil for localhost.
+If the project already existed, nil is returned, else t."
+  (let (result)
+    (if host
+        (let ((alist (ht-get proviso-remote-projects host)))
+          (unless (eq t (setq result
+                              (proviso-add-active-proj-path--alist alist dir uid)))
+            (ht-set! proviso-remote-projects host result)))
+      (unless (eq t (setq result
+                          (proviso-add-active-proj-path--alist proviso-proj-alist dir uid)))
+        (setq proviso-proj-alist result)))
+    (if (eq result t) nil result)))
 
 (defun proviso-add-active-proj-path--alist (alist dir uid)
-  "Add definition for project UID at DIR to ALIST."
+  "Add definition for project UID at DIR to ALIST.
+If the project already exists, t is returned."
   (if (seq-contains-p alist (cons dir uid)
                       ;; first check if this project already exists; need to look
                       ;; in the cdr of each alist entry for the full unique name
                       (lambda (a b) (string= (cdr a) (cdr b))))
-      alist
+      t
     (cons (cons dir uid) alist)))
 
 (defun proviso-create-project-uid (project dir &optional host)

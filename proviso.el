@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-01-25 14:24:57 dharms>
+;; Modified Time-stamp: <2021-01-29 14:54:43 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -198,7 +198,7 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
     (let* ((dir (file-name-directory (expand-file-name filename)))
            (remote-prefix (file-remote-p dir))
            (remote-host (file-remote-p dir 'host))
-           basename fullname scratch props)
+           basename fullname scratch props new-proj)
       ;; try to find some project for this file
       (seq-let [root-file root-dir] (proviso--find-root dir t)
         (unless root-dir (setq root-dir dir))
@@ -214,19 +214,25 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
                 (setq proj (intern-soft basename proviso-provisional-obarray))
                 (setq fullname
                       (proviso-create-project-uid basename root-dir remote-host))
-                (proviso-add-active-project-path root-dir fullname remote-host)
-                (setq props (if proj (copy-tree (symbol-plist proj)) nil))
-                (when (and root-file
-                           (setq other-props (proviso--eval-file root-file)))
-                  (setq props (append props other-props))
-                  (message "Adding properties from project file %s to provisional project '%s'"
-                           (abbreviate-file-name root-file)
-                           basename))
-                (setq basename provisional-name) ;basename used for display name here on
-                (unless (setq proviso-local-proj
-                              (proviso-define-active-project fullname props))
-                  (user-error "Unable to set project '%s' from provisional '%s' for %s"
-                              fullname basename (abbreviate-file-name filename))))
+                (setq new-proj (proviso-add-active-project-path root-dir fullname remote-host))
+                (if new-proj
+                    (progn
+                      (setq props (if proj (copy-tree (symbol-plist proj)) nil))
+                      (when (and root-file
+                                 (setq other-props (proviso--eval-file root-file)))
+                        (setq props (append props other-props))
+                        (message "Adding properties from project file %s to provisional project '%s'"
+                                 (abbreviate-file-name root-file)
+                                 basename))
+                      (setq basename provisional-name) ;basename used for display name here on
+                      (unless (setq proviso-local-proj
+                                    (proviso-define-active-project fullname props))
+                        (user-error "Unable to set project '%s' from provisional '%s' for %s"
+                                    fullname basename (abbreviate-file-name filename))))
+                  (unless (setq proviso-local-proj (proviso-proj-p fullname))
+                    (user-error
+                     "Error finding existing project '%s' matching provisional project '%s' for %s"
+                     fullname provisional-name (abbreviate-file-name filename)))))
             ;; no provisional project, look for a project file
             (if root-file
                 (progn
@@ -237,16 +243,22 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
                   (unless (setq basename (plist-get props :project-name))
                     (setq basename (proviso-compute-basename-from-file root-file)))
                   (setq fullname (proviso-create-project-uid basename root-dir remote-host))
-                  (proviso-add-active-project-path root-dir fullname remote-host)
-                  (unless (setq proviso-local-proj
-                                (proviso-define-active-project fullname props))
-                    (user-error "Unable to set project '%s' from %s for %s"
-                                fullname
-                                (abbreviate-file-name root-file)
-                                (abbreviate-file-name filename))))
+                  (setq new-proj (proviso-add-active-project-path root-dir fullname remote-host))
+                  (if new-proj
+                      (unless (setq proviso-local-proj
+                                    (proviso-define-active-project fullname props))
+                        (user-error "Unable to set project '%s' from %s for %s"
+                                    fullname
+                                    (abbreviate-file-name root-file)
+                                    (abbreviate-file-name filename)))
+                    (unless (setq proviso-local-proj (proviso-proj-p fullname))
+                      (user-error "Error finding existing project '%s' from %s for %s"
+                                  fullname
+                                  (abbreviate-file-name root-file)
+                                  (abbreviate-file-name filename)))))
               ;; otherwise no project file either
               )))
-        (when proviso-local-proj
+        (when (and proviso-local-proj new-proj)
           (proviso-put proviso-local-proj :root-dir root-dir)
           (proviso-put proviso-local-proj :project-name basename)
           (proviso-put proviso-local-proj :project-uid fullname)
