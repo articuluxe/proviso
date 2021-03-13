@@ -1,9 +1,9 @@
 ;;; proviso-xref.el --- xref helper for proviso
-;; Copyright (C) 2018-2019  Dan Harms (dharms)
+;; Copyright (C) 2018-2019, 2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, October 29, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-01-03 08:19:51 dharms>
+;; Modified Time-stamp: <2021-03-12 23:45:20 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -33,6 +33,25 @@
 (when (> emacs-major-version 24)
 
   (require 'xref)
+
+  (defun proviso-xref-activate-dumb-jump ()
+    "Activate `dumb-jump'."
+    (interactive)
+    (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+    (message "Added `smart-jump' to xref."))
+
+  (defun proviso-xref-deactivate-dumb-jump ()
+    "Deactivate `dumb-jump'."
+    (interactive)
+    (remove-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+    (message "Removed `smart-jump' from xref."))
+
+  (defun proviso-xref-toggle-smart-jump ()
+    "Toggle `smart-jump' in or out of xref."
+    (interactive)
+    (if (memq 'dumb-jump-xref-activate xref-backend-functions)
+        (proviso-xref-deactivate-dumb-jump)
+      (proviso-xref-activate-dumb-jump)))
 
   (defun proviso-xref-make-etags-location (tag-info file)
     "Make an etags location for TAG-INFO and FILE.
