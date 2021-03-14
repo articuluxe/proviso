@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, October 29, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-03-12 23:45:20 dharms>
+;; Modified Time-stamp: <2021-03-14 10:14:39 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -38,16 +38,16 @@
     "Activate `dumb-jump'."
     (interactive)
     (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
-    (message "Added `smart-jump' to xref."))
+    (message "Added `dumb-jump' to xref."))
 
   (defun proviso-xref-deactivate-dumb-jump ()
     "Deactivate `dumb-jump'."
     (interactive)
     (remove-hook 'xref-backend-functions #'dumb-jump-xref-activate)
-    (message "Removed `smart-jump' from xref."))
+    (message "Removed `dumb-jump' from xref."))
 
-  (defun proviso-xref-toggle-smart-jump ()
-    "Toggle `smart-jump' in or out of xref."
+  (defun proviso-xref-toggle-dumb-jump ()
+    "Toggle `dumb-jump' in or out of xref."
     (interactive)
     (if (memq 'dumb-jump-xref-activate xref-backend-functions)
         (proviso-xref-deactivate-dumb-jump)
