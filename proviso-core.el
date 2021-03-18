@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-02-05 14:49:06 dharms>
+;; Modified Time-stamp: <2021-03-17 19:59:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -102,6 +102,7 @@ Melds `proviso' functionality into Emacs' `project'."
 ;;  :grep-include-files :grep-exclude-files
 ;;  :grep-exclude-dirs
 ;;  :clang-format
+;;  :docker-container
 ;;   - Internal:
 ;; :root-dir :project-name :project-uid
 ;; :scratch-dir :local-scratch-dir
@@ -130,6 +131,10 @@ and the old one: `lambda(new old)()'.")
 (defvar proviso-hook-on-file-opened '()
   "Hooks run whenever a file is opened that belongs to a project.
 Hook functions are called with one parameter: the file's major mode.")
+(defvar proviso-hook-file-transformers '()
+  "Hooks run in certain scenarios to transform filenames.
+Hook functions are called with one parameter: the original filename.
+They return the possibly transformed filename.")
 
 (defgroup proviso-custom-group nil
   "Proviso is a collection of coding utilities."

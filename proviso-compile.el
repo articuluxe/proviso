@@ -1,9 +1,9 @@
 ;;; proviso-compile.el --- Compile utilities for proviso
-;; Copyright (C) 2017-2020  Dan Harms (dharms)
+;; Copyright (C) 2017-2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-02-25 09:32:03 dan.harms>
+;; Modified Time-stamp: <2021-03-17 20:06:28 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -69,6 +69,8 @@ ARG allows customizing behavior."
   (let ((root (or (proviso-get (proviso-current-project) :root-dir) "./"))
         (cmds (proviso-get (proviso-current-project) :compile-cmds))
         (blddirs (proviso-get (proviso-current-project) :build-subdirs))
+        (preface (or (proviso-get (proviso-current-project) :compile-cmd-preface)
+                     "%s"))
         subdirs subdir dir cmd)
     (setq subdirs (mapcar (lambda (elt)
                             (file-name-as-directory (plist-get elt :dir))) blddirs))
@@ -97,7 +99,12 @@ ARG allows customizing behavior."
          (setq root (with-parsed-tramp-file-name root file file-localname)))
     (setq dir (concat root (unless (string= subdir "./") subdir)))
     (add-to-list 'proviso-compile-dir-history dir)
-    (format "cd %s && %s" dir cmd)
+    (unless (seq-empty-p proviso-hook-file-transformers)
+      (dolist (hook proviso-hook-file-transformers)
+        (setq dir (funcall hook dir)))
+      (message "Transformed filename to %s" dir))
+    (format preface
+            (format "cd %s && %s" dir cmd))
     ))
 
 (defun proviso-compile-command-repo (&optional arg)
