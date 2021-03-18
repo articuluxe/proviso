@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-03-17 20:06:28 dharms>
+;; Modified Time-stamp: <2021-03-18 17:14:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -101,8 +101,8 @@ ARG allows customizing behavior."
     (add-to-list 'proviso-compile-dir-history dir)
     (unless (seq-empty-p proviso-hook-file-transformers)
       (dolist (hook proviso-hook-file-transformers)
-        (setq dir (funcall hook dir)))
-      (message "Transformed filename to %s" dir))
+        (setq dir (funcall hook (proviso-current-project) dir)))
+      (message "proviso-compile transformed filename to %s" dir))
     (format preface
             (format "cd %s && %s" dir cmd))
     ))

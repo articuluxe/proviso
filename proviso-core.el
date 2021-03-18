@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-03-17 19:59:56 dharms>
+;; Modified Time-stamp: <2021-03-18 17:15:31 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -113,6 +113,7 @@ Melds `proviso' functionality into Emacs' `project'."
 ;; :project-files :project-dirs
 ;; :file-cache
 ;; :deployments :deploy-file :last-deploy :deploy-id :deploy-buffer
+;; :docker-mount-src :docker-mount-dst
 
 ;; hooks
 (defvar proviso-hook-on-project-pre-init '()

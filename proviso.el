@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-01-29 14:54:43 dharms>
+;; Modified Time-stamp: <2021-03-18 17:20:43 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -45,6 +45,7 @@
 (require 'proviso-gud)
 (require 'proviso-dired)
 (require 'proviso-display)
+(require 'proviso-docker)
 (require 'proviso-tags)
 (require 'proviso-gentags)
 ;; bookmarks must come before registers so that registers runs first
