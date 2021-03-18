@@ -1,5 +1,5 @@
 .POSIX:
-EMACS=$(VISUAL) -nw
+EMACS=$(EMACS_BIN) -nw
 # override: make EMACS=emacs-27.1 check
 # override from environment: export EMACS=emacs-27.1 ; make -e
 ROOT=$(HOME)/.emacs.d
