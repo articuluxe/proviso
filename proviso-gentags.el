@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-03-19 15:35:31 dharms>
+;; Modified Time-stamp: <2021-03-19 17:18:22 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -127,8 +127,10 @@ interactively."
                           (if (file-name-absolute-p subdir)
                               subdir
                             (if (and dir (file-name-absolute-p dir))
-                                (concat dir subdir)
-                              (concat root dir subdir)))
+                                ;; we can assume root ends with '/',
+                                ;; but not dir
+                                (concat (file-name-as-directory dir) subdir)
+                              (concat root (file-name-as-directory dir) subdir)))
                         (if (and dir (file-name-absolute-p dir))
                             dir
                           (concat root dir))))
