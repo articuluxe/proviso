@@ -1,9 +1,9 @@
 ;;; proviso-gentags.el --- Generate TAGS files
-;; Copyright (C) 2015-2020   (dan.harms)
+;; Copyright (C) 2015-2021   (dan.harms)
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-08-04 08:56:47 dharms>
+;; Modified Time-stamp: <2021-03-19 15:35:31 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -122,8 +122,16 @@ interactively."
     (dolist (elt tags-alist)
       (let* ((name (plist-get elt :name))
              (dir (proviso-substitute-env-vars (plist-get elt :dir)))
-             (dir-abs (if (and dir (file-name-absolute-p dir)) dir
-                        (concat root dir)))
+             (subdir (proviso-substitute-env-vars (plist-get elt :ctags-subdir)))
+             (dir-abs (if subdir
+                          (if (file-name-absolute-p subdir)
+                              subdir
+                            (if (and dir (file-name-absolute-p dir))
+                                (concat dir subdir)
+                              (concat root dir subdir)))
+                        (if (and dir (file-name-absolute-p dir))
+                            dir
+                          (concat root dir))))
              (subname (concat name "-tags"))
              (destfile (concat
                         (if int-dir
