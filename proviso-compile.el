@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-03-18 17:14:50 dharms>
+;; Modified Time-stamp: <2021-03-19 15:48:42 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -103,9 +103,13 @@ ARG allows customizing behavior."
       (dolist (hook proviso-hook-file-transformers)
         (setq dir (funcall hook (proviso-current-project) dir)))
       (message "proviso-compile transformed filename to %s" dir))
-    (format preface
-            (format "cd %s && %s" dir cmd))
-    ))
+    (if (and (proviso-get (proviso-current-project) :docker-container) (executable-find "docker"))
+        (format preface
+                (proviso-get (proviso-current-project) :docker-container)
+                (format "cd %s && %s" dir cmd))
+      (format preface
+              (format "cd %s && %s" dir cmd))
+      )))
 
 (defun proviso-compile-command-repo (&optional arg)
   "Create a compile command for projects using a repo layout.
