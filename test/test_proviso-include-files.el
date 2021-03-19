@@ -1,10 +1,10 @@
 ;;; test_proviso-include-files.el --- test proviso include files
-;; Copyright (C) 2017-2020  Dan Harms (dharms)
+;; Copyright (C) 2017-2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-01-20 08:52:45 Dan.Harms>
-;; Modified by: Dan.Harms
+;; Modified Time-stamp: <2021-03-19 11:27:31 dharms>
+;; Modified by: Dan Harms
 ;; Keywords: proviso project include files test
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -82,6 +82,39 @@
                   (list (file-name-as-directory absolute-root-dir))))
       (should (equal (proviso-get proviso-local-proj :include-ff-files)
                      (list "." absolute-root-dir (concat base-test-dir "a/b/c"))))
+      ;; clean up buffers
+      (kill-buffer "dfile1")
+      )))
+
+(ert-deftest proviso-include-open-project-extra-ff-search-dirs ()
+  (proviso-test-reset-all)
+  (let (file-contents)
+    (cl-letf (((symbol-function 'proviso--eval-file)
+               (lambda (_)
+                 (unless (string-empty-p (string-trim file-contents))
+                   (car (read-from-string file-contents))))))
+      ;; open file
+      (setq file-contents (concat "(
+:initfun (lambda (proj)
+   (proviso-put proj :proj-alist
+               '( (:name \"base\" :dir \""
+                                  (file-name-as-directory absolute-root-dir)
+                                  "\")
+                  ))
+   (proviso-put proj :include-ff-files
+                '(\"existing\")))
+)"))
+      (find-file (concat base-test-dir "a/b/c/d/dfile1"))
+      (should (string= (proviso-get proviso-local-proj :root-dir)
+                       (concat base-test-dir "a/b/c/")))
+      (should (string= (proviso-get proviso-local-proj :project-name)
+                       "c"))
+      (should (equal (proviso-get proviso-local-proj :include-files)
+                  (list (file-name-as-directory absolute-root-dir))))
+      (should (equal (proviso-get proviso-local-proj :include-ff-files)
+                     (list "." absolute-root-dir
+                           (concat base-test-dir "a/b/c")
+                            "existing")))
       ;; clean up buffers
       (kill-buffer "dfile1")
       )))

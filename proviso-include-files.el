@@ -1,9 +1,9 @@
 ;;; proviso-include-files.el --- Support for project include files
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2019, 2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:34:51 dan.harms>
+;; Modified Time-stamp: <2021-03-19 11:19:28 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -79,13 +79,15 @@
     (proviso-put proj :include-files includes)
     ;; for ff-search-directories, prepend current dir and append root
     (proviso-put proj :include-ff-files
-                 (cl-remove-duplicates
+                 (append
+                  (cl-remove-duplicates
                   ;; ff-search-directories doesn't want a trailing slash
                   (mapcar 'directory-file-name
                           (append '(".")
                                   ff-includes
                                   `,(list (concat remote root))))
-                  :test 'string=))))
+                  :test 'string=)
+                  (proviso-get proj :include-ff-files)))))
 
 (defun proviso--gather-compiler-includes (compiler)
   "Return a list of include directories for COMPILER.  They will be absolute."
