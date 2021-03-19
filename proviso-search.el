@@ -1,10 +1,10 @@
 ;;; proviso-search.el --- A custom search utility across projects
-;; Copyright (C) 2019-2020  Dan Harms (dharms)
+;; Copyright (C) 2019-2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 25, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-02-21 09:11:36 Dan.Harms>
-;; Modified by: Dan.Harms
+;; Modified Time-stamp: <2021-03-19 16:40:22 dharms>
+;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "25.1"))
@@ -137,7 +137,9 @@ search."
               hits)))
     (if (setq matches
               (xref--convert-hits (nreverse hits) search-str))
-        (xref--show-xrefs matches nil t)
+        (if (< emacs-major-version 27)
+            (xref--show-xrefs matches nil t)
+          (xref--show-xrefs `(lambda () ',matches) nil))
       (user-error "No results"))))
 
 (defun proviso-search--project (proj func search-str args
