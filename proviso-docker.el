@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, March 17, 2021
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-03-18 17:31:30 dharms>
+;; Modified Time-stamp: <2021-03-25 19:02:08 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -31,11 +31,13 @@
 
 (defun proviso--test-docker (proj)
   "Test project PROJ for docker functionality."
-  (let ((container (proviso-get proj :docker-container))
+  (let ((container (proviso-substitute-env-vars
+                    (proviso-get proj :docker-container)))
         src dst)
     (when (and (executable-find "docker")
                container
                (not (string-empty-p container)))
+      (proviso-put proj :docker-container container)
       (setq src (proviso-docker-query-mount container "Source"))
       (setq dst (proviso-docker-query-mount container "Destination"))
       (when (and src dst
