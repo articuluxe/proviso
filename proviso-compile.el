@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 24, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-03-19 15:48:42 dharms>
+;; Modified Time-stamp: <2021-03-26 10:48:42 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: c tools languages proviso project compile
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -117,7 +117,7 @@ ARG allows customizing behavior."
   (let ((root (or (proviso-get (proviso-current-project) :root-dir) "./"))
         (cmds (proviso-get (proviso-current-project) :compile-cmds))
         (blddirs (proviso-get (proviso-current-project) :build-subdirs))
-        (preface (or (proviso-get (proviso-current-project) :compile-cmd-preface)
+        (preface (or (proviso-get (proviso-current-project) :compile-cmd-repo)
                      ". %srepo-setup.sh && "))
         origroot subdirs subdir dir cmd)
     (setq origroot root)
