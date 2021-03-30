@@ -1,9 +1,9 @@
 ;;; proviso-frame-title.el --- Frame title manipulation
-;; Copyright (C) 2017, 2019  Dan Harms (dharms)
+;; Copyright (C) 2017, 2019, 2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, July  7, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:33:25 dan.harms>
+;; Modified Time-stamp: <2021-03-30 12:49:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso frame title
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -32,7 +32,7 @@
 (setq-default
  frame-title-format
  '(:eval
-   (format "%s@%s: %s %s"
+   (format "%s@%s: %s %s %s"
            (or (file-remote-p default-directory 'user)
                user-real-login-name)
            (or (file-remote-p default-directory 'host)
@@ -43,6 +43,10 @@
            (if (and (featurep 'proviso)
                     (proviso-current-project-name))
                (concat "(" (upcase (proviso-current-project-name)) ")")
+             "")
+           (if (and (boundp 'server-name)
+                    (not (string-empty-p server-name)))
+               (concat "<" server-name ">")
              "")
            )))
 
