@@ -1,9 +1,9 @@
 ;;; proviso-defines.el --- Provide defines useful for proviso
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2019, 2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:32:21 dan.harms>
+;; Modified Time-stamp: <2021-04-14 13:45:08 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -67,6 +67,52 @@ filter to those files already selected by
 (defvar proviso-uninteresting-dirs '("*.git" "*.tags")
   "List of uninteresting directory patterns.
 These are in shell glob format.")
+
+(defun proviso--filter-search-items (lst input)
+  "Filter default list LST according to INPUT.
+INPUT is a list of items to replace, by default, the items in the
+default list.  If INPUT contains the symbol +, then subsequent
+items will be added to the defaults.  If INPUT contains the
+symbol -, then subsequent items will be removed from the
+defaults, if present.  There can be multiple such directives in
+the INPUT list, each takes effect on subsequent elements until
+another appears."
+  (let ((action 'replace))
+    (dolist (elt input)
+      (if (symbolp elt)
+          (cond ((eq elt '+)
+                 (setq action 'add))
+                ((eq elt '-)
+                 (setq action 'subtract)))
+        (if (stringp elt)
+            (cond ((eq action 'add)
+                   (setq lst (cons elt lst)))
+                  ((eq action 'subtract)
+                   (setq lst (remove elt lst)))
+                  ((eq action 'replace)
+                   (setq lst (list elt))
+                   (setq action 'add)))
+          (error "Unhandled action %S" elt)))))
+  lst)
+
+(defun proviso--set-grep-files-dirs (proj)
+  "Init search settings for PROJ after project is loaded."
+  (let ((exclude-dirs proviso-uninteresting-dirs)
+        (exclude-files proviso-uninteresting-files)
+        (include-files proviso-interesting-files)
+        (ex-dir (proviso-get proj :search-exclude-dirs))
+        (ex-file (proviso-get proj :search-exclude-files))
+        (inc-file (proviso-get proj :search-include-files))
+        action)
+    (proviso-put proj :grep-exclude-dirs
+                 (proviso--filter-search-items exclude-dirs ex-dir))
+    (proviso-put proj :grep-exclude-files
+                 (proviso--filter-search-items exclude-files ex-file))
+    (proviso-put proj :grep-include-files
+                 (proviso--filter-search-items include-files inc-file))))
+
+
+(add-hook 'proviso-hook-on-project-post-init 'proviso--set-grep-files-dirs)
 
 (provide 'proviso-defines)
 ;;; proviso-defines.el ends here

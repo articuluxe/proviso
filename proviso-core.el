@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-03-18 17:15:31 dharms>
+;; Modified Time-stamp: <2021-04-14 13:01:31 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -99,8 +99,8 @@ Melds `proviso' functionality into Emacs' `project'."
 ;;  :compile-cmds :compile-defun
 ;;  :compile-cmds-comint-filters
 ;;  :gcc-standard :clang-standard
-;;  :grep-include-files :grep-exclude-files
-;;  :grep-exclude-dirs
+;;  :search-include-files :search-exclude-files
+;;  :search-exclude-dirs
 ;;  :clang-format
 ;;  :docker-container
 ;;   - Internal:
@@ -108,6 +108,8 @@ Melds `proviso' functionality into Emacs' `project'."
 ;; :scratch-dir :local-scratch-dir
 ;; :inited :initfun :init-errors
 ;; :remote-prefix :remote-host :root-stem
+;; :grep-include-files :grep-exclude-files
+;; :grep-exclude-dirs
 ;; :registers
 ;; :tags-alist :tags-dir :tags-lastgen :tags-remote-dir
 ;; :project-files :project-dirs
