@@ -1,9 +1,9 @@
 ;;; proviso-finder.el --- Utilities for selecting files in a project
-;; Copyright (C) 2018-2019  Dan Harms (dharms)
+;; Copyright (C) 2018-2019, 2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 24, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-25 13:51:06 dan.harms>
+;; Modified Time-stamp: <2021-04-15 14:51:50 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -359,7 +359,7 @@ OTHER-WINDOW means to open the file in the other window."
                        (proviso-finder-gather-dirs ,remote ,root (quote ,lst) t
                                                    (quote ,exclude-dirs))))))))
 
-(add-hook 'proviso-hook-on-project-init 'proviso-finder--load-files)
+(add-hook 'proviso-hook-on-project-post-init 'proviso-finder--load-files 50)
 
 (provide 'proviso-finder)
 ;;; proviso-finder.el ends here

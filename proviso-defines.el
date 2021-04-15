@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-04-14 13:45:08 dharms>
+;; Modified Time-stamp: <2021-04-15 14:52:06 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -112,7 +112,7 @@ another appears."
                  (proviso--filter-search-items include-files inc-file))))
 
 
-(add-hook 'proviso-hook-on-project-post-init 'proviso--set-grep-files-dirs)
+(add-hook 'proviso-hook-on-project-post-init 'proviso--set-grep-files-dirs -50)
 
 (provide 'proviso-defines)
 ;;; proviso-defines.el ends here
