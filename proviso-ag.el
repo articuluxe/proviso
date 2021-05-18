@@ -1,10 +1,10 @@
 ;;; proviso-ag.el --- Support ag for proviso
-;; Copyright (C) 2017-2020  Dan Harms (dharms)
+;; Copyright (C) 2017-2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  2, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-02-20 17:33:45 Dan.Harms>
-;; Modified by: Dan.Harms
+;; Modified Time-stamp: <2021-04-20 14:01:47 dharms>
+;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project ag silver searcher
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "25.1"))
@@ -116,7 +116,7 @@ ARG allows customizing the selection of the root search directory."
       (setq dir (cond ((and arg (>= (prefix-numeric-value arg) 16))
                        (read-directory-name prompt default-directory nil t))
                       ((and arg (= (prefix-numeric-value arg) 4) dirs)
-                       (completing-read prompt dirs))
+                       (completing-read prompt dirs nil nil nil nil (last dirs)))
                       ((or (null dirs) (null first) (string-empty-p first))
                        (or (proviso-current-project-root) default-directory))
                       (t first)))

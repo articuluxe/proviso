@@ -1,9 +1,9 @@
 ;;; proviso-grep.el --- Utilities to support grep for proviso
-;; Copyright (C) 2017-2020  Dan Harms (dharms)
+;; Copyright (C) 2017-2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-02-21 10:12:39 dan.harms>
+;; Modified Time-stamp: <2021-04-20 13:28:20 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -134,7 +134,7 @@ ARG allows customizing the selection of the root search directory."
     (setq dir (cond ((and arg (>= (prefix-numeric-value arg) 16))
                      (read-directory-name prompt default-directory nil t))
                     ((and arg (= (prefix-numeric-value arg) 4) dirs)
-                     (completing-read prompt dirs))
+                     (completing-read prompt dirs nil nil nil nil (last dirs)))
                     ((or (null dirs) (null first) (string-empty-p first))
                      (or (proviso-current-project-root) default-directory))
                     (t first)))
