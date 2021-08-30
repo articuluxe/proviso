@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-04-14 13:01:31 dharms>
+;; Modified Time-stamp: <2021-08-30 15:28:10 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -86,10 +86,31 @@ If there is no active project, nil is returned."
 Melds `proviso' functionality into Emacs' `project'."
   (let ((result (proviso--find-root dir t)))
     (if result
-        (cons 'vc (cadr result))
+        (cons 'transient (cadr result))
       (setq result (proviso-find-provisional-project dir))
       (if result
-          (cons 'vc (car result))))))
+          (cons 'transient (car result))))))
+
+(cl-defmethod project-root ((proj (head proviso)))
+  "Return root of PROJ."
+  (cdr proj))
+
+(cl-defmethod project-files ((proj (head proviso)) &optional _dirs)
+  "Return list of project files from PROJ."
+  (let ((p (proviso-find-proj (cdr proj))))
+    (proviso-get p :project-files)))
+  ;; (let ((root (cdr proj)))
+  ;;   (proviso-finder-gather-files (file-remote-p root)
+  ;;                                root nil nil
+  ;;                                proviso-uninteresting-files
+  ;;                                proviso-uninteresting-dirs
+  ;;                                proviso-interesting-files)))
+
+(cl-defmethod project-ignores ((proj (head proviso)) _dir)
+  "Return list of ignore patterns from PROJ."
+  (let ((p (proviso-find-proj (cdr proj))))
+    (proviso-get p :grep-exclude-dirs)))
+
 
 ;; Project Properties:
 ;;   - External:
