@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-09-13 11:40:55 dharms>
+;; Modified Time-stamp: <2021-09-13 12:54:30 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -84,12 +84,13 @@ If there is no active project, nil is returned."
 (defun proviso-find-project (dir)
   "Return project associated with DIR.
 Melds `proviso' functionality into Emacs' `project'."
-  (let ((result (proviso--find-root dir t)))
-    (if result
-        (cons 'proviso (cadr result))
-      (setq result (proviso-find-provisional-project dir))
-      (if result
-          (cons 'proviso (car result))))))
+  (let ((proj (proviso-find-active-project
+               (if (file-remote-p dir)
+                   (file-remote-p dir 'localname)
+                 (expand-file-name dir))
+               (file-remote-p dir 'host))))
+    (when proj
+      (cons 'proviso (proviso-get proj :root-dir)))))
 
 (cl-defmethod project-roots ((proj (head proviso)))
   "Return list of directory roots of PROJ."
@@ -101,18 +102,19 @@ Melds `proviso' functionality into Emacs' `project'."
 
 (cl-defmethod project-files ((proj (head proviso)) &optional _dirs)
   "Return list of project files from PROJ."
-  (let ((p (proviso-find-proj (cdr proj))))
-    (proviso-get p :project-files)))
-  ;; (let ((root (cdr proj)))
-  ;;   (proviso-finder-gather-files (file-remote-p root)
-  ;;                                root nil nil
-  ;;                                proviso-uninteresting-files
-  ;;                                proviso-uninteresting-dirs
-  ;;                                proviso-interesting-files)))
+  (let ((p (proviso-find-active-project (cdr proj))))
+    (when p
+      (let ((files (proviso-get p :project-files)))
+        (unless files
+          (unless (async-ready (proviso-get p :project-files-future))
+            (message "Still gathering files..."))
+          (when (setq files (async-get (proviso-get p :project-files-future)))
+            (proviso-put p :project-files files)))
+        (mapcar 'car files)))))
 
 (cl-defmethod project-ignores ((proj (head proviso)) _dir)
   "Return list of ignore patterns from PROJ."
-  (let ((p (proviso-find-proj (cdr proj))))
+  (let ((p (proviso-find-active-project (cdr proj))))
     (proviso-get p :grep-exclude-dirs)))
 
 
