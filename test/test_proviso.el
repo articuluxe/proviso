@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, December  9, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-02-03 17:28:06 dharms>
+;; Modified Time-stamp: <2021-09-13 11:51:01 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools projects test
 ;; Package-Requires: ((emacs "25.1"))
@@ -40,7 +40,7 @@
                    (car (read-from-string file-contents))))))
       ;; open first file, init new project
       (should (equal (proviso-find-project (concat base-test-dir "a/b/c/d/"))
-                     (cons 'vc (concat base-test-dir "a/b/c/"))))
+                     (cons 'proviso (concat base-test-dir "a/b/c/"))))
       (should (not proviso-local-proj))
       (find-file (concat base-test-dir "a/b/c/d/dfile1"))
       (push "dfile1" buffers)
@@ -360,7 +360,7 @@
       (proviso-define-project "neon" '(("/m/")))
       (proviso-define-project "fog" '(("/p")))
       (should (equal (proviso-find-project (concat base-test-dir "m/n/"))
-                     (cons 'vc (concat base-test-dir "m/"))))
+                     (cons 'proviso (concat base-test-dir "m/"))))
       (should-not proviso-local-proj)
       (find-file (concat base-test-dir "m/n/nfile1"))
       (push "nfile1" buffers)

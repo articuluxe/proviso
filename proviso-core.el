@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-08-30 15:28:10 dharms>
+;; Modified Time-stamp: <2021-09-13 11:40:55 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -86,10 +86,14 @@ If there is no active project, nil is returned."
 Melds `proviso' functionality into Emacs' `project'."
   (let ((result (proviso--find-root dir t)))
     (if result
-        (cons 'transient (cadr result))
+        (cons 'proviso (cadr result))
       (setq result (proviso-find-provisional-project dir))
       (if result
-          (cons 'transient (car result))))))
+          (cons 'proviso (car result))))))
+
+(cl-defmethod project-roots ((proj (head proviso)))
+  "Return list of directory roots of PROJ."
+  (list (cdr proj)))                    ;TODO: be smarter
 
 (cl-defmethod project-root ((proj (head proviso)))
   "Return root of PROJ."

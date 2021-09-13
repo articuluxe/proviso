@@ -1,10 +1,10 @@
 ;;; test_proviso-grep-command.el --- test proviso grep-command
-;; Copyright (C) 2017-2020  Dan Harms (dharms)
+;; Copyright (C) 2017-2021  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May  3, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-01-20 08:50:18 Dan.Harms>
-;; Modified by: Dan.Harms
+;; Modified Time-stamp: <2021-09-13 11:58:36 dharms>
+;; Modified by: Dan Harms
 ;; Keywords: tools proviso project grep command
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -106,7 +106,7 @@
                  (unless (string-empty-p (string-trim file-contents))
                    (car (read-from-string file-contents)))))
               ((symbol-function 'completing-read)
-               (lambda (_ _2)
+               (lambda (_ _2 _3 _4 _5 _6 _7)
                  read-result))
               ((symbol-function 'read-directory-name)
                (lambda (_ _2 _3 _4)
