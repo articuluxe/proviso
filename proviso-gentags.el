@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-03-19 17:18:22 dharms>
+;; Modified Time-stamp: <2021-10-05 10:42:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -58,7 +58,7 @@ REST, if not nil, is appended."
    (list exe
          "-Re"
          (concat "--kinds-c++=" proviso-gentags-ctags-cpp-kinds)
-         "--extras=-F"
+         "--extras=+F"
          "--tag-relative=no")
    (if (listp rest) rest (list rest))))
 
