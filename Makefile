@@ -8,7 +8,7 @@ VERSION=0.1.1
 DEPS=-L . -L $(ROOT)/ext/xfer -L $(ROOT)/ext/parsenv -L $(ROOT)/plugins -L $(ROOT)/elisp -L $(ROOT)/plugins/bookmark+ -L $(ROOT)/plugins/auto-complete -L $(ROOT)/plugins/swiper -L $(ROOT)/plugins/realgud
 EL := $(wildcard *.el)
 ELC := $(patsubst %.el,%.elc,$(wildcard *.el))
-DOC := README.md
+DOC := 
 rwildcard=$(wildcard $1$2)$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 TESTS := $(call rwildcard,test/,test_*.el)
 ifdef COMSPEC

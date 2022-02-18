@@ -1,2 +1,5 @@
 test/*/*
 *.bmk
+
+# Package artifacts
+*.tar
