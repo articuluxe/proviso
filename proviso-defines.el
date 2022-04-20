@@ -1,9 +1,9 @@
 ;;; proviso-defines.el --- Provide defines useful for proviso
-;; Copyright (C) 2017-2019, 2021  Dan Harms (dharms)
+;; Copyright (C) 2017-2019, 2021-2022  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-04-15 14:52:06 dharms>
+;; Modified Time-stamp: <2022-04-20 15:02:25 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -48,6 +48,7 @@
     "*.ts"
     "*.xml"
     "*.lua"
+    "*.yml"
     "CMakeLists.txt"
     "[Mm]akefile"
     )
