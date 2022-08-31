@@ -1,10 +1,10 @@
 ;;; proviso-bookmarks.el --- Settings for proviso bookmarks
-;; Copyright (C) 2017-2020  Dan Harms (dharms)
+;; Copyright (C) 2017-2020, 2022  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-03-09 09:07:27 Dan.Harms>
-;; Modified by: Dan.Harms
+;; Modified Time-stamp: <2022-08-29 13:16:03 dharms>
+;; Modified by: Dan Harms
 ;; Keywords: tools proviso project bookmarks
 ;; URL: https://github.com/articuluxe/proviso.git
 ;; Package-Requires: ((emacs "25.1"))
@@ -64,8 +64,8 @@ The bookmark file should have been stored in :bookmark-file."
     (when file
       (bmkp-switch-bookmark-file-create file nil t))))
 
-(add-hook 'proviso-hook-on-project-init 'proviso--init-bookmarks)
-(add-hook 'proviso-hook-on-project-active 'proviso--activate-bookmarks-maybe)
+;; (add-hook 'proviso-hook-on-project-init 'proviso--init-bookmarks)
+;; (add-hook 'proviso-hook-on-project-active 'proviso--activate-bookmarks-maybe)
 
 (provide 'proviso-bookmarks)
 ;;; proviso-bookmarks.el ends here
