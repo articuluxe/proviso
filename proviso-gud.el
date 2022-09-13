@@ -1,9 +1,9 @@
 ;;; proviso-gud.el --- Debugging utilities for proviso
-;; Copyright (C) 2018-2019  Dan Harms (dharms)
+;; Copyright (C) 2018-2019, 2022  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, January 26, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-16 13:22:23 dharms>
+;; Modified Time-stamp: <2022-09-13 15:22:17 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools gdb proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -23,16 +23,13 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; Helper utilties to launch debugging sessions like gud or realgud.
+;; Helper utilties to launch debugging sessions like gud.
 ;;
 
 ;;; Code:
 (require 'proviso-core)
 (require 'ivy)
-(require 'realgud)
 
-;; gud settings
-(setq realgud-safe-mode nil)
 ;; gdb settings
 (add-hook 'gud-mode-hook
           (lambda()
@@ -129,16 +126,6 @@ ARG allows customizing the directory to look in for executables."
   (let ((exe (proviso-gud-get-debug-exe arg)))
     (if exe
         (gdb (concat "gdb -i=mi " exe))
-      (message "No executable found."))))
-
-;;;###autoload
-(defun proviso-gud-open-realgud (&optional arg)
-  "Open realgud according to the current project.
-ARG allows customizing the directory to look in for executables."
-  (interactive "P")
-  (let ((exe (proviso-gud-get-debug-exe arg)))
-    (if exe
-        (realgud:gdb (concat "gdb " exe))
       (message "No executable found."))))
 
 ;;;###autoload
