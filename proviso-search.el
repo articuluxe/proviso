@@ -1,9 +1,9 @@
 ;;; proviso-search.el --- A custom search utility across projects
-;; Copyright (C) 2019-2021  Dan Harms (dharms)
+;; Copyright (C) 2019-2022  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 25, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-03-19 16:40:22 dharms>
+;; Modified Time-stamp: <2022-09-14 11:34:02 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -30,6 +30,7 @@
 (require 'proviso-grep)
 (require 'proviso-ag)
 (require 'proviso-rg)
+(require 'proviso-ugrep)
 (require 'xref)
 
 ;;;###autoload
@@ -64,6 +65,17 @@ ARG allows customizing search parameters."
    #'proviso-rg-create-search-cmd
    proviso-rg-args
    "rg"))
+
+;;;###autoload
+(defun proviso-ugrep-all (&optional arg)
+  "Search through multiple projects using ripgrep.
+ARG allows customizing search parameters."
+  (interactive "P")
+  (proviso-search--driver
+   arg
+   #'proviso-ugrep-create-search-cmd
+   proviso-ugrep-args
+   "ugrep"))
 
 (defun proviso-search--driver (arg command args name)
   "Search through all projects using COMMAND with args ARGS.
