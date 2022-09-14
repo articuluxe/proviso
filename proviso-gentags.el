@@ -1,9 +1,9 @@
 ;;; proviso-gentags.el --- Generate TAGS files
-;; Copyright (C) 2015-2021   (dan.harms)
+;; Copyright (C) 2015-2022   (dan.harms)
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-10-05 10:42:37 dharms>
+;; Modified Time-stamp: <2022-09-14 11:10:34 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -257,9 +257,9 @@ BUFFER is an output buffer."
                    `(lambda (result)
                       (with-current-buffer ,buffer
                         (insert "  " (cdr result) "\n")
-                        (decf proviso-gentags--num-working-jobs))
+                        (cl-decf proviso-gentags--num-working-jobs))
                       (proviso-gentags--spawn-jobs ,buffer)))
-                (decf proviso-gentags--num-working-jobs)
+                (cl-decf proviso-gentags--num-working-jobs)
                 (proviso-gentags--spawn-jobs buffer))))))))
 
 (defun proviso-gentags--done (buffer)
