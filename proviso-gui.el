@@ -1,9 +1,9 @@
 ;;; proviso-gui.el --- gui gramework for proviso
-;; Copyright (C) 2018-2019  Dan Harms (dharms)
+;; Copyright (C) 2018-2019, 2022  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-09-18 09:04:14 dharms>
+;; Modified Time-stamp: <2022-09-14 11:26:10 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -208,7 +208,7 @@ If WHERE is non-nil, it provides the current line."
 (defun proviso-gui-get-next-entry-id (buffer)
   "Return the next id in BUFFER for identifying entries."
   (with-current-buffer buffer
-    (incf proviso-gui--next-id)))
+    (cl-incf proviso-gui--next-id)))
 
 (defun proviso-gui-lookup-by-category (symbol)
   "Return a list of IDs of GUI elements corresponding to category SYMBOL."

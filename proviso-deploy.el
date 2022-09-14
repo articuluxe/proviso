@@ -1,9 +1,9 @@
 ;;; proviso-deploy.el --- Deploy artifacts to locations
-;; Copyright (C) 2018-2020  Dan Harms (dharms)
+;; Copyright (C) 2018-2020, 2022  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-04-27 07:41:41 dharms>
+;; Modified Time-stamp: <2022-09-14 11:26:21 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -478,7 +478,7 @@ If ARG is non-nil, another project can be chosen."
   "Get the next :deploy-id from PROJ."
   (let ((id (or (proviso-get proj :deploy-id) 0)))
     (prog1
-        (incf id)
+        (cl-incf id)
       (proviso-put proj :deploy-id id))))
 
 (defun proviso-deploy--get-deploy-by-id (specs which)
