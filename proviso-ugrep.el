@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-09-14 17:07:11 dharms>
+;; Modified Time-stamp: <2022-09-14 19:01:57 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project ugrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -33,7 +33,7 @@
 (require 'grep)
 (require 'subr-x)
 
-(defcustom proviso-ugrep-args "-Hrnj0."
+(defcustom proviso-ugrep-args "-Hrnj."
   "Standard arguments to give to ugrep."
   :group 'proviso-custom-group)
 
