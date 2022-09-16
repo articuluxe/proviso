@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, August 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-09-14 11:26:10 dharms>
+;; Modified Time-stamp: <2022-09-16 08:22:42 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -27,6 +27,7 @@
 ;;
 
 ;;; Code:
+(require 'cl)
 (require 'cl-lib)
 (require 's)
 (require 'seq)
