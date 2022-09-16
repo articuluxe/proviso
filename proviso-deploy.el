@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-09-14 11:26:21 dharms>
+;; Modified Time-stamp: <2022-09-16 12:16:49 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -35,6 +35,7 @@
 (require 'ivy)
 (require 'diff)
 (require 'ediff-diff)
+(require 'cl)
 (require 'cl-lib)
 
 (defconst proviso-deploy-buffer-name-prefix
