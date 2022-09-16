@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, October 29, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-09-15 11:43:25 dharms>
+;; Modified Time-stamp: <2022-09-16 15:08:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -33,10 +33,6 @@
 (when (> emacs-major-version 24)
 
   (require 'xref)
-  (unless (version< emacs-version "28.1")
-    (setq xref-auto-jump-to-first-definition 'move)
-    (setq xref-auto-jump-to-first-xref 'move)
-    (setq etags-xref-prefer-current-file t))
 
   (defun proviso-xref-activate-dumb-jump ()
     "Activate `dumb-jump'."
