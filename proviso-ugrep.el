@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-09-14 19:01:57 dharms>
+;; Modified Time-stamp: <2022-09-16 15:18:34 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project ugrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -196,7 +196,7 @@ ARG allows customizing the selection of the root search directory."
          (remote (proviso-get proj :remote-prefix))
          (cmd (proviso-ugrep--create-ugrep-str
                proj
-               (proviso-ugrep--compute-quote-char< remote)
+               (proviso-ugrep--compute-quote-char remote)
                exclude-files exclude-dirs include-files)))
     (setq dir (if remote
                   (replace-regexp-in-string (regexp-quote remote) "" dir)
