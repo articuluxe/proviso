@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-11-03 10:16:35 dharms>
+;; Modified Time-stamp: <2022-11-03 15:02:31 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -125,6 +125,8 @@
               (proviso-get proj :include-files)))
         (add-to-list 'flymake-collection-clang-args
                      (concat "-std=" (or proviso-cpp-language-standard "c++17")))
+        (add-to-list 'flymake-collection-clang-args
+                     "-Wno-pragma-once-outside-header")
         ;; gcc
         (when (featurep 'flymake-collection-gcc)
           (set (make-local-variable 'flymake-collection-gcc-include-path)
