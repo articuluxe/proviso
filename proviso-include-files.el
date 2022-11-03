@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-11-03 09:53:09 dharms>
+;; Modified Time-stamp: <2022-11-03 10:16:35 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -155,7 +155,7 @@
                               (proviso-get proj :root-dir)))))
             (proviso-get proj :compiler-include-dirs)
             )))
-    ))
+    )))
 
 (add-hook 'proviso-hook-on-project-init 'proviso--set-include-files)
 ;; add the validation last so it runs first
