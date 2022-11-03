@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-08-31 11:15:46 dharms>
+;; Modified Time-stamp: <2022-11-03 09:53:30 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -110,19 +110,20 @@ This may or may not be for the first time."
 
 (defun proviso-on-file-opened ()
   "Called when a file is opened."
-  (when proviso-local-proj
-    (run-hook-with-args 'proviso-hook-on-file-opened
-                        proviso-local-proj major-mode)))
+  (if-let ((proj (or proviso-local-proj proviso-curr-proj)))
+      (run-hook-with-args 'proviso-hook-on-file-opened
+                          proj major-mode)))
 
 (add-hook 'find-file-hook 'proviso-on-file-opened)
 
 (defun proviso--on-proj-loaded (proj)
   "Called when a project PROJ is made active."
-  (unless (eq proj proviso-curr-proj)
-    (let ((proviso-old-proj proviso-curr-proj))
-      (setq proviso-curr-proj proj)
-      (run-hook-with-args 'proviso-hook-on-project-active proj proviso-old-proj)
-      )))
+  (when proj
+    (unless (eq proj proviso-curr-proj)
+      (let ((proviso-old-proj proviso-curr-proj))
+        (setq proviso-curr-proj proj)
+        (run-hook-with-args 'proviso-hook-on-project-active proj proviso-old-proj)
+        ))))
 
 (defun proviso-refresh-current-project ()
   "Make sure the current buffer's project is up-to-date."

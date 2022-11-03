@@ -1,9 +1,9 @@
 ;;; proviso-include-files.el --- Support for project include files
-;; Copyright (C) 2017-2019, 2021  Dan Harms (dharms)
+;; Copyright (C) 2017-2019, 2021-2022  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-03-19 11:19:28 dharms>
+;; Modified Time-stamp: <2022-11-03 09:53:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -32,6 +32,9 @@
 (require 'flycheck)
 (require 'cl-lib)
 (require 'f)
+
+(defvar proviso-cpp-language-standard "c++17"
+  "Default c++ compiler language standard.")
 
 (defun proviso--validate-include-files (proj)
   "Validate the set of include files of project PROJ."
@@ -89,51 +92,57 @@
                   :test 'string=)
                   (proviso-get proj :include-ff-files)))))
 
-(defun proviso--gather-compiler-includes (compiler)
+(defun proviso-gather-compiler-includes (compiler)
   "Return a list of include directories for COMPILER.  They will be absolute."
+  (interactive)
   (let ((cmd (concat "echo | " compiler " -v -x c++ -E - 2>&1 | "
                      "grep -A 20 starts | grep include | grep -v search")))
     (split-string (shell-command-to-string cmd))))
 
 (defun proviso--include-on-file-opened (proj mode)
   "A file has been opened for project PROJ in mode MODE."
-  (setq ff-search-directories (proviso-get proj :include-ff-files))
-  (when (bound-and-true-p c-buffer-is-cc-mode)
-    (set (make-local-variable 'company-c-headers-path-user)
-         (append
-          (proviso-get proj :include-files)
-          (list ".")))
-    (set (make-local-variable 'company-c-headers-path-system)
-         (append
-          (proviso--gather-compiler-includes
-           (or (getenv "CXX") "g++"))
-          (proviso-get proj :include-files)))
-    ;; set flycheck for c++
-    (when (eq major-mode 'c++-mode)
-      ;; clang
-      (when (proviso-get proj :clang-standard)
-        (setq-local flycheck-clang-language-standard (proviso-get proj :clang-standard)))
-      (set (make-local-variable 'flycheck-clang-standard-library)
-           "libc++")
-      (set (make-local-variable 'flycheck-clang-include-path)
-           (proviso-get proj :include-files))
-      ;; gcc
-      (when (proviso-get proj :gcc-standard)
-        (setq-local flycheck-gcc-language-standard (proviso-get proj :gcc-standard)))
-      (set (make-local-variable 'flycheck-gcc-include-path)
-           (proviso-get proj :include-files))
-      ;; favor gcc over clang for now
-      (add-to-list 'flycheck-disabled-checkers 'c/c++-clang)
-      )
-    ;; set 'compiler-include-dirs for clang
+  (let* ((compiler (or (getenv "CXX") "g++"))
+         (compiler-includes (proviso-gather-compiler-includes compiler)))
+    (setq ff-search-directories
+          (append
+           compiler-includes
+           (proviso-get proj :include-ff-files)))
+    (when (bound-and-true-p c-buffer-is-cc-mode)
+      (set (make-local-variable 'company-c-headers-path-user)
+           (append
+            (proviso-get proj :include-files)
+            (list ".")))
+      (set (make-local-variable 'company-c-headers-path-system)
+           (append
+            compiler-includes
+            (proviso-get proj :include-files)))
+      ;; set flymake for c++
+      (when (eq major-mode 'c++-mode)
+        ;; clang
+        (set (make-local-variable 'flymake-collection-clang-include-path)
+             (append
+              compiler-includes
+              (proviso-get proj :include-files)))
+        (add-to-list 'flymake-collection-clang-args
+                     (concat "-std=" (or proviso-cpp-language-standard "c++17")))
+        ;; gcc
+        (when (featurep 'flymake-collection-gcc)
+          (set (make-local-variable 'flymake-collection-gcc-include-path)
+               (append
+                compiler-includes
+                (proviso-get proj :include-files)))
+          (add-to-list 'flymake-collection-gcc-args
+                       (concat "-std=" (or proviso-cpp-language-standard "c++17")))
+          )
+        ;; set compiler-include-dirs for flymake
     (when (executable-find "clang")
       (or (proviso-get proj :compiler-include-dirs)
           (proviso-put proj :compiler-include-dirs
                        (mapcar (lambda(x) (concat "-I" x))
-                               (proviso--gather-compiler-includes
-                                (or (getenv "CXX") "g++")))))
+                               compiler-includes))))
       (set (make-local-variable 'company-clang-arguments)
            (append
+            (list (concat "-std=" (or proviso-cpp-language-standard "c++17")))
             ;; `(,(concat "-stdlib=" flycheck-clang-standard-library)
             ;;   ,(concat "-std=" flycheck-clang-language-standard)
             ;;   "-code-completion-macros" "-code-completion-patterns")
