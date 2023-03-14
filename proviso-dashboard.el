@@ -1,9 +1,9 @@
 ;;; proviso-dashboard.el --- A dashboard for proviso projects
-;; Copyright (C) 2018-2020  Dan Harms (dharms)
+;; Copyright (C) 2018-2020, 2023  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2020-05-21 07:24:31 dharms>
+;; Modified Time-stamp: <2023-03-14 14:28:56 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -175,6 +175,20 @@ Optional ARG allows choosing a project."
                  :bindings (("t" "Toggle Active" proviso-clang-format-toggle-active)
                             ("f" "Format" proviso-clang-format-buffer-or-region)
                             ))
+       (:heading "Docker"
+                 :predicate (lambda() (proviso-get proviso-local-proj :docker-container))
+                 :content (lambda ()
+                            (let ((container (proviso-get proviso-local-proj :docker-container))
+                                  (src (proviso-get proviso-local-proj :docker-mount-src))
+                                  (dst (proviso-get proviso-local-proj :docker-mount-dst)))
+                              (concat
+                               (propertize container 'face '(bold))
+                               ": "
+                               (propertize src 'face '(highlight))
+                               " -> "
+                               (propertize dst 'face '(highlight))
+                               )))
+                 )
        ))
     (proviso-gui-finalize-buffer buffer)
     ))
