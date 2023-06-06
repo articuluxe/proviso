@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, May 16, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-03-14 14:28:56 dharms>
+;; Modified Time-stamp: <2023-06-06 11:42:29 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -176,7 +176,9 @@ Optional ARG allows choosing a project."
                             ("f" "Format" proviso-clang-format-buffer-or-region)
                             ))
        (:heading "Docker"
-                 :predicate (lambda() (proviso-get proviso-local-proj :docker-container))
+                 :predicate (lambda() (and (proviso-get proviso-local-proj :docker-container)
+                                           (proviso-get proviso-local-proj :docker-mount-src)
+                                           (proviso-get proviso-local-proj :docker-mount-dst)))
                  :content (lambda ()
                             (let ((container (proviso-get proviso-local-proj :docker-container))
                                   (src (proviso-get proviso-local-proj :docker-mount-src))
