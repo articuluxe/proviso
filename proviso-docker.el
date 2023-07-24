@@ -1,9 +1,9 @@
 ;;; proviso-docker.el --- docker utilities
-;; Copyright (C) 2021  Dan Harms (dharms)
+;; Copyright (C) 2021, 2023  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, March 17, 2021
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-03-25 19:02:08 dharms>
+;; Modified Time-stamp: <2023-07-24 13:13:19 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -48,15 +48,25 @@
         (message "Proviso-Docker will transform %s to %s for container %s"
                  src dst container)
         (add-hook 'proviso-hook-file-transformers
-                  #'proviso-docker-transform)))))
+                  #'proviso-docker-transform-to-dst)
+        (add-hook 'compilation-filter-hook
+                  #'proviso-docker-compile-filter-to-src)))))
 
-(defun proviso-docker-transform (proj loc)
+(defun proviso-docker-transform-to-dst (proj loc)
   "Transform the absolute location LOC according to project PROJ."
   (let ((src (proviso-get proj :docker-mount-src))
         (dst (proviso-get proj :docker-mount-dst)))
     (if (and src dst (string-match src loc))
         (replace-match dst nil t loc)
       loc)))
+
+(defun proviso-docker-compile-filter-to-src ()
+  "A compile filter to translate from docker container to host."
+  (let ((inhibit-read-only t)
+        (src (proviso-get proviso-curr-proj :docker-mount-src))
+        (dst (proviso-get proviso-curr-proj :docker-mount-dst)))
+    (when (and src dst)
+      (replace-regexp-in-region dst src compilation-filter-start (point)))))
 
 (defun proviso-docker-query-mount (container source-or-dest)
   "Query CONTAINER for the source and destination mounts.
