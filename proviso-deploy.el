@@ -1,9 +1,9 @@
 ;;; proviso-deploy.el --- Deploy artifacts to locations
-;; Copyright (C) 2018-2020, 2022  Dan Harms (dharms)
+;; Copyright (C) 2018-2020, 2022-2023  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-09-16 12:16:49 dharms>
+;; Modified Time-stamp: <2023-07-26 12:12:44 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -65,9 +65,15 @@ optional SYNCHRONOUS is non-nil, another process will not be
 spawned."
   (let ((type (plist-get spec :type)))
     (cond ((eq type 'command)
-           (shell-command
-            (proviso-substitute-env-vars
-             (plist-get spec :command))))
+           (let* ((case-fold-search nil)
+                  (sys (string-trim (shell-command-to-string "uname")))
+                  (coding-system-for-read
+                   (cond ((string-match-p "darwin" sys)
+                          'mac)
+                         (t nil))))
+             (shell-command
+              (proviso-substitute-env-vars
+               (plist-get spec :command)))))
           ((eq type 'deploy)
            (if (eq subid t)
                (dolist (source (plist-get spec :real-sources))
