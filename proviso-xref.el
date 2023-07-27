@@ -1,9 +1,9 @@
 ;;; proviso-xref.el --- xref helper for proviso
-;; Copyright (C) 2018-2019, 2021-2022  Dan Harms (dharms)
+;; Copyright (C) 2018-2019, 2021-2023  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, October 29, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-09-16 15:08:37 dharms>
+;; Modified Time-stamp: <2023-07-27 15:38:55 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -49,6 +49,7 @@
   (defun proviso-xref-toggle-dumb-jump ()
     "Toggle `dumb-jump' in or out of xref."
     (interactive)
+    (require 'dumb-jump)
     (if (memq 'dumb-jump-xref-activate xref-backend-functions)
         (proviso-xref-deactivate-dumb-jump)
       (proviso-xref-activate-dumb-jump)))
