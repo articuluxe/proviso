@@ -95,7 +95,7 @@
 (defun proviso-gather-compiler-includes (compiler)
   "Return a list of include directories for COMPILER.  They will be absolute."
   (interactive)
-  (let ((cmd (concat "echo | " compiler " -v -x c++ -E - 2>&1 | "
+  (let ((cmd (concat "echo | " compiler " -v -x c++ -E -MM - 2>&1 | "
                      "grep -A 20 starts | grep include | grep -v search")))
     (split-string (shell-command-to-string cmd))))
 
