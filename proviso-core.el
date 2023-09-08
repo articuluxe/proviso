@@ -1,9 +1,9 @@
 ;;; proviso-core.el --- Core functionality for proviso.
-;; Copyright (C) 2017-2021  Dan Harms (dharms)
+;; Copyright (C) 2017-2021, 2023  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-09-13 12:54:30 dharms>
+;; Modified Time-stamp: <2023-09-08 17:34:55 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -121,7 +121,7 @@ Melds `proviso' functionality into Emacs' `project'."
 ;; Project Properties:
 ;;   - External:
 ;;  :env-file
-;;  :include-files :include-ff-files
+;;  :include-files :include-ff-files :include-ff-recurse-dirs
 ;;  :build-subdirs :debug-subdirs
 ;;  :compile-cmds :compile-defun
 ;;  :compile-cmds-comint-filters

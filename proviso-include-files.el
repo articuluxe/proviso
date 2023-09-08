@@ -1,9 +1,9 @@
 ;;; proviso-include-files.el --- Support for project include files
-;; Copyright (C) 2017-2019, 2021-2022  Dan Harms (dharms)
+;; Copyright (C) 2017-2019, 2021-2023  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-11-03 15:02:31 dharms>
+;; Modified Time-stamp: <2023-09-08 17:28:54 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -28,6 +28,7 @@
 
 ;;; Code:
 (require 'proviso-core)
+(require 'proviso-fulledit)
 (require 'find-file)
 (require 'flycheck)
 (require 'cl-lib)
@@ -92,6 +93,18 @@
                   :test 'string=)
                   (proviso-get proj :include-ff-files)))))
 
+(defun proviso--gather-recursive-dirs (proj)
+  "Recursively gather include files under the specified dirs of PROJ."
+  (let ((remote (proviso-get proj :remote-prefix))
+        (root (proviso-get proj :root-dir))
+        (dirs (proviso-get proj :include-ff-recurse-dirs))
+        elt entry lst)
+    (dolist (element dirs)
+      (setq entry (proviso-substitute-env-vars element))
+      (setq elt (concat (when (or (null entry) (f-relative? entry)) root) entry))
+      (push (concat remote (directory-file-name elt)) lst))
+    (seq-mapcat #'proviso-fulledit-gather-dirs lst)))
+
 (defun proviso-gather-compiler-includes (compiler)
   "Return a list of include directories for COMPILER.  They will be absolute."
   (interactive)
@@ -106,7 +119,8 @@
     (setq ff-search-directories
           (append
            compiler-includes
-           (proviso-get proj :include-ff-files)))
+           (proviso-get proj :include-ff-files)
+           (proviso--gather-recursive-dirs proj)))
     (when (bound-and-true-p c-buffer-is-cc-mode)
       (set (make-local-variable 'company-c-headers-path-user)
            (append
