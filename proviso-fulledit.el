@@ -1,9 +1,9 @@
 ;;; proviso-fulledit.el --- A full-edit utility for proviso
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2019, 2023  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:33:43 dan.harms>
+;; Modified Time-stamp: <2023-09-11 11:43:24 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -49,30 +49,32 @@ Results are filtered via `proviso-uninteresting-dirs'."
                           proviso-uninteresting-dirs)))
     (proviso-fulledit-gather-dirs dir exclude-dirs reporter symbolic)))
 
-(defun proviso-fulledit-gather-dirs (dir &optional exclude-dirs reporter symbolic)
-  "Gather a list of directories recursivevly below DIR.
+(defun proviso-fulledit-gather-dirs (parent &optional exclude-dirs reporter symbolic)
+  "Gather a list of directories recursivevly below PARENT.
 EXCLUDE-DIRS provides an optional filter to exclude results.
 REPORTER is an optional progress reporter.  SYMBOLIC should be
 non-nil to allow the presence of symlinks in the results.
 Results are filtered via `proviso-uninteresting-dirs'."
-  (let* ((all-results
-          (directory-files
-           dir t directory-files-no-dot-files-regexp t))
-         (dirs (seq-filter 'file-directory-p all-results))
-         result)
-    (unless symbolic
-      (setq dirs (seq-remove 'file-symlink-p dirs)))
-    (dolist (dir dirs)
-      (unless
-          (proviso-fulledit-test-list-for-string
-           (mapcar 'proviso-regexp-glob-to-regex exclude-dirs)
-           dir)
-        (setq result
-              (append
-               (list dir)
-               result
-               (proviso-fulledit-gather-dirs dir exclude-dirs reporter symbolic)))
-        (when reporter (progress-reporter-update reporter))))
+  (let (all-results dirs result)
+    (unless (proviso-fulledit-test-list-for-string
+             (mapcar 'proviso-regexp-glob-to-regex exclude-dirs)
+             parent)
+      (push parent result)
+      (setq all-results (directory-files
+                         parent t directory-files-no-dot-files-regexp t))
+      (setq dirs (seq-filter 'file-directory-p all-results))
+      (unless symbolic
+        (setq dirs (seq-remove 'file-symlink-p dirs)))
+      (dolist (dir dirs)
+        (unless
+            (proviso-fulledit-test-list-for-string
+             (mapcar 'proviso-regexp-glob-to-regex exclude-dirs)
+             dir)
+          (setq result
+                (append
+                 result
+                 (proviso-fulledit-gather-dirs dir exclude-dirs reporter symbolic)))
+          (when reporter (progress-reporter-update reporter)))))
     result))
 
 (defun proviso-fulledit-gather-all-files-interactive (dir &optional reporter symbolic)
