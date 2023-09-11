@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-09-08 17:28:54 dharms>
+;; Modified Time-stamp: <2023-09-11 10:28:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -80,7 +80,7 @@
       (setq elt (concat (when (or (null entry) (f-relative? entry)) root) entry))
       (push (file-name-as-directory elt) includes) ;ensure trailing slash
       (push (concat remote elt) ff-includes))
-    (proviso-put proj :include-files includes)
+    (proviso-put proj :include-files (nreverse includes))
     ;; for ff-search-directories, prepend current dir and append root
     (proviso-put proj :include-ff-files
                  (append
@@ -88,7 +88,7 @@
                   ;; ff-search-directories doesn't want a trailing slash
                   (mapcar 'directory-file-name
                           (append '(".")
-                                  ff-includes
+                                  (nreverse ff-includes)
                                   `,(list (concat remote root))))
                   :test 'string=)
                   (proviso-get proj :include-ff-files)))))
@@ -103,7 +103,7 @@
       (setq entry (proviso-substitute-env-vars element))
       (setq elt (concat (when (or (null entry) (f-relative? entry)) root) entry))
       (push (concat remote (directory-file-name elt)) lst))
-    (seq-mapcat #'proviso-fulledit-gather-dirs lst)))
+    (seq-mapcat #'proviso-fulledit-gather-dirs (nreverse lst))))
 
 (defun proviso-gather-compiler-includes (compiler)
   "Return a list of include directories for COMPILER.  They will be absolute."
@@ -118,8 +118,9 @@
          (compiler-includes (proviso-gather-compiler-includes compiler)))
     (setq ff-search-directories
           (append
-           compiler-includes
+           (proviso-get proj :ff-search-directories)
            (proviso-get proj :include-ff-files)
+           compiler-includes
            (proviso--gather-recursive-dirs proj)))
     (when (bound-and-true-p c-buffer-is-cc-mode)
       (set (make-local-variable 'company-c-headers-path-user)
