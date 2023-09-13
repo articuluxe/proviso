@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-09-11 10:28:51 dharms>
+;; Modified Time-stamp: <2023-09-13 10:02:32 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -115,29 +115,33 @@
 (defun proviso--include-on-file-opened (proj mode)
   "A file has been opened for project PROJ in mode MODE."
   (let* ((compiler (or (getenv "CXX") "g++"))
-         (compiler-includes (proviso-gather-compiler-includes compiler)))
+         (compiler-includes (proviso-gather-compiler-includes compiler))
+         (recursive-dirs (proviso--gather-recursive-dirs proj)))
     (setq ff-search-directories
           (append
            (proviso-get proj :ff-search-directories)
            (proviso-get proj :include-ff-files)
            compiler-includes
-           (proviso--gather-recursive-dirs proj)))
+           recursive-dirs))
     (when (bound-and-true-p c-buffer-is-cc-mode)
       (set (make-local-variable 'company-c-headers-path-user)
            (append
             (proviso-get proj :include-files)
-            (list ".")))
+            (list ".")
+            recursive-dirs))
       (set (make-local-variable 'company-c-headers-path-system)
            (append
             compiler-includes
-            (proviso-get proj :include-files)))
+            (proviso-get proj :include-files)
+            recursive-dirs))
       ;; set flymake for c++
       (when (eq major-mode 'c++-mode)
         ;; clang
         (set (make-local-variable 'flymake-collection-clang-include-path)
              (append
               compiler-includes
-              (proviso-get proj :include-files)))
+              (proviso-get proj :include-files)
+              recursive-dirs))
         (add-to-list 'flymake-collection-clang-args
                      (concat "-std=" (or proviso-cpp-language-standard "c++17")))
         (add-to-list 'flymake-collection-clang-args
@@ -147,7 +151,8 @@
           (set (make-local-variable 'flymake-collection-gcc-include-path)
                (append
                 compiler-includes
-                (proviso-get proj :include-files)))
+                (proviso-get proj :include-files)
+                recursive-dirs))
           (add-to-list 'flymake-collection-gcc-args
                        (concat "-std=" (or proviso-cpp-language-standard "c++17")))
           )
