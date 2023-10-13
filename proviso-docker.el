@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, March 17, 2021
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-07-24 13:13:19 dharms>
+;; Modified Time-stamp: <2023-10-13 17:44:12 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -41,8 +41,11 @@
       (setq src (proviso-docker-query-mount container "Source"))
       (setq dst (proviso-docker-query-mount container "Destination"))
       (when (and src dst
-                 (not (string-empty-p src))
-                 (not (string-empty-p dst)))
+                 (not (or (string-empty-p src)
+                          (string-empty-p dst)
+                          (string-equal src "docker login")
+                          (string-equal dst "docker login")
+                          )))
         (proviso-put proj :docker-mount-src src)
         (proviso-put proj :docker-mount-dst dst)
         (message "Proviso-Docker will transform %s to %s for container %s"
