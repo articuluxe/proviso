@@ -1,9 +1,9 @@
 ;;; proviso-tags.el --- Add tags functionality to proviso
-;; Copyright (C) 2017-2019  Dan Harms (dharms)
+;; Copyright (C) 2017-2019, 2023  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:30:50 dan.harms>
+;; Modified Time-stamp: <2023-10-13 10:40:09 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso tags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -39,6 +39,7 @@ into :tags-alist."
   (let* ((remote (proviso-get proj :remote-prefix))
          (root (proviso-get proj :root-dir))
          (lst (proviso-get proj :proj-alist))
+         (tags-adds (proviso-get proj :ctags-additions))
          (scratch (proviso-get proj :scratch-dir))
          (local-scratch (proviso-get proj :local-scratch-dir))
          (subdir ".tags/")
@@ -71,6 +72,13 @@ into :tags-alist."
                ;; any remote prefix
                "^\\(.*\\)" dir "\\(.*\\)$")
               ext-dirs))
+      (push entry (car tags-alist)))
+    (dolist (element tags-adds)
+      (setq curr (plist-get element :name))
+      (setq entry (expand-file-name
+                   (concat tag-root curr "-tags")))
+      (setq dir (proviso-substitute-env-vars (plist-get element :dir)))
+      ;; not pushing an external dir here, don't think it's needed
       (push entry (car tags-alist)))
     (when (seq-empty-p (cdr (car tags-alist)))
       ;; if nothing specified, add an entry for the root

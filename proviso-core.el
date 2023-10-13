@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-09-11 10:11:58 dharms>
+;; Modified Time-stamp: <2023-10-13 10:34:22 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -122,9 +122,11 @@ Melds `proviso' functionality into Emacs' `project'."
 ;;   - External:
 ;;  :env-file
 ;;  :include-files
+;;  :proj-alist
 ;;  :ff-search-directories: literal additions to ff-search-directories
 ;;  :include-ff-files: dirs treated as relative to root
 ;;  :include-ff-recurse-dirs: dirs (relative to root) will be traversed recursively
+;;  :ctags-additions
 ;;  :build-subdirs :debug-subdirs
 ;;  :compile-cmds :compile-defun
 ;;  :compile-cmds-comint-filters

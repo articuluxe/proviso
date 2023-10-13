@@ -100,6 +100,7 @@ will be generated anew, but it is also possible to just copy over
 existing files.  ARG allows customizing these options
 interactively."
   (let* ((tags-alist (proviso-get proj :proj-alist))
+         (tags-adds (proviso-get proj :ctags-additions))
          (remote (proviso-get proj :remote-prefix))
          (do-gen t)
          (copy-remote remote)
@@ -152,14 +153,54 @@ interactively."
                      :dir (if remote (concat remote dir-abs) dir-abs)
                      :do-gen do-gen
                      :copy-remote copy-remote
-                     ) (when copy-remote
-                     (list
-                      :remote-src (concat remote destfile)
-                      :remote-dst localfile)))
+                     )
+               (when copy-remote
+                 (list
+                  :remote-src (concat remote destfile)
+                  :remote-dst localfile)))
               lst)))
+    (dolist (elt tags-adds)
+      (let* ((name (plist-get elt :name))
+             (dir (proviso-substitute-env-vars (plist-get elt :dir)))
+             (dir-abs (if (and dir (file-name-absolute-p dir))
+                            dir
+                          (concat root dir)))
+             (subname (concat name "-tags"))
+             (destfile (concat
+                        (if int-dir
+                            (file-remote-p int-dir 'localname)
+                          tags-dir)
+                        subname))
+             (localfile (concat tags-dir subname)) ;only used for remote
+             (cmd (concat exe " " (plist-get elt :cmd) " -f "
+                          destfile " " dir-abs)))
+        (push (append
+               (list :cmd (list cmd)
+                     :dir (if remote (concat remote dir-abs) dir-abs)
+                     :do-gen do-gen
+                     :copy-remote copy-remote
+                     )
+               (when copy-remote
+                 (list
+                  :remote-src (concat remote destfile)
+                  :remote-dst localfile)))
+              lst)))
+    (proviso-gentags--prerun tags-dir)
     (proviso-gentags--run (proviso-get proj :project-name)
                           (nreverse lst) remote)
     (proviso-put proj :tags-lastgen (current-time))))
+
+(defun proviso-gentags--prerun (dir)
+  "Prepare DIR for storing TAGS files.
+Move existing TAGS files to a backup location.
+Existing files in the backup location are deleted."
+  (let ((subdir (file-name-as-directory
+                 (concat (file-name-as-directory dir) ".prior"))))
+    (delete-directory subdir t)
+    (make-directory subdir t)
+    (dolist (file (directory-files dir t ".+-tags" t))
+      (rename-file file subdir t))
+    ))
 
 (defun proviso-gentags--run (name lst &optional remote)
   "Run a series of tags invocations for project NAME according to LST.
