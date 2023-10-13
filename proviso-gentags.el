@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-10-13 11:14:30 dharms>
+;; Modified Time-stamp: <2023-10-13 11:19:23 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -169,7 +169,9 @@ interactively."
               lst)))
     (dolist (elt tags-adds)
       (let* ((name (plist-get elt :name))
-             (dir (proviso-substitute-env-vars (plist-get elt :dir)))
+             (dir (proviso-substitute-env-vars
+                   (or (plist-get elt :loc)
+                       (plist-get elt :dir))))
              (dir-abs (if (and dir (file-name-absolute-p dir))
                             dir
                           (concat root dir)))
