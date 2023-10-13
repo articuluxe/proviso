@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-10-13 11:19:57 dharms>
+;; Modified Time-stamp: <2023-10-13 12:17:58 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso tags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -77,9 +77,6 @@ into :tags-alist."
       (setq curr (plist-get element :name))
       (setq entry (expand-file-name
                    (concat tag-root curr "-tags")))
-      (setq dir (proviso-substitute-env-vars
-                 (or (plist-get element :loc)
-                     (plist-get element :dir))))
       ;; not pushing an external dir here, don't think it's needed
       (push entry (car tags-alist)))
     (when (seq-empty-p (cdr (car tags-alist)))

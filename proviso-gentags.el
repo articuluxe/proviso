@@ -3,7 +3,7 @@
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-10-13 11:19:23 dharms>
+;; Modified Time-stamp: <2023-10-13 12:16:16 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -158,7 +158,8 @@ interactively."
              (cmd (mapconcat 'identity args " ")))
         (push (append
                (list :cmd (list cmd)
-                     :dir (if remote (concat remote dir-abs) dir-abs)
+                     :dir (file-name-as-directory
+                           (if remote (concat remote dir-abs) dir-abs))
                      :do-gen do-gen
                      :copy-remote copy-remote
                      )
@@ -170,11 +171,17 @@ interactively."
     (dolist (elt tags-adds)
       (let* ((name (plist-get elt :name))
              (dir (proviso-substitute-env-vars
-                   (or (plist-get elt :loc)
-                       (plist-get elt :dir))))
-             (dir-abs (if (and dir (file-name-absolute-p dir))
+                   (plist-get elt :dir)))
+             (file (proviso-substitute-env-vars
+                    (plist-get elt :loc)))
+             (dir-abs (when dir
+                        (if (and dir (file-name-absolute-p dir))
                             dir
-                          (concat root dir)))
+                          (concat root dir))))
+             (file-abs (when file
+                         (if (and file (file-name-absolute-p file))
+                             file
+                           (concat root file))))
              (subname (concat name "-tags"))
              (destfile (concat
                         (if int-dir
@@ -183,10 +190,16 @@ interactively."
                         subname))
              (localfile (concat tags-dir subname)) ;only used for remote
              (cmd (concat exe " " (plist-get elt :cmd) " -f "
-                          destfile " " dir-abs)))
+                          destfile " "
+                          (if file-abs file-abs
+                            (directory-file-name dir-abs)))))
         (push (append
                (list :cmd (list cmd)
-                     :dir (if remote (concat remote dir-abs) dir-abs)
+                     :dir (if file-abs
+                              (file-name-directory
+                               (if remote (concat remote file-abs) file-abs))
+                            (file-name-as-directory
+                             (if remote (concat remote dir-abs) dir-abs)))
                      :do-gen do-gen
                      :copy-remote copy-remote
                      )
