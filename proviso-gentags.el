@@ -1,9 +1,9 @@
 ;;; proviso-gentags.el --- Generate TAGS files
-;; Copyright (C) 2015-2022   (dan.harms)
+;; Copyright (C) 2015-2023   (dan.harms)
 ;; Author:  <dan.harms@xrtrading.com>
 ;; Created: Wednesday, March 18, 2015
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-09-14 11:10:34 dharms>
+;; Modified Time-stamp: <2023-10-13 11:14:30 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project etags ctags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -145,6 +145,14 @@ interactively."
              (arglist (plist-get elt :ctags-opts))
              (args (append
                     (proviso-gentags-command exe arglist)
+                    (mapcar (lambda (dir)
+                              (concat "--exclude=" dir))
+                            (or (proviso-get proj :grep-exclude-dirs)
+                                proviso-uninteresting-dirs))
+                    (mapcar (lambda (file)
+                              (concat "--exclude=" file))
+                            (or (proviso-get proj :grep-exclude-files)
+                                proviso-uninteresting-files))
                     (list "-f" destfile
                           (directory-file-name dir-abs))))
              (cmd (mapconcat 'identity args " ")))
@@ -211,19 +219,19 @@ REMOTE is non-nil if the project is on a remote host."
     (pop-to-buffer buffer)
     (with-current-buffer buffer
       (setq-local window-point-insertion-type t)
-      (setq proviso-gentags--waiting-jobs lst)
-      (setq proviso-gentags--procs nil)
-      (setq proviso-gentags--num-working-jobs 0)
-      (setq proviso-gentags--max-jobs
-            (if remote proviso-gentags-max-jobs-remote
-              proviso-gentags-max-jobs-local))
+      (setq-local proviso-gentags--waiting-jobs lst)
+      (setq-local proviso-gentags--procs nil)
+      (setq-local proviso-gentags--num-working-jobs 0)
+      (setq-local proviso-gentags--max-jobs
+                  (if remote proviso-gentags-max-jobs-remote
+                    proviso-gentags-max-jobs-local))
       (let ((map (make-sparse-keymap)))
         (define-key map "q" #'quit-window)
         (set-keymap-parent map (current-local-map))
         (use-local-map map))
       (insert (format "TAGS generation started at %s\n\n"
                       (current-time-string start-time)))
-      (setq proviso-gentags--start-time start-time))
+      (setq-local proviso-gentags--start-time start-time))
     (proviso-gentags--spawn-jobs buffer)))
 
 (defun proviso-gentags--spawn-jobs (buffer)

@@ -131,7 +131,8 @@ Melds `proviso' functionality into Emacs' `project'."
 ;;  :compile-cmds :compile-defun
 ;;  :compile-cmds-comint-filters
 ;;  :gcc-standard :clang-standard
-;;  :search-include-files :search-exclude-files
+;;  :search-include-files
+;;  :search-exclude-files
 ;;  :search-exclude-dirs
 ;;  :clang-format
 ;;  :docker-container
