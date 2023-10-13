@@ -1,9 +1,9 @@
 ;;; proviso-defines.el --- Provide defines useful for proviso
-;; Copyright (C) 2017-2019, 2021-2022  Dan Harms (dharms)
+;; Copyright (C) 2017-2019, 2021-2023  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-04-20 15:02:25 dharms>
+;; Modified Time-stamp: <2023-10-13 16:38:59 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -65,7 +65,7 @@ limited to those patterns which still apply as an additional
 filter to those files already selected by
 `proviso-interesting-files'.")
 
-(defvar proviso-uninteresting-dirs '("*.git" "*.tags")
+(defvar proviso-uninteresting-dirs '("*.git*" "*.tags*")
   "List of uninteresting directory patterns.
 These are in shell glob format.")
 

@@ -1,9 +1,9 @@
 ;;; proviso-ugrep.el --- Support ugrep for proviso
-;; Copyright (C) 2018-2022  Dan Harms (dharms)
+;; Copyright (C) 2018-2023  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-09-16 15:18:34 dharms>
+;; Modified Time-stamp: <2023-10-13 17:07:21 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project ugrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -59,7 +59,9 @@ quotes."
 (defun proviso-ugrep--create-dir-exclusion-str (lst quote)
   "Create an ugrep subcommand to exclude dirs from LST, surrounded by QUOTE."
   (concat "-g " (mapconcat (lambda(elt)
-                             (concat quote "^" elt "/" quote))
+                             (concat quote "^"
+                                     (proviso-regexp-enhance-dir-glob elt)
+                                     "/" quote))
                            lst ",")
           " "))
 

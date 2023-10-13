@@ -1,9 +1,9 @@
 ;;; proviso-regexp.el --- Regex manipulations for proviso
-;; Copyright (C) 2017, 2019  Dan Harms (dharms)
+;; Copyright (C) 2017, 2019, 2023  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, November  8, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:35:07 dan.harms>
+;; Modified Time-stamp: <2023-10-13 17:05:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -63,6 +63,14 @@ is being replicated."
      (and (not no-anchor-begin) anchor-begin "^")
      result
      (and (not no-anchor-end) anchor-end "$"))))
+
+(defun proviso-regexp-enhance-dir-glob (dir)
+  "Return an enhanced glob for DIR usable in some tools.
+For example, a DIR of `*foo*' will result in `**/foo/**'."
+  (let ((str dir))
+    (setq str (replace-regexp-in-string "^\*?" "**/" str t t))
+    (setq str (replace-regexp-in-string ".*?\\(\*?\\)$" "/**" str t "\&" 1))
+    str))
 
 (provide 'proviso-regexp)
 ;;; proviso-regexp.el ends here

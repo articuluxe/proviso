@@ -1,9 +1,9 @@
 ;;; proviso-rg.el --- Support rg for proviso
-;; Copyright (C) 2018-2021  Dan Harms (dharms)
+;; Copyright (C) 2018-2021, 2023  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-04-20 14:02:08 dharms>
+;; Modified Time-stamp: <2023-10-13 17:06:27 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project rg ripgrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -60,7 +60,9 @@ quotes."
   "Create an rg subcommand to exclude dirs from LST, surrounded by QUOTE."
   (let (str)
     (dolist (elt lst str)
-      (setq str (concat str "-g " quote "!" elt quote " ")))))
+      (setq str (concat str "-g " quote "!"
+                        (proviso-regexp-enhance-dir-glob elt)
+                        quote " ")))))
 
 (defun proviso-rg--create-inclusion-str (lst quote)
   "Create an rg subcommand to match files from LST, surrounded by QUOTE."
