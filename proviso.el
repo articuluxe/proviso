@@ -1,9 +1,9 @@
 ;;; proviso.el --- Manage projects
-;; Copyright (C) 2016-2019, 2021-2022  Dan Harms (dharms)
+;; Copyright (C) 2016-2019, 2021-2023  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-11-03 09:53:30 dharms>
+;; Modified Time-stamp: <2023-10-16 13:17:41 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -130,6 +130,12 @@ This may or may not be for the first time."
   (interactive)
   (proviso--on-proj-loaded proviso-local-proj))
 
+(defun proviso-find-file-no-project (file)
+  "Open FILE without examining for `'proviso' functionality."
+  (interactive "fFind file: ")
+  (let ((proviso-inspect-files-p nil))
+    (find-file file)))
+
 (defun proviso-switch-buffer-defun (prev curr)
   "Called on buffer change events, with PREV and CURR the buffers that changed."
   (when (local-variable-p 'proviso-local-proj curr)
@@ -192,6 +198,7 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
 
 (defun proviso--file-opened (buffer filename)
   "Initialize a project, if necessary, for BUFFER, visiting FILENAME."
+  (when proviso-inspect-files-p
   (with-current-buffer buffer
     (make-local-variable 'proviso-local-proj)
     (put 'proviso-local-proj 'permanent-local t)
@@ -275,7 +282,7 @@ NOWARN, RAWFILE, TRUENAME and NUMBER are not used by the advice."
               (proviso-put proviso-local-proj :local-scratch-dir
                            (proviso--compute-scratch-dir root-dir remote-host remote-prefix t))))
         )
-      (proviso--loaded proviso-local-proj))))
+      (proviso--loaded proviso-local-proj)))))
 
 (provide 'proviso)
 ;;; proviso.el ends here
