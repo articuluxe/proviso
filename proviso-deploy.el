@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-07-26 12:12:44 dharms>
+;; Modified Time-stamp: <2023-10-17 13:13:04 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -46,6 +46,15 @@ This will be formatted with the project name.")
 (defconst proviso-deploy-subdir ".deployments/"
   "Subdirectory within scratch-dir to store deployment files.")
 
+(defvar proviso-deploy-term-exe-alist
+  '(("Linux" .
+     ("xfce4-terminal"
+      "%s -e 'bash -c \"%s; bash\"'"))
+    ("Darwin" .
+     ("osascript"
+      "%s -e 'tell app \"Terminal\" to activate' -e 'tell app \"Terminal\" to do script \"%s\"'")))
+  "An alist of terminal properties per OS.")
+
 (defun proviso-deploy--execute (source dest &optional sync)
   "Execute a deployment from SOURCE to DEST.
 Optional SYNC is non-nil to prevent a background process from
@@ -57,6 +66,26 @@ being spawned to execute the file transfer."
         (xfer-transfer-file src dst)
       (xfer-transfer-file-async src dst))))
 
+(defun proviso-deploy--execute-cmd (cmd)
+  "Execute a command deployment CMD."
+  (let* ((case-fold-search nil)
+         (sys (string-trim (shell-command-to-string "uname")))
+         (coding-system-for-read
+          (cond ((string-match-p "darwin" sys)
+                 'mac)
+                (t nil))))
+    (shell-command cmd)))
+
+(defun proviso-deploy--execute-term (cmd)
+  "Execute a terminal command deployment CMD."
+  (let* ((sys (string-trim (shell-command-to-string "uname")))
+         (rules (alist-get sys proviso-deploy-term-exe-alist nil nil #'string-equal))
+         (exe (car rules))
+         (str (cadr rules)))
+    (if (executable-find exe)
+        (shell-command (format str exe cmd))
+      (user-error "Deployment skipped: unknown terminal application \'%s\'" exe))))
+
 (defun proviso-deploy-one (spec subid &optional synchronous)
   "Execute a deployment represented by SPEC.
 SUBID should reference an actual sub-deployment (see
@@ -65,15 +94,13 @@ optional SYNCHRONOUS is non-nil, another process will not be
 spawned."
   (let ((type (plist-get spec :type)))
     (cond ((eq type 'command)
-           (let* ((case-fold-search nil)
-                  (sys (string-trim (shell-command-to-string "uname")))
-                  (coding-system-for-read
-                   (cond ((string-match-p "darwin" sys)
-                          'mac)
-                         (t nil))))
-             (shell-command
-              (proviso-substitute-env-vars
-               (plist-get spec :command)))))
+           (proviso-deploy--execute-cmd
+            (proviso-substitute-env-vars
+             (plist-get spec :command))))
+          ((eq type 'terminal)
+           (proviso-deploy--execute-term
+            (proviso-substitute-env-vars
+             (plist-get spec :terminal))))
           ((eq type 'deploy)
            (if (eq subid t)
                (dolist (source (plist-get spec :real-sources))
@@ -144,6 +171,16 @@ ID is an optional id."
       (list :command cmd :type 'command :id id)
     (list :command cmd :type 'command)))
 
+(defun proviso-deploy-create-term (&optional cmd id)
+  "Add a deployment terminal cmd CMD.
+ID is an optional id."
+  (interactive)
+  (unless cmd
+    (setq cmd (read-shell-command "Terminal command: " nil 'shell-history)))
+  (if id
+      (list :terminal cmd :type 'terminal :id id)
+    (list :terminal cmd :type 'terminal)))
+
 (defun proviso-deploy-create-env (&optional cmd id)
   "Add an environment directive CMD.
 ID is an optional id."
@@ -166,6 +203,12 @@ PROMPT is an optional prompt."
                (push (cons
                       (proviso-substitute-env-vars
                        (plist-get spec :command))
+                      (plist-get spec :id))
+                     lst))
+              ((eq (plist-get spec :type) 'terminal)
+               (push (cons
+                      (proviso-substitute-env-vars
+                       (plist-get spec :terminal))
                       (plist-get spec :id))
                      lst))
               ((eq (plist-get spec :type) 'env)
@@ -220,11 +263,13 @@ PROMPT is an optional prompt."
 
 (defun proviso-deploy--write-to-current-buffer (specs)
   "Write deployment specification SPECS to current buffer."
-  (let (deploys envs type)
+  (let (deploys envs terms type)
     (dolist (spec specs)
       (setq type (plist-get spec :type))
       (cond ((eq type 'command)
              (setq deploys t))
+            ((eq type 'terminal)
+             (setq terms t))
             ((eq type 'deploy)
              (setq deploys t))
             ((eq type 'env)
@@ -257,6 +302,18 @@ PROMPT is an optional prompt."
                  (prin1 (cons src dst) (current-buffer))
                  (insert "\n")))))
       (insert "))"))
+    (when terms
+      (when (or deploys envs)
+        (insert "\n"))
+      (insert "(terminal . (\n")
+      (dolist (spec specs)
+        (let ((type (plist-get spec :type))
+              cmd)
+          (when (eq type 'terminal)
+            (setq cmd (plist-get spec :terminal))
+            (prin1 cmd (current-buffer))
+            (insert "\n"))))
+      (insert "))"))
     (insert ")\n")))
 
 (defun proviso-deploy-write-to-string (specs)
@@ -272,9 +329,11 @@ PROMPT is an optional prompt."
                :destination (cdr elt)
                :type 'deploy))
         ((stringp elt)
-         (if (eq type 'env)
-             (list :env elt :type 'env)
-           (list :command elt :type (or type 'command))))
+         (cond ((eq type 'env)
+                (list :env elt :type 'env))
+               ((eq type 'terminal)
+                (list :terminal elt :type 'terminal))
+               (t (list :command elt :type (or type 'command)))))
         (t nil)))
 
 (defun proviso-deploy--read-from-str (str &optional proj)
@@ -296,6 +355,16 @@ If PROJ is not supplied, no `:id' parameter will be present."
                   (eq (car spec) 'deploy))
              (dolist (elt (cdr spec))
                (when (setq obj (proviso-deploy--read-elt elt))
+                 (when proj
+                   (setq obj
+                         (append
+                          `(:id ,(proviso-deploy-get-next-id proj))
+                          obj)))
+                 (push obj specs))))
+            ((and (consp spec)
+                  (eq (car spec) 'terminal))
+             (dolist (elt (cdr spec))
+               (when (setq obj (proviso-deploy--read-elt elt 'terminal))
                  (when proj
                    (setq obj
                          (append
@@ -441,7 +510,8 @@ If ARG is non-nil, another project can be chosen."
                                               (proviso-deploy-compute-real-dest
                                                spec
                                                (proviso-get proj :remote-prefix)
-                                               (proviso-get proj :root-dir)))))
+                                               (proviso-get proj :root-dir))))
+                                 spec)
                                specs))
           (proviso-put proj :deploy-file file)))))
 
@@ -685,6 +755,37 @@ If ARG is non-nil, another project can be chosen."
   "Add a deployment command to PROJ."
   (let* ((specs (proviso-get proj :deployments))
          (spec (proviso-deploy-create-cmd)))
+    (if spec
+        (progn
+          (setq spec
+                (append `(:id ,(proviso-deploy-get-next-id proj))
+                        spec))
+          (if specs
+              (add-to-list 'specs spec t)
+            (setq specs (list spec)))
+          (proviso-put proj :deployments specs))
+      (user-error "No deployment command added"))))
+
+;;;###autoload
+(defun proviso-deploy-add-deploy-term (&optional arg)
+  "Add a deployment terminal command.
+If ARG is non-nil, another project can be chosen."
+  (interactive "P")
+  (let* ((proj (if arg (proviso-choose-project)
+                 (proviso-current-project))))
+    (proviso-deploy--add-deploy-term proj)))
+
+(defun proviso-deploy-add-deploy-term-current-project ()
+  "Add a deployment terminal command to the current project."
+  (let ((proj proviso-local-proj))
+    (if proj
+        (proviso-deploy--add-deploy-term proj)
+      (user-error "No current project"))))
+
+(defun proviso-deploy--add-deploy-term (proj)
+  "Add a deployment command to PROJ."
+  (let* ((specs (proviso-get proj :deployments))
+         (spec (proviso-deploy-create-term)))
     (if spec
         (progn
           (setq spec
@@ -1060,12 +1161,21 @@ If ARG is non-nil, another project can be chosen."
                    (proviso-deploy-create-cmd
                     (read-shell-command "Shell command: "
                                         (plist-get spec :command)
-                                        'shell-history) id)))
+                                        'shell-history)
+                    id)))
+          ((eq type 'terminal)
+           (setcar (nthcdr n specs)
+                   (proviso-deploy-create-term
+                    (read-shell-command "Terminal command: "
+                                        (plist-get spec :terminal)
+                                        'shell-history)
+                    id)))
           ((eq type 'env)
            (setcar (nthcdr n specs)
                    (proviso-deploy-create-env
                     (read-string "Environment: "
-                                 (plist-get spec :env)) id))
+                                 (plist-get spec :env))
+                    id))
            (proviso-deploy-set-environment proj))
           ((eq type 'deploy)
            (setq src (plist-get spec :source))
@@ -1291,6 +1401,7 @@ This only has an effect if there is a current deployment buffer."
        ("+" "Add deployment" proviso-deploy-add-deploy-current-project buffer new)
        ("=" "Add command" proviso-deploy-add-deploy-cmd-current-project buffer new)
        ("-" "Add env" proviso-deploy-add-deploy-env-current-project buffer new)
+       ("_" "Add terminal" proviso-deploy-add-deploy-term-current-project buffer new)
        ("\M-p" "Move up" proviso-deploy-move-deployment-up buffer id)
        ("\M-n" "Move down" proviso-deploy-move-deployment-down buffer id)
        ))
@@ -1337,6 +1448,24 @@ This only has an effect if there is a current deployment buffer."
                                :content (lambda ()
                                           (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
                                                  (cmd (plist-get spec :command)))
+                                            (proviso-substitute-env-vars cmd)))
+                               :bindings `(("r" "Run"
+                                            (lambda ()
+                                              (proviso-deploy--run-deploy-by-id proviso-local-proj ,id)))
+                                           ("t" "Edit"
+                                            (lambda ()
+                                              (proviso-deploy--edit-deploy-spec proviso-local-proj ,id))))
+                               :section 'pre) t))
+                ((eq type 'terminal)
+                 (setq command (plist-get spec :terminal))
+                 (add-to-list 'lst
+                              (list
+                               :heading "Terminal"
+                               :category 'terminal
+                               :source-id id
+                               :content (lambda ()
+                                          (let* ((spec (proviso-deploy-get-deploy-by-id proviso-local-proj id))
+                                                 (cmd (plist-get spec :terminal)))
                                             (proviso-substitute-env-vars cmd)))
                                :bindings `(("r" "Run"
                                             (lambda ()
