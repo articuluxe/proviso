@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  3, 2016
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-10-16 13:17:41 dharms>
+;; Modified Time-stamp: <2023-10-18 16:14:53 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -132,7 +132,7 @@ This may or may not be for the first time."
 
 (defun proviso-find-file-no-project (file)
   "Open FILE without examining for `'proviso' functionality."
-  (interactive "fFind file: ")
+  (interactive "fFind file without project: ")
   (let ((proviso-inspect-files-p nil))
     (find-file file)))
 
