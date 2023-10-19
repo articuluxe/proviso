@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-10-19 14:24:37 dharms>
+;; Modified Time-stamp: <2023-10-19 17:31:51 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -79,7 +79,9 @@ being spawned to execute the file transfer."
           (cond ((string-match-p "darwin" sys)
                  'mac)
                 (t nil))))
-    (shell-command cmd)))
+    (if (require 'xterm-color nil t)
+        (message (xterm-color-filter (shell-command-to-string cmd)))
+      (shell-command cmd))))
 
 (defun proviso-deploy--execute-term (cmd)
   "Execute a terminal command deployment CMD."
