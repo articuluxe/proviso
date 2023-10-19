@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 12, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-10-17 13:13:04 dharms>
+;; Modified Time-stamp: <2023-10-19 14:24:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -54,6 +54,11 @@ This will be formatted with the project name.")
      ("osascript"
       "%s -e 'tell app \"Terminal\" to activate' -e 'tell app \"Terminal\" to do script \"%s\"'")))
   "An alist of terminal properties per OS.")
+
+;; To do multiple tabs:
+;; xfce4-terminal -T title_one --working-directory=~ -e 'bash -c "cd ~; pwd; bash"' --tab -T title_two --working-directory=~/src -e 'bash -c "cd ~/src; pwd; bash"'
+;; osascript -e 'tell app "Terminal" to activate' -e 'tell app "System Events" to tell process "Terminal" to keystroke "t" using command down'
+;;  -e 'tell app "Terminal" to do script "..." in selected tab of the front window'
 
 (defun proviso-deploy--execute (source dest &optional sync)
   "Execute a deployment from SOURCE to DEST.
