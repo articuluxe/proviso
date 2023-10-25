@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-10-13 17:07:21 dharms>
+;; Modified Time-stamp: <2023-10-25 14:55:08 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project ugrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -61,7 +61,7 @@ quotes."
   (concat "-g " (mapconcat (lambda(elt)
                              (concat quote "^"
                                      (proviso-regexp-enhance-dir-glob elt)
-                                     "/" quote))
+                                     quote))
                            lst ",")
           " "))
 
