@@ -1,9 +1,9 @@
 ;;; proviso-core.el --- Core functionality for proviso.
-;; Copyright (C) 2017-2021, 2023  Dan Harms (dharms)
+;; Copyright (C) 2017-2021, 2023-2024  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-10-16 13:11:51 dharms>
+;; Modified Time-stamp: <2024-05-10 13:41:03 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -529,20 +529,21 @@ Returns a list (ROOT FILE)."
               (locate-dominating-file
                dir
                (lambda (parent)
-                 (let ((files (directory-files
-                               parent t
-                               (concat "\\sw*" pattern)
-                               t)))
-                   (setq file (car
-                               (seq-remove
-                                (lambda (f)
-                                  (and
-                                   (string-match-p "\\.git$" f)
-                                   (not (file-directory-p f))
-                                   ;; a .git file (not directory): this should
-                                   ;; be sufficient to ignore submodules.
-                                   ))
-                                files))))))
+                 (unless (string-match-p "homebrew" parent)
+                   (let ((files (directory-files
+                                 parent t
+                                 (concat "\\sw*" pattern)
+                                 t)))
+                     (setq file (car
+                                 (seq-remove
+                                  (lambda (f)
+                                    (and
+                                     (string-match-p "\\.git$" f)
+                                     (not (file-directory-p f))
+                                     ;; a .git file (not directory): this should
+                                     ;; be sufficient to ignore submodules.
+                                     ))
+                                  files)))))))
             (proviso-find-file-upwards
              dir
              (concat "\\sw*" pattern))))
