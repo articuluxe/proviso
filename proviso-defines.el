@@ -1,9 +1,9 @@
 ;;; proviso-defines.el --- Provide defines useful for proviso
-;; Copyright (C) 2017-2019, 2021-2023  Dan Harms (dharms)
+;; Copyright (C) 2017-2019, 2021-2024  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, September 20, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-10-13 16:38:59 dharms>
+;; Modified Time-stamp: <2024-05-30 10:08:39 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools project proviso
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -43,6 +43,7 @@
     "*.json"
     "*.proto"
     "*.py"
+    "*.rs"
     "*.sh"
     "*.sql"
     "*.ts"
