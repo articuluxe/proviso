@@ -1,9 +1,9 @@
 ;;; proviso-include-files.el --- Support for project include files
-;; Copyright (C) 2017-2019, 2021-2023  Dan Harms (dharms)
+;; Copyright (C) 2017-2019, 2021-2023, 2025  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-09-13 10:02:32 dharms>
+;; Modified Time-stamp: <2025-01-27 19:09:43 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -34,7 +34,7 @@
 (require 'cl-lib)
 (require 'f)
 
-(defvar proviso-cpp-language-standard "c++17"
+(defvar proviso-cpp-language-standard "c++20"
   "Default c++ compiler language standard.")
 
 (defun proviso--validate-include-files (proj)
@@ -143,7 +143,7 @@
               (proviso-get proj :include-files)
               recursive-dirs))
         (add-to-list 'flymake-collection-clang-args
-                     (concat "-std=" (or proviso-cpp-language-standard "c++17")))
+                     (concat "-std=" (or proviso-cpp-language-standard "c++20")))
         (add-to-list 'flymake-collection-clang-args
                      "-Wno-pragma-once-outside-header")
         ;; gcc
@@ -154,7 +154,7 @@
                 (proviso-get proj :include-files)
                 recursive-dirs))
           (add-to-list 'flymake-collection-gcc-args
-                       (concat "-std=" (or proviso-cpp-language-standard "c++17")))
+                       (concat "-std=" (or proviso-cpp-language-standard "c++20")))
           )
         ;; set compiler-include-dirs for flymake
     (when (executable-find "clang")
@@ -164,7 +164,7 @@
                                compiler-includes))))
       (set (make-local-variable 'company-clang-arguments)
            (append
-            (list (concat "-std=" (or proviso-cpp-language-standard "c++17")))
+            (list (concat "-std=" (or proviso-cpp-language-standard "c++20")))
             ;; `(,(concat "-stdlib=" flycheck-clang-standard-library)
             ;;   ,(concat "-std=" flycheck-clang-language-standard)
             ;;   "-code-completion-macros" "-code-completion-patterns")
