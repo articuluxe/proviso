@@ -1,9 +1,9 @@
 ;;; proviso-docker.el --- docker utilities
-;; Copyright (C) 2021, 2023  Dan Harms (dharms)
+;; Copyright (C) 2021, 2023, 2025  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Wednesday, March 17, 2021
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-10-13 17:44:12 dharms>
+;; Modified Time-stamp: <2025-03-20 17:41:30 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools profiles project
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -50,6 +50,7 @@
         (proviso-put proj :docker-mount-dst dst)
         (message "Proviso-Docker will transform %s to %s for container %s"
                  src dst container)
+        (push (cons (concat "^" dst) src) directory-abbrev-alist)
         (add-hook 'proviso-hook-file-transformers
                   #'proviso-docker-transform-to-dst)
         (add-hook 'compilation-filter-hook
