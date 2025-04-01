@@ -1,9 +1,9 @@
 ;;; proviso-core.el --- Core functionality for proviso.
-;; Copyright (C) 2017-2021, 2023-2024  Dan Harms (dharms)
+;; Copyright (C) 2017-2021, 2023-2025  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Monday, March 27, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2024-05-10 13:41:03 dharms>
+;; Modified Time-stamp: <2025-04-01 15:02:35 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso projects
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -136,6 +136,7 @@ Melds `proviso' functionality into Emacs' `project'."
 ;;  :search-include-files
 ;;  :search-exclude-files
 ;;  :search-exclude-dirs
+;;  :compile-db
 ;;  :clang-format
 ;;  :docker-container
 ;;   - Internal:

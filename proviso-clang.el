@@ -1,9 +1,9 @@
 ;;; proviso-clang-format.el --- Utility to run clang-format
-;; Copyright (C) 2017, 2019  Dan Harms (dharms)
+;; Copyright (C) 2017, 2019, 2025  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, November 10, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-10-11 16:23:43 dan.harms>
+;; Modified Time-stamp: <2025-04-01 16:23:07 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -31,13 +31,13 @@
 (require 'clang-format)
 
 (defvar proviso-clang-format-active-p nil
-  "Non-nil if clang-format should be called.
-Note there are other dependencies: clang-format must be
+  "Non-nil if `clang-format' should be called.
+Note there are other dependencies: \"clang-format\" must be
 installed; a .clang-format file must be found, etc.")
 
 ;;;###autoload
 (defun proviso-clang-format-toggle-active ()
-  "Select whether clang-format is active.
+  "Select whether `clang-format' is active.
 See `proviso-clang-format-active-p'."
   (interactive)
   (setq proviso-clang-format-active-p
@@ -67,24 +67,30 @@ Settings file `.clang-format' must be specified, and exist."
     (proviso-clang-format-buffer-or-region)))
 
 (defun proviso-clang-format--setup-buffer (proj mode)
-  "Setup a buffer's clang-format according to the settings in PROJ.
+  "Setup a buffer's `clang-format' according to the settings in PROJ.
 MODE is the `major-mode'."
   (when (or (eq mode 'c-mode)
             (eq mode 'c++-mode))
     (add-hook 'before-save-hook 'proviso-clang-format-maybe-buffer nil t)))
 
-(defun proviso-clang-format--init (proj)
-  "Set up clang-format according to PROJ's project definition."
+(defun proviso-clang--init (proj)
+  "Set up `clang-format' according to PROJ's project definition."
   (let* ((root (proviso-get proj :scratch-dir))
-         (name (or (proviso-get proj :clang-format)
+         (format-name (or (proviso-get proj :clang-format)
                   ".clang-format"))
-         (path (if (file-name-absolute-p name)
-                   (expand-file-name name)
-                 (concat root name))))
+         (format-path (if (file-name-absolute-p format-name)
+                   (expand-file-name format-name)
+                 (concat root format-name)))
+         (db-name (or (proviso-get proj :compile-db)
+                      ".compile_commands.json"))
+         (db-path (if (file-name-absolute-p db-name)
+                      (expand-file-name db-name)
+                    (concat root db-name))))
+    (proviso-put proj :compile-db (if (file-exists-p db-path) db-path nil))
     ;; if .clang-format doesn't exist in the root, also check the first
     ;; (privileged) src dir
-    (unless (or (file-exists-p path)
-                (file-name-absolute-p name))
+    (unless (or (file-exists-p format-path)
+                (file-name-absolute-p format-name))
       (let ((lst (proviso-get proj :proj-alist))
             dir try)
         (and (car lst)
@@ -92,13 +98,13 @@ MODE is the `major-mode'."
                         (plist-get (car lst) :dir)))
              (setq try (concat root
                                (file-name-as-directory dir)
-                               name))
+                               format-name))
              (file-exists-p try)
-             (setq path try))))
-    (proviso-put proj :clang-format path)))
+             (setq format-path try))))
+    (proviso-put proj :clang-format format-path)))
 
-(add-hook 'proviso-hook-on-project-init #'proviso-clang-format--init)
+(add-hook 'proviso-hook-on-project-init #'proviso-clang--init)
 (add-hook 'proviso-hook-on-file-opened #'proviso-clang-format--setup-buffer)
 
-(provide 'proviso-clang-format)
+(provide 'proviso-clang)
 ;;; proviso-clang-format.el ends here
