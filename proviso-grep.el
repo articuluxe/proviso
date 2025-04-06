@@ -1,9 +1,9 @@
 ;;; proviso-grep.el --- Utilities to support grep for proviso
-;; Copyright (C) 2017-2021  Dan Harms (dharms)
+;; Copyright (C) 2017-2021, 2025  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-04-20 13:28:20 dharms>
+;; Modified Time-stamp: <2025-04-06 16:44:10 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -35,6 +35,17 @@
 (defcustom proviso-grep-args "--null -HIsni"
   "Standard arguments to give to grep."
   :group 'proviso-custom-group)
+
+(defcustom proviso-search-ask-whole-word t
+  "Whether to ask the user if the whole word should be searched.")
+
+(defun proviso-grep--get-args ()
+  "Get the search parameters."
+  (if proviso-search-ask-whole-word
+      (if (y-or-n-p "Search whole word occurrences?")
+          (concat proviso-grep-args "w")
+        proviso-grep-args)
+    proviso-grep-args))
 
 (defun proviso--set-grep-dirs (proj)
   "Set grep directories according to PROJ's project definition."
@@ -185,7 +196,8 @@ ARG allows customizing the selection of the root search directory."
             ;; some grep variants barf on trailing slashes
             (directory-file-name dir)
             cmd
-            proviso-grep-args " "
+            (proviso-grep--get-args)
+            " "
             (when search-string
               (proviso-grep--sanitize-search-str search-string)))))
 

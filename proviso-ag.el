@@ -1,9 +1,9 @@
 ;;; proviso-ag.el --- Support ag for proviso
-;; Copyright (C) 2017-2021  Dan Harms (dharms)
+;; Copyright (C) 2017-2021, 2025  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  2, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2021-04-20 14:01:47 dharms>
+;; Modified Time-stamp: <2025-04-06 16:50:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project ag silver searcher
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -37,6 +37,14 @@
 (defcustom proviso-ag-args "--hidden --nogroup --null -fi"
   "Standard arguments to give to ag."
   :group 'proviso-custom-group)
+
+(defun proviso-ag--get-args ()
+  "Get the search parameters."
+  (if proviso-search-ask-whole-word
+      (if (y-or-n-p "Search whole word occurrences?")
+          (concat proviso-ag-args "w")
+        proviso-ag-args)
+    proviso-ag-args))
 
 (defun proviso-ag--create-file-exclusion-str (lst)
   "Create an ag subcommand to exclude files from LST."
@@ -161,7 +169,7 @@ ARG allows customizing the selection of the root search directory."
           (setq include-files 'none)))
       (setq cmd (proviso-ag--create-ag-str proj exclude-files
                                            exclude-dirs include-files))
-      (setq substr (concat "ag" cmd " " proviso-ag-args " "))
+      (setq substr (concat "ag" cmd " " (proviso-ag--get-args) " "))
       (setq idx (string-width substr))
       (cons
        (concat

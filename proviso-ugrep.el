@@ -1,9 +1,9 @@
 ;;; proviso-ugrep.el --- Support ugrep for proviso
-;; Copyright (C) 2018-2023  Dan Harms (dharms)
+;; Copyright (C) 2018-2023, 2025  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-10-25 14:55:08 dharms>
+;; Modified Time-stamp: <2025-04-06 16:51:35 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project ugrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -36,6 +36,14 @@
 (defcustom proviso-ugrep-args "-Hrnj."
   "Standard arguments to give to ugrep."
   :group 'proviso-custom-group)
+
+(defun proviso-ugrep--get-args ()
+  "Get the search parameters."
+  (if proviso-search-ask-whole-word
+      (if (y-or-n-p "Search whole word occurrences?")
+          (concat proviso-ugrep-args "w")
+        proviso-ugrep-args)
+    proviso-ugrep-args))
 
 (defun proviso-ugrep--compute-quote-char (remote)
   "Return the quote character, with remote path REMOTE.
@@ -175,7 +183,7 @@ ARG allows customizing the selection of the root search directory."
                  proj
                  (proviso-ugrep--compute-quote-char remote)
                  exclude-files exclude-dirs include-files))
-      (setq substr (concat "ugrep " cmd proviso-ugrep-args " "))
+      (setq substr (concat "ugrep " cmd (proviso-ugrep--get-args) " "))
       (setq idx (string-width substr))
       (cons
        (concat

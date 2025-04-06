@@ -1,9 +1,9 @@
 ;;; proviso-rg.el --- Support rg for proviso
-;; Copyright (C) 2018-2021, 2023  Dan Harms (dharms)
+;; Copyright (C) 2018-2021, 2023, 2025  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-10-13 17:06:27 dharms>
+;; Modified Time-stamp: <2025-04-06 16:50:06 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project rg ripgrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -37,6 +37,14 @@
 (defcustom proviso-rg-args "--no-heading --null -Snuu"
   "Standard arguments to give to rg."
   :group 'proviso-custom-group)
+
+(defun proviso-rg--get-args ()
+  "Get the search parameters."
+  (if proviso-search-ask-whole-word
+      (if (y-or-n-p "Search whole word occurrences?")
+          (concat proviso-rg-args "w")
+        proviso-rg-args)
+    proviso-rg-args))
 
 (defun proviso-rg--compute-quote-char (remote)
   "Return the quote character, with remote path REMOTE.
@@ -173,7 +181,7 @@ ARG allows customizing the selection of the root search directory."
                  proj
                  (proviso-rg--compute-quote-char remote)
                  exclude-files exclude-dirs include-files))
-      (setq substr (concat "rg " cmd proviso-rg-args " "))
+      (setq substr (concat "rg " cmd (proviso-rg--get-args) " "))
       (setq idx (string-width substr))
       (cons
        (concat
