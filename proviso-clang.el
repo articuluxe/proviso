@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, November 10, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2025-04-01 16:23:07 dharms>
+;; Modified Time-stamp: <2025-04-11 10:12:02 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project clang-format
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -82,7 +82,7 @@ MODE is the `major-mode'."
                    (expand-file-name format-name)
                  (concat root format-name)))
          (db-name (or (proviso-get proj :compile-db)
-                      ".compile_commands.json"))
+                      "compile_commands.json"))
          (db-path (if (file-name-absolute-p db-name)
                       (expand-file-name db-name)
                     (concat root db-name))))
