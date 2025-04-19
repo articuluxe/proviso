@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Saturday, April  1, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2025-04-06 16:44:10 dharms>
+;; Modified Time-stamp: <2025-04-19 12:15:24 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project grep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -36,7 +36,10 @@
   "Standard arguments to give to grep."
   :group 'proviso-custom-group)
 
-(defcustom proviso-search-ask-whole-word t
+(defcustom proviso-search-whole-word t
+  "Whether the whole word boundary should be searched.")
+
+(defcustom proviso-search-ask-whole-word nil
   "Whether to ask the user if the whole word should be searched.")
 
 (defun proviso-grep--get-args ()
@@ -45,7 +48,9 @@
       (if (y-or-n-p "Search whole word occurrences?")
           (concat proviso-grep-args "w")
         proviso-grep-args)
-    proviso-grep-args))
+    (if proviso-search-whole-word
+        (concat proviso-grep-args "w")
+      proviso-grep-args)))
 
 (defun proviso--set-grep-dirs (proj)
   "Set grep directories according to PROJ's project definition."

@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, January 23, 2018
 ;; Version: 1.0
-;; Modified Time-stamp: <2025-04-06 16:51:35 dharms>
+;; Modified Time-stamp: <2025-04-19 12:15:22 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project ugrep
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -43,7 +43,9 @@
       (if (y-or-n-p "Search whole word occurrences?")
           (concat proviso-ugrep-args "w")
         proviso-ugrep-args)
-    proviso-ugrep-args))
+    (if proviso-search-whole-word
+        (concat proviso-ugrep-args "w")
+      proviso-ugrep-args)))
 
 (defun proviso-ugrep--compute-quote-char (remote)
   "Return the quote character, with remote path REMOTE.

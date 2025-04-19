@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, November  2, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2025-04-06 16:50:15 dharms>
+;; Modified Time-stamp: <2025-04-19 12:15:23 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project ag silver searcher
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -44,7 +44,9 @@
       (if (y-or-n-p "Search whole word occurrences?")
           (concat proviso-ag-args "w")
         proviso-ag-args)
-    proviso-ag-args))
+    (if proviso-search-whole-word
+        (concat proviso-ag-args "w")
+      proviso-ag-args)))
 
 (defun proviso-ag--create-file-exclusion-str (lst)
   "Create an ag subcommand to exclude files from LST."
