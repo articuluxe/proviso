@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, March 30, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2025-01-27 19:09:43 dharms>
+;; Modified Time-stamp: <2025-05-12 12:01:37 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project include files
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -137,6 +137,7 @@
       ;; set flymake for c++
       (when (eq major-mode 'c++-mode)
         ;; clang
+        (require 'flymake-collection-clang)
         (set (make-local-variable 'flymake-collection-clang-include-path)
              (append
               compiler-includes
