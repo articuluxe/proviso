@@ -1,9 +1,9 @@
 ;;; proviso-fd.el --- Support for fd in proviso
-;; Copyright (C) 2019  Dan Harms (dharms)
+;; Copyright (C) 2019, 2025  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Friday, October 11, 2019
 ;; Version: 1.0
-;; Modified Time-stamp: <2019-11-25 12:49:54 dharms>
+;; Modified Time-stamp: <2025-10-06 16:45:19 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools unix proviso project fd
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -30,6 +30,9 @@
 (require 'proviso-defines)
 (require 'proviso-regexp)
 (require 'seq)
+
+(defcustom proviso-fd-exe "fd" "The fd executable name."
+  :group 'proviso-custom-group)
 
 (defcustom proviso-fd-args "-HIa"
   "Standard arguments to give to fd."
@@ -97,7 +100,7 @@ EXCLUDE-FILES, EXCLUDE-DIRS and INCLUDE-FILES provide filters to
 exclude and include results, respectively.  SYMBOLIC should be
 non-nil to allow the presence of symlinks in the results."
   (let ((buffer (get-buffer-create " *proviso-fd*"))
-        (cmd (concat "fd "
+        (cmd (concat proviso-fd-exe " "
                      (if symbolic (concat proviso-fd-args "L")
                        proviso-fd-args)
                      (when exclude-files
