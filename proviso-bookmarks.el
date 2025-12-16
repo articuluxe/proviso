@@ -1,9 +1,9 @@
 ;;; proviso-bookmarks.el --- Settings for proviso bookmarks
-;; Copyright (C) 2017-2020, 2022  Dan Harms (dharms)
+;; Copyright (C) 2017-2020, 2022, 2025  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2022-08-29 13:16:03 dharms>
+;; Modified Time-stamp: <2025-12-16 14:09:31 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project bookmarks
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -28,44 +28,19 @@
 
 ;;; Code:
 (require 'proviso-core)
-(require 'bookmark+)
-
-(defvar proviso-bookmarks-create-bmk-on-proj-init nil
-  "Create bookmark file automatically when switching to a project.
-If non-nil, a bookmark file will be created in the project's
-root directory when a project is first made active.  If nil, the
-bookmark file will only be created on demand.")
+(require 'bookmark)
 
 (defun proviso--init-bookmarks (proj)
   "Set bookmarks according to PROJ's project definition."
-  (let ((dir (proviso-get proj :scratch-dir))
-        (name (proviso-get proj :project-name)))
-    (proviso-put proj :bookmark-file
-     (concat dir name ".bmk"))))
+  (let* ((dir (proviso-get proj :scratch-dir))
+         (name (proviso-get proj :project-name))
+         (file (or (proviso-get proj :bookmark-file)
+                   (concat dir name ".bmk"))))
+    (proviso-put proj :bookmark-file file)
+    (when (file-exists-p file)
+      (bookmark-load file nil nil t))))
 
-(defun proviso--activate-bookmarks-maybe (proj old)
-  "Maybe activate the bookmark file as defined by PROJ's settings.
-PROJ is now the active project, replacing OLD.
-See `proviso-bookmarks-create-bmk-on-proj-init'."
-  (when proviso-bookmarks-create-bmk-on-proj-init
-    (proviso-bookmarks--activate-file proj)))
-
-(defun proviso-bookmarks-switch-to-bookmark ()
-  "Activate a bookmark file according to the current project."
-  (interactive)
-  (let ((proj (proviso-current-project)))
-    (when proj
-      (proviso-bookmarks--activate-file proj))))
-
-(defun proviso-bookmarks--activate-file (proj)
-  "Activate the bookmark file as defined by PROJ's settings.
-The bookmark file should have been stored in :bookmark-file."
-  (let ((file (proviso-get proj :bookmark-file)))
-    (when file
-      (bmkp-switch-bookmark-file-create file nil t))))
-
-;; (add-hook 'proviso-hook-on-project-init 'proviso--init-bookmarks)
-;; (add-hook 'proviso-hook-on-project-active 'proviso--activate-bookmarks-maybe)
+(add-hook 'proviso-hook-on-project-init 'proviso--init-bookmarks)
 
 (provide 'proviso-bookmarks)
 ;;; proviso-bookmarks.el ends here
