@@ -3,7 +3,7 @@
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Tuesday, April 18, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2025-12-16 14:09:31 dharms>
+;; Modified Time-stamp: <2025-12-19 12:37:15 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso project bookmarks
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -38,7 +38,8 @@
                    (concat dir name ".bmk"))))
     (proviso-put proj :bookmark-file file)
     (when (file-exists-p file)
-      (bookmark-load file nil nil t))))
+      (let ((proviso-inspect-files-p nil))
+        (bookmark-load file nil nil t)))))
 
 (add-hook 'proviso-hook-on-project-init 'proviso--init-bookmarks)
 
