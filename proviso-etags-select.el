@@ -519,5 +519,31 @@ Use the C-u prefix to prevent the etags-select window from closing."
   (setq overlay-arrow-position nil)
   (run-hooks 'etags-select-mode-hook))
 
+;; Code to integrate with proviso:
+;; (defun proviso-etags--real-file-name (filename)
+;;   "Return the tag's correct destination file for FILENAME.
+;; This may prepend a remote prefix."
+;;   (concat
+;;    (proviso-get proviso-curr-proj :remote-prefix)
+;;    (if (file-name-absolute-p filename)
+;;        filename
+;;      (concat
+;;       (proviso-get proviso-curr-proj :root-dir)
+;;       filename))))
+
+;; ;; point etags-select to our function
+;; (setq etags-select-real-file-name #'proviso-etags--real-file-name)
+
+;; (defun proviso-etags--insert-file-name(filename tag-file-path)
+;;   "Return a display name for FILENAME.
+;; TAG-FILE-PATH is the TAGS file being looked at."
+;;   (if (file-name-absolute-p filename)
+;;       filename
+;;     (concat (proviso-get proviso-curr-proj :root-dir)
+;;             filename)))
+
+;; ;; point etags-select to our function
+;; (setq etags-select-insert-file-name #'proviso-etags--insert-file-name)
+
 (provide 'proviso-etags-select)
 ;;; proviso-etags-select.el ends here

@@ -1,9 +1,9 @@
 ;;; proviso-tags.el --- Add tags functionality to proviso
-;; Copyright (C) 2017-2019, 2023  Dan Harms (dharms)
+;; Copyright (C) 2017-2019, 2023, 2026  Dan Harms (dharms)
 ;; Author: Dan Harms <enniomore@icloud.com>
 ;; Created: Thursday, January  5, 2017
 ;; Version: 1.0
-;; Modified Time-stamp: <2023-10-13 12:17:58 dharms>
+;; Modified Time-stamp: <2026-09-17 11:54:57 dharms>
 ;; Modified by: Dan Harms
 ;; Keywords: tools proviso tags
 ;; URL: https://github.com/articuluxe/proviso.git
@@ -105,30 +105,14 @@ PROJ is now the active project, replacing OLD."
   ;; maintain a global value comprised of all known projects
   (setq etags-table-alist (proviso-get proj :tags-alist)))
 
-(defun proviso-etags--real-file-name (filename)
-  "Return the tag's correct destination file for FILENAME.
-This may prepend a remote prefix."
-  (concat
-   (proviso-get proviso-curr-proj :remote-prefix)
-   (if (file-name-absolute-p filename)
-       filename
-     (concat
-      (proviso-get proviso-curr-proj :root-dir)
-      filename))))
+(defun proviso-etags--xref-backend (orig-fn &rest args)
+  "Extend the xref health check in ORIG-FN with proviso logic, given ARGS."
+  (or
+   (apply orig-fn args)
+   (when (or etags-table-alist)
+     'etags)))
 
-;; point etags-select to our function
-(setq etags-select-real-file-name #'proviso-etags--real-file-name)
-
-(defun proviso-etags--insert-file-name(filename tag-file-path)
-  "Return a display name for FILENAME.
-TAG-FILE-PATH is the TAGS file being looked at."
-  (if (file-name-absolute-p filename)
-      filename
-    (concat (proviso-get proviso-curr-proj :root-dir)
-            filename)))
-
-;; point etags-select to our function
-(setq etags-select-insert-file-name #'proviso-etags--insert-file-name)
+(advice-add 'etags--xref-backend :around 'proviso-etags--xref-backend)
 
 (provide 'proviso-tags)
 ;;; proviso-tags.el ends here

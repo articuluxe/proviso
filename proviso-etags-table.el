@@ -5,7 +5,7 @@
 ;; Author: Scott Frazer <frazer.scott@gmail.com>
 ;; Maintainer: Scott Frazer <frazer.scott@gmail.com>
 ;; Created: 28 Oct 2008
-;; Version: 1.1
+;; Version: 1.2
 ;; Keywords: etags tags tag
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -37,6 +37,8 @@
 ;; automatically recomputed.
 
 ;;; Change log:
+;; 25 Jun 2017 -- v1.2
+;;                Integrated with proviso project management
 ;;
 ;; 27 Mar 2009 -- v1.1
 ;;                Add ability to use backreferences in etags-table-alist
@@ -46,8 +48,6 @@
 ;; 28 Oct 2008 -- v1.0
 ;;                Initial release
 ;;
-;; Modified Sunday, June 25, 2017 to be made part of proviso
-;; proviso-etags-table.el
 
 ;;; Code:
 
